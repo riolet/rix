@@ -1,0 +1,1 @@
+eol, eof, ident, intnumber, stringlit, floatnumber, number, lparen, rparen, times, slash, plus, minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym
