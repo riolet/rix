@@ -91,14 +91,19 @@ void evaluate(void)
                        oprnSymStack[rnd].symStr);
 
             oprnStack[rnd-1]=evaluation;
-            strncpy(oprnSymStack[oprnSymStackPtr].symStr,evalBuff,evalBuffLen);
+            strncpy(oprnSymStack[oprnSymStackPtr].symStr,evalBuff,evalBuffLen+1);
             rnd--;
         } else {
             if (oprnStack[rnd]==evaluation)
-                printf("%s(%s)\n",symnames[optrStack[tor]],symnames[oprnStack[rnd]]);
+               evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s)\n",symnames[optrStack[tor]],symnames[oprnStack[rnd]]);
             else
-                printf("%s(\"%s\")\n",symnames[optrStack[tor]],symnames[oprnStack[rnd]]);
+               evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(\"%s\")\n",symnames[optrStack[tor]],symnames[oprnStack[rnd]]);
+
+            oprnStack[rnd]=evaluation;
+            strncpy(oprnSymStack[oprnSymStackPtr].symStr,evalBuff,evalBuffLen+1);
+            rnd--;
         }
+        printf("%s\n",evalBuff);
     }
 }
 
