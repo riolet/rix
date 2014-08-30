@@ -49,7 +49,6 @@ const char * getIdentifierType(const char * identifier) {
             return id.type;
         }
     }
-    fprintf(stderr,"Unknown identifier: %s\n",identifier);
     return NULL;
 }
 
@@ -127,6 +126,8 @@ void evaluate(void)
         if (!typeSet) {
            if (oprnStack[rnd]==stringlit) {
                 strcpy(type,"String");
+           } else if (oprnStack[rnd]==intnumber) {
+                strcpy(type,"Integer");
            } else if (oprnStack[rnd]==ident) {
                 char *idtype=getIdentifierType(holderSymStack);
                 if (idtype!=NULL)
@@ -134,7 +135,7 @@ void evaluate(void)
                 else
                     strcpy(type,"???");
            }else {
-                strcpy(type,holderSymStack);
+                strcpy(type,holderName);
            }
            typeSet=true;
         }
@@ -156,14 +157,16 @@ void evaluate(void)
                                      oprnSymStack[rnd-1].symStr,
                                      holderSymStack);
             if (oprnStack[rnd-1]==ident&&optrStack[tor]==assign) {
-                if (getIdentifierType(oprnSymStack[rnd-1].symStr)==NULL) {
-
+                char * idType=getIdentifierType(oprnSymStack[rnd-1].symStr);
+                if (idType==NULL) {
                     strcpy(idents[identIdx].name,oprnSymStack[rnd-1].symStr);
                     strcpy(idents[identIdx].type,type);
                     identIdx++;
                 }
-                else
-                    fprintf("You can't redefine %s. This is not PHP\n",oprnSymStack[rnd-1].symStr);
+                else {
+                    if (strcmp(idType,type)!=0)
+                        fprintf(stderr,"You can't redefine %s. This is not PHP\n",oprnSymStack[rnd-1].symStr);
+                }
 
             }
             strcpy(holderName,symnames[oprnStack[rnd-1]]);
@@ -268,6 +271,19 @@ void getsym(void)
 
         linePos++;
     }
+
+    /* Number */
+    else if ((buff[linePos]>='0'&&buff[linePos]<='9'))
+    {
+        while ((buff[linePos]>='0'&&buff[linePos]<='9'))
+        {
+            symStr[symStrIdx++]=buff[linePos++];
+        }
+        symStr[symStrIdx]=0;
+        sym=intnumber;
+        opStackUpdate();
+    }
+
 
     /* Assignment and equal */
     else if ((buff[linePos]=='='))
@@ -377,7 +393,15 @@ void term(void)
 
 void expression(void)
 {
-    if (accept(stringlit))
+    if (accept(intnumber))
+    {
+        while (sym == plus )
+        {
+            getsym();
+            expression();
+        }
+    }
+    else if (accept(stringlit))
     {
         while (sym == plus )
         {
