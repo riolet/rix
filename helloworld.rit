@@ -1,4 +1,4 @@
 hello="Hello"
 world="World"
 helloWorld=hello+" "+world
-hwr=helloWorld.reverse
+print helloWorld
