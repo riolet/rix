@@ -134,7 +134,7 @@ void evaluate(void)
     int rnd=oprnStackPtr-1;
 
     char evalBuff[EVAL_BUFF_MAX_LEN];
-    char holderName[BUFFLEN];
+    Symbol holderSymbol;
     char holderSymStack[BUFFLEN];
     char holderType[BUFFLEN];
     int evalBuffLen=0;
@@ -145,7 +145,7 @@ void evaluate(void)
         printf("%s\n",oprnSymStack[i].symStr);
     }
 
-    strcpy(holderName,symnames[oprnStack[rnd]]);
+    holderSymbol=oprnStack[rnd];
     strcpy(holderSymStack,oprnSymStack[rnd].symStr);
 
     bool rTypeSet=false;
@@ -239,12 +239,17 @@ void evaluate(void)
                     strcpy(idents[identIdx].name,oprnSymStack[rnd-1].symStr);
                     strcpy(idents[identIdx].type,rtype);
                     printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
-                    if (!strcmp(idents[identIdx].type,"Integer")) {
-                        fprintf(outfile,"int %s;\n",idents[identIdx].name);
-                    } else  if (!strcmp(idents[identIdx].type,"Integer")) {
-                        fprintf(outfile,"float %s;\n",idents[identIdx].name);
-                    } else {
-                        fprintf(outfile,"%s %s;\n",idents[identIdx].type,idents[identIdx].name);
+                    if (!strcmp(idents[identIdx].type,"Integer"))
+                    {
+                        fprintf(outfile,"\tint %s;\n",idents[identIdx].name);
+                    }
+                    else  if (!strcmp(idents[identIdx].type,"Float"))
+                    {
+                        fprintf(outfile,"\tfloat %s;\n",idents[identIdx].name);
+                    }
+                    else
+                    {
+                        fprintf(outfile,"\t%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
                     }
                     identIdx++;
                 }
@@ -259,41 +264,70 @@ void evaluate(void)
             char tempRtype[BUFFLEN];
             char funcName[BUFFLEN];
 
-            if ((strcmp(ltype,"Integer")||strcmp(ltype,"Float"))&&(strcmp(rtype,"Integer")||strcmp(rtype,"Float"))){
-                if (!strcmp(fn,"assign")) {
+            if ((!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float")))
+            {
+                if (!strcmp(fn,"assign"))
+                {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
-                    oprnSymStack[rnd-1].symStr,
-                    holderSymStack);
-                } else if (!strcmp(fn,"plus")) {
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+                }
+                else if (!strcmp(fn,"plus"))
+                {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s + %s",
-                    oprnSymStack[rnd-1].symStr,
-                    holderSymStack);
-                }  else {
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+                }
+                else
+                {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
-                    funcName,
-                    oprnSymStack[rnd-1].symStr,
-                    holderSymStack);
+                                         funcName,
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
                 }
-            } else {
+            }
+            else if (holderSymbol==stringlit||oprnStack[rnd-1]==stringlit)
+            {
+                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                if (holderSymbol==stringlit&&oprnStack[rnd-1]==stringlit)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(String_from_stringlit(%s),String_from_stringlit(%s))",
+                                         funcName,
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+                else if (oprnStack[rnd-1]==stringlit)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(String_from_stringlit(%s),%s)",
+                                         funcName,
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+                else if (holderSymbol==stringlit)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,String_from_stringlit(%s))",
+                                         funcName,
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+            }
+            else
+            {
                 snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                 evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
-                funcName,
-                oprnSymStack[rnd-1].symStr,
-                holderSymStack);
+                                     funcName,
+                                     oprnSymStack[rnd-1].symStr,
+                                     holderSymStack);
 
             }
 
-            strcpy(holderName,symnames[oprnStack[rnd-1]]);
-            strncpy(holderSymStack,evalBuff,evalBuffLen+1);
+
 
             char * funcType=getFunctionType(funcName);
-            if (funcType==NULL) {
+            if (funcType==NULL)
+            {
                 fprintf(stderr,"Unknown method %s. Assuming void\n",funcName);
                 strcpy(rtype,"void");
-            } else {
+            }
+            else
+            {
                 strcpy(rtype,funcType);
             }
             rnd--;
@@ -303,14 +337,15 @@ void evaluate(void)
 
             evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
 
-            strcpy(holderName,symnames[oprnStack[rnd]]);
-            strncpy(holderSymStack,evalBuff,evalBuffLen+1);
             rnd--;
         }
+
+        holderSymbol=evaluation;
+        strncpy(holderSymStack,evalBuff,evalBuffLen+1);
         printf("%d %s\n",evalBuffLen,evalBuff);
     }
     if (evalBuffLen>0)
-        fprintf(outfile,"%s;\n",evalBuff);
+        fprintf(outfile,"\t%s;\n",evalBuff);
 }
 
 void getln(void)
@@ -490,7 +525,11 @@ void getsym(void)
     }
 }
 
-void error(const char msg[]);
+void error(const char msg[])
+{
+
+}
+
 void expression(void);
 
 int accept(Symbol s)
@@ -656,8 +695,12 @@ int main(int argc,char **argv)
     }
 
     outfile=fopen("out.c","w");
-    linePos=0;
 
+    fprintf(outfile,"#include \"ritchie.h\"\n");
+    fprintf(outfile,"int main(void) {\n");
+
+
+    linePos=0;
     optrStackPtr=0;
     oprnStackPtr=0;
     optrSymStackPtr=0;
@@ -669,13 +712,13 @@ int main(int argc,char **argv)
 
     /*TODO: This should be done in RL itself *
     /*Create stdout */
-    strcpy(idents[identIdx].name,"out");
+    strcpy(idents[identIdx].name,"stdout");
     strcpy(idents[identIdx].type,"Stream");
     identIdx++;
 
     /*Setup some function shortcuts */
     strcpy(shortFuncs[shortFuncIdx].name,"print");
-    strcpy(shortFuncs[shortFuncIdx].object,"out");
+    strcpy(shortFuncs[shortFuncIdx].object,"stdout");
     shortFuncIdx++;
 
     /*Setup some functions signatures */
@@ -687,12 +730,27 @@ int main(int argc,char **argv)
     strcpy(functions[funcIdx].type,"Integer");
     funcIdx++;
 
+    strcpy(functions[funcIdx].name,"Integer_plus_Float");
+    strcpy(functions[funcIdx].type,"Float");
+    funcIdx++;
+
+    strcpy(functions[funcIdx].name,"Float_plus_Integer");
+    strcpy(functions[funcIdx].type,"Float");
+    funcIdx++;
+
+    strcpy(functions[funcIdx].name,"Float_plus_Float");
+    strcpy(functions[funcIdx].type,"Float");
+    funcIdx++;
 
     getln();
     getsym();
     block();
     if (sym!=eof)
         expect(eof);
+
+    fprintf(outfile,"return 0;\n}\n");
     close(outfile);
     close(file);
+
+    return 0;
 }
