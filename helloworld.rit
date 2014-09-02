@@ -4,5 +4,6 @@ helloWorld=hello+" "+world
 print helloWorld+"!"
 i=1
 j=1
-k=i+j
-print k
+k=i+j+0.4
+l=2.3
+print l+k

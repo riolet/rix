@@ -9,14 +9,23 @@ int ritch_i_;
 #define LABELMAX 8096
 #define STACKDEP 1024
 
-typedef struct StaticFunction_
+typedef struct Function_
+{
+    char name[BUFFLEN];
+    char type[BUFFLEN];
+} Function;
+
+Function functions[LABELMAX];
+int funcIdx;
+
+typedef struct shortCutFunction_
 {
     char name[BUFFLEN];
     char object[BUFFLEN];
-} StaticFunction;
+} shortCutFunction;
 
-StaticFunction statFuncs[LABELMAX];
-int statFuncIdx;
+shortCutFunction shortFuncs[LABELMAX];
+int shortFuncIdx;
 
 typedef struct Identifier_
 {
@@ -42,9 +51,21 @@ const char * symnames[]=
     "evaluation"
 };
 
+const char * getFunctionType(const char * func)
+{
+    int i;
+    for (i=0; i<funcIdx; i++)
+    {
+        if (strcmp(functions[i].name,func)==0)
+        {
+            return functions[i].type;
+        }
+    }
+    return NULL;
+}
+
 const char * getIdentifierType(const char * identifier)
 {
-    Identifier id;
     int i;
     for (i=0; i<identIdx; i++)
     {
@@ -59,11 +80,11 @@ const char * getIdentifierType(const char * identifier)
 const char *  getFunctionObject(const char * funcname)
 {
     int i;
-    for (i=0; i<statFuncIdx; i++)
+    for (i=0; i<shortFuncIdx; i++)
     {
-        if (strcmp(statFuncs[i].name,funcname)==0)
+        if (strcmp(shortFuncs[i].name,funcname)==0)
         {
-            return statFuncs[i].object;
+            return shortFuncs[i].object;
         }
     }
     return NULL;
@@ -113,47 +134,51 @@ void evaluate(void)
     int rnd=oprnStackPtr-1;
 
     char evalBuff[EVAL_BUFF_MAX_LEN];
-    char holderName[EVAL_BUFF_MAX_LEN];
+    char holderName[BUFFLEN];
     char holderSymStack[BUFFLEN];
+    char holderType[BUFFLEN];
     int evalBuffLen=0;
 
-
+    int i;
+    for (i=0; i<oprnStackPtr; i++)
+    {
+        printf("%s\n",oprnSymStack[i].symStr);
+    }
 
     strcpy(holderName,symnames[oprnStack[rnd]]);
     strcpy(holderSymStack,oprnSymStack[rnd].symStr);
-
 
     bool rTypeSet=false;
     char rtype[BUFFLEN];
     bool lTypeSet=false;
     char ltype[BUFFLEN];
 
+    if (oprnStack[rnd]==stringlit)
+    {
+        strcpy(rtype,"String");
+    }
+    else if (oprnStack[rnd]==intnumber)
+    {
+        strcpy(rtype,"Integer");
+    }
+    else if (oprnStack[rnd]==floatnumber)
+    {
+        strcpy(rtype,"Float");
+    }
+
+    else if (oprnStack[rnd]==ident)
+    {
+        const char *idType=getIdentifierType(holderSymStack);
+        if (idType!=NULL)
+            strcpy(rtype,getIdentifierType(holderSymStack));
+        else
+            strcpy(rtype,"???");
+    }
+
     for (tor=optrStackPtr-1; tor>=0; tor--)
     {
-        if (!rTypeSet)
-        {
-            if (oprnStack[rnd]==stringlit)
-            {
-                strcpy(rtype,"String");
-            }
-            else if (oprnStack[rnd]==intnumber)
-            {
-                strcpy(rtype,"Integer");
-            }
-            else if (oprnStack[rnd]==ident)
-            {
-                const char *idType=getIdentifierType(holderSymStack);
-                if (idType!=NULL)
-                    strcpy(rtype,getIdentifierType(holderSymStack));
-                else
-                    strcpy(rtype,"???");
-            }
-            else
-            {
-                strcpy(rtype,holderName);
-            }
-            rTypeSet=true;
-        }
+        printf("OPTR %s\n",symnames[optrStack[rnd]]);
+
         printf("tor/optrStackPtr %d/%d rnd/oprnStackPtr %d/%d %s\n",tor,optrStackPtr,rnd,oprnStackPtr,oprnSymStack[rnd].symStr);
 
         char fn[BUFFLEN];
@@ -167,38 +192,45 @@ void evaluate(void)
         }
         if (rnd>0)
         {
-
-            if (!lTypeSet)
+            if (optrStack[tor]==assign)
             {
-                if (oprnStack[rnd]==stringlit)
+                strcpy(ltype,rtype);
+            }
+            else
+            {
+                if (!lTypeSet)
                 {
-                    strcpy(ltype,"String");
+
+                    if (oprnStack[rnd-1]==stringlit)
+                    {
+                        strcpy(ltype,"String");
+                    }
+                    else if (oprnStack[rnd-1]==intnumber)
+                    {
+                        strcpy(ltype,"Integer");
+                    }
+                    else if (oprnStack[rnd-1]==floatnumber)
+                    {
+                        strcpy(ltype,"Float");
+                    }
+                    else if (oprnStack[rnd-1]==ident)
+                    {
+
+                        const char * ltype_=getIdentifierType(oprnSymStack[rnd-1].symStr);
+                        if (ltype_==NULL)
+                        {
+                            fprintf(stderr,"Type of %s indeterminalbe",oprnSymStack[rnd-1].symStr);
+                        }
+                        else
+                        {
+                            strcpy(ltype,ltype_);
+                        }
+
+                    }
+                    //lTypeSet=true;
                 }
-                else if (oprnStack[rnd]==intnumber)
-                {
-                    strcpy(ltype,"Integer");
-                }
-                else if (oprnStack[rnd]==ident)
-                {
-                    const char *idType=getIdentifierType(holderSymStack);
-                    if (idType!=NULL)
-                        strcpy(rtype,getIdentifierType(holderSymStack));
-                    else
-                        strcpy(rtype,"???");
-                }
-                else
-                {
-                    strcpy(ltype,holderName);
-                }
-                lTypeSet=true;
             }
 
-            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s.%s_%s(%s,%s)",
-                                 rtype,
-                                 ltype,
-                                 fn,
-                                 oprnSymStack[rnd-1].symStr,
-                                 holderSymStack);
             if (oprnStack[rnd-1]==ident&&optrStack[tor]==assign)
             {
                 const char * idType=getIdentifierType(oprnSymStack[rnd-1].symStr);
@@ -207,7 +239,13 @@ void evaluate(void)
                     strcpy(idents[identIdx].name,oprnSymStack[rnd-1].symStr);
                     strcpy(idents[identIdx].type,rtype);
                     printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
-                    fprintf(outfile,"%s %s;\n",idents[identIdx].type,idents[identIdx].name);
+                    if (!strcmp(idents[identIdx].type,"Integer")) {
+                        fprintf(outfile,"int %s;\n",idents[identIdx].name);
+                    } else  if (!strcmp(idents[identIdx].type,"Integer")) {
+                        fprintf(outfile,"float %s;\n",idents[identIdx].name);
+                    } else {
+                        fprintf(outfile,"%s %s;\n",idents[identIdx].type,idents[identIdx].name);
+                    }
                     identIdx++;
                 }
                 else
@@ -217,14 +255,53 @@ void evaluate(void)
                 }
 
             }
+
+            char tempRtype[BUFFLEN];
+            char funcName[BUFFLEN];
+
+            if ((strcmp(ltype,"Integer")||strcmp(ltype,"Float"))&&(strcmp(rtype,"Integer")||strcmp(rtype,"Float"))){
+                if (!strcmp(fn,"assign")) {
+                    snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
+                    oprnSymStack[rnd-1].symStr,
+                    holderSymStack);
+                } else if (!strcmp(fn,"plus")) {
+                    snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s + %s",
+                    oprnSymStack[rnd-1].symStr,
+                    holderSymStack);
+                }  else {
+                    snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
+                    funcName,
+                    oprnSymStack[rnd-1].symStr,
+                    holderSymStack);
+                }
+            } else {
+                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
+                funcName,
+                oprnSymStack[rnd-1].symStr,
+                holderSymStack);
+
+            }
+
             strcpy(holderName,symnames[oprnStack[rnd-1]]);
             strncpy(holderSymStack,evalBuff,evalBuffLen+1);
+
+            char * funcType=getFunctionType(funcName);
+            if (funcType==NULL) {
+                fprintf(stderr,"Unknown method %s. Assuming void\n",funcName);
+                strcpy(rtype,"void");
+            } else {
+                strcpy(rtype,funcType);
+            }
             rnd--;
         }
         else
         {
 
-            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s.%s(%s)",rtype,fn,holderSymStack);
+            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
 
             strcpy(holderName,symnames[oprnStack[rnd]]);
             strncpy(holderSymStack,evalBuff,evalBuffLen+1);
@@ -251,7 +328,7 @@ void getln(void)
     oprnSymStackPtr=0;
 }
 
-void opStackUpdate()
+void oprnStackUpdate()
 {
     oprnStack[oprnStackPtr]=sym;
     oprnStackPtr++;
@@ -287,19 +364,25 @@ void getsym(void)
             symStr[symStrIdx++]=buff[linePos++];
         }
         symStr[symStrIdx]=0;
-        const char * fn=getFunctionObject(symStr);
-        if (fn!=NULL)
+        const char * fnObj=getFunctionObject(symStr);
+        if (fnObj!=NULL)
         {
             sym=function;
-            strcpy(optrSymStack[optrStackPtr].symStr,fn);
+            strcpy(optrSymStack[optrStackPtr].symStr,symStr);
             optrStack[optrStackPtr]=sym;
             optrStackPtr++;
+
+            oprnStack[oprnStackPtr]=ident;
+            oprnStackPtr++;
+            strcpy(oprnSymStack[oprnSymStackPtr].symStr,fnObj);
+            printf("GETSYM:%s\n",oprnSymStack[oprnSymStackPtr].symStr);
+            oprnSymStackPtr++;
         }
         else
         {
             sym=ident;
 
-            opStackUpdate();
+            oprnStackUpdate();
         }
     }
 
@@ -315,7 +398,7 @@ void getsym(void)
         symStr[symStrIdx]=0;
         sym=stringlit;
 
-        opStackUpdate();
+        oprnStackUpdate();
 
         linePos++;
     }
@@ -338,7 +421,7 @@ void getsym(void)
                 }
                 symStr[symStrIdx]=0;
                 sym=floatnumber;
-                opStackUpdate();
+                oprnStackUpdate();
             }
             else
             {
@@ -349,7 +432,7 @@ void getsym(void)
         {
             symStr[symStrIdx]=0;
             sym=intnumber;
-            opStackUpdate();
+            oprnStackUpdate();
         }
     }
 
@@ -470,6 +553,14 @@ void expression(void)
             expression();
         }
     }
+    else if (accept(floatnumber))
+    {
+        while (sym == plus )
+        {
+            getsym();
+            expression();
+        }
+    }
     else if (accept(stringlit))
     {
         while (sym == plus )
@@ -573,18 +664,29 @@ int main(int argc,char **argv)
     oprnSymStackPtr=0;
 
     identIdx=0;
-    statFuncIdx=0;
+    shortFuncIdx=0;
+    funcIdx=0;
 
     /*TODO: This should be done in RL itself *
     /*Create stdout */
     strcpy(idents[identIdx].name,"out");
     strcpy(idents[identIdx].type,"Stream");
-    statFuncIdx++;
+    identIdx++;
 
     /*Setup some function shortcuts */
-    strcpy(statFuncs[statFuncIdx].name,"print");
-    strcpy(statFuncs[statFuncIdx].object,"out");
-    statFuncIdx++;
+    strcpy(shortFuncs[shortFuncIdx].name,"print");
+    strcpy(shortFuncs[shortFuncIdx].object,"out");
+    shortFuncIdx++;
+
+    /*Setup some functions signatures */
+    strcpy(functions[funcIdx].name,"String_plus_String");
+    strcpy(functions[funcIdx].type,"String");
+    funcIdx++;
+
+    strcpy(functions[funcIdx].name,"Integer_plus_Integer");
+    strcpy(functions[funcIdx].type,"Integer");
+    funcIdx++;
+
 
     getln();
     getsym();
