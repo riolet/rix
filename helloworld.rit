@@ -1,7 +1,7 @@
 hello="Hello"
 world="World"
 helloWorld=hello+" "+world
-print helloWorld+"!"
+print helloWorld+"!\n"
 i=1
 j=1
 k=i+j+0.4

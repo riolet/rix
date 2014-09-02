@@ -142,7 +142,7 @@ void evaluate(void)
     int i;
     for (i=0; i<oprnStackPtr; i++)
     {
-        printf("%s\n",oprnSymStack[i].symStr);
+        //printf("%s\n",oprnSymStack[i].symStr);
     }
 
     holderSymbol=oprnStack[rnd];
@@ -177,9 +177,9 @@ void evaluate(void)
 
     for (tor=optrStackPtr-1; tor>=0; tor--)
     {
-        printf("OPTR %s\n",symnames[optrStack[rnd]]);
+        //printf("OPTR %s\n",symnames[optrStack[rnd]]);
 
-        printf("tor/optrStackPtr %d/%d rnd/oprnStackPtr %d/%d %s\n",tor,optrStackPtr,rnd,oprnStackPtr,oprnSymStack[rnd].symStr);
+        //printf("tor/optrStackPtr %d/%d rnd/oprnStackPtr %d/%d %s\n",tor,optrStackPtr,rnd,oprnStackPtr,oprnSymStack[rnd].symStr);
 
         char fn[BUFFLEN];
         if (optrStack[tor]==function)
@@ -238,20 +238,22 @@ void evaluate(void)
                 {
                     strcpy(idents[identIdx].name,oprnSymStack[rnd-1].symStr);
                     strcpy(idents[identIdx].type,rtype);
-                    printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
+                    //printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
                     if (!strcmp(idents[identIdx].type,"Integer"))
                     {
-                        fprintf(outfile,"\tint %s;\n",idents[identIdx].name);
+                        fprintf(outfile,"\tint %s = %s;\n",idents[identIdx].name,holderSymStack);
                     }
                     else  if (!strcmp(idents[identIdx].type,"Float"))
                     {
-                        fprintf(outfile,"\tfloat %s;\n",idents[identIdx].name);
+                        fprintf(outfile,"\tfloat %s = %s;\n",idents[identIdx].name,holderSymStack);
                     }
                     else
                     {
-                        fprintf(outfile,"\t%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
+                        fprintf(outfile,"\t%s * %s = %s;\n",idents[identIdx].type,idents[identIdx].name,holderSymStack);
                     }
                     identIdx++;
+                    /*TODO: This could be trouble*/
+                    evalBuffLen=0;
                 }
                 else
                 {
@@ -269,9 +271,9 @@ void evaluate(void)
                 if (!strcmp(fn,"assign"))
                 {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
+                    /*evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
                                          oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);
+                                         holderSymStack);*/
                 }
                 else if (!strcmp(fn,"plus"))
                 {
@@ -289,24 +291,12 @@ void evaluate(void)
                                          holderSymStack);
                 }
             }
-            else if (holderSymbol==stringlit||oprnStack[rnd-1]==stringlit)
+            else if (!strcmp(fn,"assign"))
             {
                 snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                if (holderSymbol==stringlit&&oprnStack[rnd-1]==stringlit)
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(String_from_stringlit(%s),String_from_stringlit(%s))",
-                                         funcName,
+                /* evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
                                          oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);
-                else if (oprnStack[rnd-1]==stringlit)
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(String_from_stringlit(%s),%s)",
-                                         funcName,
-                                         oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);
-                else if (holderSymbol==stringlit)
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,String_from_stringlit(%s))",
-                                         funcName,
-                                         oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);
+                                         holderSymStack);*/
             }
             else
             {
@@ -323,7 +313,7 @@ void evaluate(void)
             char * funcType=getFunctionType(funcName);
             if (funcType==NULL)
             {
-                fprintf(stderr,"Unknown method %s. Assuming void\n",funcName);
+                fprintf(stderr,"Warning: Unknown method %s. Assuming void\n",funcName);
                 strcpy(rtype,"void");
             }
             else
@@ -342,7 +332,7 @@ void evaluate(void)
 
         holderSymbol=evaluation;
         strncpy(holderSymStack,evalBuff,evalBuffLen+1);
-        printf("%d %s\n",evalBuffLen,evalBuff);
+        //printf("%d %s\n",evalBuffLen,evalBuff);
     }
     if (evalBuffLen>0)
         fprintf(outfile,"\t%s;\n",evalBuff);
@@ -371,7 +361,7 @@ void oprnStackUpdate()
     if (sym!=stringlit)
         strncpy(oprnSymStack[oprnSymStackPtr].symStr,symStr,symStrIdx+1);
     else
-        snprintf(oprnSymStack[oprnSymStackPtr].symStr,BUFFLEN,"\"%s\"",symStr);
+        snprintf(oprnSymStack[oprnSymStackPtr].symStr,BUFFLEN,"String_from_stringlit(\"%s\")",symStr);
     oprnSymStackPtr++;
 }
 
@@ -410,7 +400,7 @@ void getsym(void)
             oprnStack[oprnStackPtr]=ident;
             oprnStackPtr++;
             strcpy(oprnSymStack[oprnSymStackPtr].symStr,fnObj);
-            printf("GETSYM:%s\n",oprnSymStack[oprnSymStackPtr].symStr);
+            //printf("GETSYM:%s\n",oprnSymStack[oprnSymStackPtr].symStr);
             oprnSymStackPtr++;
         }
         else
@@ -514,14 +504,14 @@ void getsym(void)
         linePos++;
     }
 
-    printf ("S:%s",symnames[sym]);
+    //printf ("S:%s",symnames[sym]);
     if (symStrIdx>0)
     {
-        printf ("->%s\n",symStr);
+        //printf ("->%s\n",symStr);
     }
     else
     {
-        printf ("\n");
+        //printf ("\n");
     }
 }
 
@@ -678,7 +668,7 @@ void block(void)
         statement();
     }
     while (accept(eol));
-    printf ("End of block\n");
+    //printf ("End of block\n");
 }
 
 
@@ -748,7 +738,7 @@ int main(int argc,char **argv)
     if (sym!=eof)
         expect(eof);
 
-    fprintf(outfile,"return 0;\n}\n");
+    fprintf(outfile,"\treturn 0;\n}\n");
     close(outfile);
     close(file);
 

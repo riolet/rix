@@ -15,30 +15,21 @@ String * String_from_stringlit (const char * strlit) {
     tempStr->buff=malloc(tempStr->length*sizeof(char));
     memcpy(tempStr->buff,strlit,tempStr->length);
     tempStr->cap=tempStr->length;
-    printf("String_from_stringlit %d good\n",tempStr);
     return tempStr;
 }
 
-String * String_assign_String (String * left, String * right) {
-    printf("Right %d\n",right);
-    left = right;
-}
-
 String * String_plus_String (String * left, String * right) {
-    printf("Left %d Right %d\n",left,right);
-    String * tempStr;
-    tempStr=malloc(sizeof(String));
-    tempStr->buff=malloc(sizeof(char)*(left->length+right->length));
-    memcpy(tempStr->buff,left,left->length);
-    memcpy(tempStr->buff+left->length,right,right->length);
+    String * tempStr=malloc(sizeof(String));
     tempStr->length=left->length+right->length;
+    tempStr->buff=malloc(sizeof(char)*(tempStr->length));
+    memcpy(tempStr->buff,left->buff,left->length);
+    memcpy((tempStr->buff)+left->length,right->buff,right->length);
     tempStr->cap=left->length+right->length;
-    printf("String_plus_String good\n");
     return tempStr;
 }
 
 Stream_print_String(FILE *stream,String *s) {
-    fwrite(s->buff,1,s->length,stream);
+    fwrite(s->buff,sizeof(char),s->length,stream);
 }
 
 Stream_print_Float(FILE *stream, float f) {
