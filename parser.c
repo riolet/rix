@@ -239,21 +239,38 @@ void evaluate(void)
                     strcpy(idents[identIdx].name,oprnSymStack[rnd-1].symStr);
                     strcpy(idents[identIdx].type,rtype);
                     //printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
-                    if (!strcmp(idents[identIdx].type,"Integer"))
-                    {
-                        fprintf(outfile,"\tint %s = %s;\n",idents[identIdx].name,holderSymStack);
+                    if (tor==0) {
+                        if (!strcmp(idents[identIdx].type,"Integer"))
+                        {
+                            fprintf(outfile,"\tint %s = %s;\n",idents[identIdx].name,holderSymStack);
+                        }
+                        else  if (!strcmp(idents[identIdx].type,"Float"))
+                        {
+                            fprintf(outfile,"\tfloat %s = %s;\n",idents[identIdx].name,holderSymStack);
+                        }
+                        else
+                        {
+                            fprintf(outfile,"\t%s * %s = %s;\n",idents[identIdx].type,idents[identIdx].name,holderSymStack);
+                        }
+                        identIdx++;
+                        /*TODO: This could be trouble*/
+                        evalBuffLen=0;
+                    } else {
+                        if (!strcmp(idents[identIdx].type,"Integer"))
+                        {
+                            fprintf(outfile,"\tint %s;\n",idents[identIdx].name);
+                        }
+                        else  if (!strcmp(idents[identIdx].type,"Float"))
+                        {
+                            fprintf(outfile,"\tfloat %s;\n",idents[identIdx].name);
+                        }
+                        else
+                        {
+                            fprintf(outfile,"\t%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
+                        }
+                        identIdx++;
+
                     }
-                    else  if (!strcmp(idents[identIdx].type,"Float"))
-                    {
-                        fprintf(outfile,"\tfloat %s = %s;\n",idents[identIdx].name,holderSymStack);
-                    }
-                    else
-                    {
-                        fprintf(outfile,"\t%s * %s = %s;\n",idents[identIdx].type,idents[identIdx].name,holderSymStack);
-                    }
-                    identIdx++;
-                    /*TODO: This could be trouble*/
-                    evalBuffLen=0;
                 }
                 else
                 {
@@ -271,9 +288,10 @@ void evaluate(void)
                 if (!strcmp(fn,"assign"))
                 {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                    /*evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
+                    if (tor!=0)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
                                          oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);*/
+                                         holderSymStack);
                 }
                 else if (!strcmp(fn,"plus"))
                 {
@@ -294,9 +312,10 @@ void evaluate(void)
             else if (!strcmp(fn,"assign"))
             {
                 snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                /* evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
-                                         oprnSymStack[rnd-1].symStr,
-                                         holderSymStack);*/
+                if (tor!=0)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
+                                             oprnSymStack[rnd-1].symStr,
+                                             holderSymStack);
             }
             else
             {
@@ -310,15 +329,19 @@ void evaluate(void)
 
 
 
-            char * funcType=getFunctionType(funcName);
-            if (funcType==NULL)
-            {
-                fprintf(stderr,"Warning: Unknown method %s. Assuming void\n",funcName);
-                strcpy(rtype,"void");
-            }
-            else
-            {
-                strcpy(rtype,funcType);
+            if (strcmp(fn,"assign")) {
+                char * funcType=getFunctionType(funcName);
+                if (funcType==NULL)
+                {
+                    fprintf(stderr,"Warning: Unknown method %s. Assuming void\n",funcName);
+                    strcpy(rtype,"void");
+                }
+                else
+                {
+                    strcpy(rtype,funcType);
+                }
+            } else {
+                //strcpy(rtype,"void");
             }
             rnd--;
         }
@@ -605,6 +628,14 @@ void expression(void)
             getsym();
             expression();
         }
+        if (accept(assign)) {
+            getsym();
+            expression();
+        }
+    }
+    else if (accept(function))
+    {
+        expression();
     }
     else
     {
