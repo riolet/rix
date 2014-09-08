@@ -12,4 +12,4 @@ print m
 print "\n"
 if j>1
     print "J>0"
-    print "Lalalala".
+    print 13.1 .

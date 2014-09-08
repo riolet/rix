@@ -128,7 +128,7 @@ int oprnSymStackPtr;
 char buff[BUFFLEN];
 int linePos;
 int lineNum;
-
+int scopeLevel;
 #define EVAL_BUFF_MAX_LEN 1024
 
 int errorMsg(const char * format,...) {
@@ -297,15 +297,17 @@ void evaluate(void)
             char tempRtype[BUFFLEN];
             char funcName[BUFFLEN];
 
-            errorMsg("TOR %s %d\n",symnames[optrStack[tor]],optrStack[tor]);
+            //errorMsg("TOR %s %d\n",symnames[optrStack[tor]],optrStack[tor]);
             if (optrStack[tor]==ifsym) {
                 snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                 evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
                                              holderSymStack);
                 semiColonStr="  ";
+                scopeLevel++;
             }
             else if (optrStack[tor]==endsym) {
                 semiColonStr=";}";
+                scopeLevel--;
                 continue;
             }
             else if (optrStack[tor]==assign)
@@ -385,8 +387,11 @@ void evaluate(void)
                 evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
                                              holderSymStack);
                 semiColonStr="  ";
+                scopeLevel++;
             } else if (optrStack[tor]==endsym) {
-
+                semiColonStr=";}";
+                scopeLevel--;
+                continue;
             }  else {
                 evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
             }
@@ -397,9 +402,22 @@ void evaluate(void)
         strncpy(holderSymStack,evalBuff,evalBuffLen+1);
         //printf("%d %s\n",evalBuffLen,evalBuff);
     }
-    if (evalBuffLen>0)
-        fprintf(outfile,"\t%s%s\n",evalBuff,semiColonStr);
-
+    if (evalBuffLen>0) {
+        i=0;
+        if (!strcmp(semiColonStr,"  ")) {
+            i=1;
+        }
+        for (;i<=scopeLevel;i++) {
+            fprintf(outfile,"\t");
+        }
+        fprintf(outfile,"%s%s\n",evalBuff,semiColonStr);
+    }
+    else if (!strcmp(semiColonStr,";}")) {
+        for (i=0;i<=scopeLevel;i++) {
+            fprintf(outfile,"\t");
+        }
+        fprintf(outfile,"}\n");
+    }
 }
 
 void getln(void)
@@ -722,7 +740,8 @@ void statement(void)
         accept(eol);
         do
         {
-            statement();
+            if (!accept(endsym))
+                statement();
             if (sym==endsym) {
                 getsym();
                 done=true;
@@ -768,6 +787,7 @@ int main(int argc,char **argv)
 
     linePos=0;
     lineNum=0;
+    scopeLevel=0;
     optrStackPtr=0;
     oprnStackPtr=0;
     optrSymStackPtr=0;
