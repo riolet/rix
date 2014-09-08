@@ -10,3 +10,6 @@ print l+k
 print "\n"
 print m
 print "\n"
+if j>1
+    print "J>0"
+    print "Lalalala".

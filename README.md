@@ -1,4 +1,4 @@
-ritche
-======
+Ritchie Language
+================
 
-Richie language has the power of C language and the convenience of a high level language
+Ritchie is an elegant, effic language for the C language eco system. Ritchie uses C libraries natively, and generates easy to understand C code. It is named after the great computer scientist Dennis Ritchie, if not for whom we would all be programming in Visual Basic.

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 typedef enum {false, true} bool;
 int ritch_i_;
@@ -126,8 +127,20 @@ int oprnSymStackPtr;
 
 char buff[BUFFLEN];
 int linePos;
+int lineNum;
 
 #define EVAL_BUFF_MAX_LEN 1024
+
+int errorMsg(const char * format,...) {
+    int ret;
+    fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
+    va_list arg;
+    va_start(arg,format);
+    ret = vfprintf(stderr, format, arg);
+    va_end(arg);
+    return ret;
+}
+
 void evaluate(void)
 {
     int tor;
@@ -175,6 +188,7 @@ void evaluate(void)
             strcpy(rtype,"???");
     }
 
+    char * semiColonStr="; ";
     for (tor=optrStackPtr-1; tor>=0; tor--)
     {
         //printf("OPTR %s\n",symnames[optrStack[rnd]]);
@@ -219,7 +233,7 @@ void evaluate(void)
                         const char * ltype_=getIdentifierType(oprnSymStack[rnd-1].symStr);
                         if (ltype_==NULL)
                         {
-                            fprintf(stderr,"Type of %s indeterminalbe",oprnSymStack[rnd-1].symStr);
+                            errorMsg("Type of %s indeterminalbe",oprnSymStack[rnd-1].symStr);
                         }
                         else
                         {
@@ -275,7 +289,7 @@ void evaluate(void)
                 else
                 {
                     if (strcmp(idType,rtype)!=0)
-                        fprintf(stderr,"You can't redefine %s. This is not PHP\n",oprnSymStack[rnd-1].symStr);
+                        errorMsg("You can't redefine %s. This is not PHP\n",oprnSymStack[rnd-1].symStr);
                 }
 
             }
@@ -283,9 +297,28 @@ void evaluate(void)
             char tempRtype[BUFFLEN];
             char funcName[BUFFLEN];
 
-            if ((!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float")))
+            errorMsg("TOR %s %d\n",symnames[optrStack[tor]],optrStack[tor]);
+            if (optrStack[tor]==ifsym) {
+                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
+                                             holderSymStack);
+                semiColonStr="  ";
+            }
+            else if (optrStack[tor]==endsym) {
+                semiColonStr=";}";
+                continue;
+            }
+            else if (optrStack[tor]==assign)
             {
-                if (!strcmp(fn,"assign"))
+                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                if (tor!=0)
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
+                                             oprnSymStack[rnd-1].symStr,
+                                             holderSymStack);
+            }
+            else  if ((!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float")))
+            {
+                if (optrStack[tor]==assign)
                 {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                     if (tor!=0)
@@ -293,10 +326,17 @@ void evaluate(void)
                                          oprnSymStack[rnd-1].symStr,
                                          holderSymStack);
                 }
-                else if (!strcmp(fn,"plus"))
+                else if (optrStack[tor]==plus)
                 {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s + %s",
+                                         oprnSymStack[rnd-1].symStr,
+                                         holderSymStack);
+                }
+                else if (optrStack[tor]==gtr)
+                {
+                    snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s > %s",
                                          oprnSymStack[rnd-1].symStr,
                                          holderSymStack);
                 }
@@ -309,14 +349,6 @@ void evaluate(void)
                                          holderSymStack);
                 }
             }
-            else if (!strcmp(fn,"assign"))
-            {
-                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                if (tor!=0)
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
-                                             oprnSymStack[rnd-1].symStr,
-                                             holderSymStack);
-            }
             else
             {
                 snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
@@ -327,13 +359,11 @@ void evaluate(void)
 
             }
 
-
-
             if (strcmp(fn,"assign")) {
-                char * funcType=getFunctionType(funcName);
+                const char * funcType=getFunctionType(funcName);
                 if (funcType==NULL)
                 {
-                    fprintf(stderr,"Warning: Unknown method %s. Assuming void\n",funcName);
+                    errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
                     strcpy(rtype,"void");
                 }
                 else
@@ -347,9 +377,19 @@ void evaluate(void)
         }
         else
         {
+            /*Unary funcs*/
+            char tempRtype[BUFFLEN];
+            char funcName[BUFFLEN];
+            if (optrStack[tor]==ifsym) {
+                snprintf(funcName,BUFFLEN,"%s_%s",ltype,fn);
+                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
+                                             holderSymStack);
+                semiColonStr="  ";
+            } else if (optrStack[tor]==endsym) {
 
-            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
-
+            }  else {
+                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
+            }
             rnd--;
         }
 
@@ -358,18 +398,21 @@ void evaluate(void)
         //printf("%d %s\n",evalBuffLen,evalBuff);
     }
     if (evalBuffLen>0)
-        fprintf(outfile,"\t%s;\n",evalBuff);
+        fprintf(outfile,"\t%s%s\n",evalBuff,semiColonStr);
+
 }
 
 void getln(void)
 {
+    lineNum++;
+
     if (!fgets(buff,BUFFLEN,file))
     {
         sym=eof;
     }
     evaluate();
-    linePos=0;
 
+    linePos=0;
     optrStackPtr=0;
     oprnStackPtr=0;
     optrSymStackPtr=0;
@@ -412,25 +455,31 @@ void getsym(void)
             symStr[symStrIdx++]=buff[linePos++];
         }
         symStr[symStrIdx]=0;
-        const char * fnObj=getFunctionObject(symStr);
-        if (fnObj!=NULL)
-        {
-            sym=function;
-            strcpy(optrSymStack[optrStackPtr].symStr,symStr);
+        //Todo: Optimize, we know the string lenght
+        if (!strcmp(symStr,"if")) {
+            sym=ifsym;
             optrStack[optrStackPtr]=sym;
             optrStackPtr++;
+        } else {
+            const char * fnObj=getFunctionObject(symStr);
+            if (fnObj!=NULL)
+            {
+                sym=function;
+                strcpy(optrSymStack[optrStackPtr].symStr,symStr);
+                optrStack[optrStackPtr]=sym;
+                optrStackPtr++;
+                optrSymStackPtr++;
 
-            oprnStack[oprnStackPtr]=ident;
-            oprnStackPtr++;
-            strcpy(oprnSymStack[oprnSymStackPtr].symStr,fnObj);
-            //printf("GETSYM:%s\n",oprnSymStack[oprnSymStackPtr].symStr);
-            oprnSymStackPtr++;
-        }
-        else
-        {
-            sym=ident;
-
-            oprnStackUpdate();
+                oprnStack[oprnStackPtr]=ident;
+                oprnStackPtr++;
+                strcpy(oprnSymStack[oprnSymStackPtr].symStr,fnObj);
+                oprnSymStackPtr++;
+            }
+            else
+            {
+                sym=ident;
+                oprnStackUpdate();
+            }
         }
     }
 
@@ -460,9 +509,10 @@ void getsym(void)
         }
         if (buff[linePos]=='.')
         {
-            symStr[symStrIdx++]=buff[linePos++];
-            if ((buff[linePos]>='0'&&buff[linePos]<='9'))
+
+            if ((buff[linePos+1]>='0'&&buff[linePos+1]<='9'))
             {
+                symStr[symStrIdx++]=buff[linePos++];
                 while ((buff[linePos]>='0'&&buff[linePos]<='9'))
                 {
                     symStr[symStrIdx++]=buff[linePos++];
@@ -473,7 +523,10 @@ void getsym(void)
             }
             else
             {
-                fprintf(stderr,"Malformed decimal number\n");
+                /*sym=equal;
+                optrStack[optrStackPtr]=sym;
+                optrStackPtr++;;*/
+
             }
         }
         else
@@ -492,7 +545,6 @@ void getsym(void)
         {
             linePos++;
             sym=equal;
-
             optrStack[optrStackPtr]=sym;
             optrStackPtr++;
 
@@ -520,13 +572,40 @@ void getsym(void)
         else
         {
             sym=plus;
-
             optrStack[optrStackPtr]=sym;
             optrStackPtr++;
         }
         linePos++;
     }
-
+    else if ((buff[linePos]=='>'))
+    {
+        if (buff[linePos+1]=='>')
+        {
+            /* Todo : << */
+        }
+        else
+        {
+            sym=gtr;
+            optrStack[optrStackPtr]=sym;
+            optrStackPtr++;
+        }
+        linePos++;
+    }
+    else if ((buff[linePos]=='.'))
+    {
+        if (buff[linePos+1]=='.')
+        {
+            /* Todo : .. */
+        }
+        else
+        {
+            printf ("->%s\n",symStr);
+            sym=endsym;
+            optrStack[optrStackPtr]=sym;
+            optrStackPtr++;
+        }
+        linePos++;
+    }
     //printf ("S:%s",symnames[sym]);
     if (symStrIdx>0)
     {
@@ -559,40 +638,8 @@ int expect(Symbol s)
 {
     if (accept(s))
         return 1;
-    fprintf(stderr,"expect: %s unexpected symbol %s\n",symnames[s],symnames[sym]);
+    errorMsg("expect: %s unexpected symbol %s\n",symnames[s],symnames[sym]);
     return 0;
-}
-
-void factor(void)
-{
-    if (accept(ident))
-    {
-        ;
-    }
-    else if (accept(number))
-    {
-        ;
-    }
-    else if (accept(lparen))
-    {
-        expression();
-        expect(rparen);
-    }
-    else
-    {
-        error("factor: syntax error");
-        getsym();
-    }
-}
-
-void term(void)
-{
-    factor();
-    while (sym == times || sym == slash)
-    {
-        getsym();
-        factor();
-    }
 }
 
 void expression(void)
@@ -623,15 +670,20 @@ void expression(void)
     }
     else if (accept(ident))
     {
-        while (sym == plus )
+        if (accept(gtr))
         {
+            expression();
+        } else if (accept(assign)) {
             getsym();
             expression();
+        } else {
+            while (sym == plus )
+            {
+                getsym();
+                expression();
+            }
         }
-        if (accept(assign)) {
-            getsym();
-            expression();
-        }
+
     }
     else if (accept(function))
     {
@@ -639,7 +691,7 @@ void expression(void)
     }
     else
     {
-        fprintf(stderr,"Expecting expression. Got %s \n",symnames[sym]);
+        errorMsg("Expecting expression. Got %s \n",symnames[sym]);
     }
     /*
     if (sym == plus || sym == minus)
@@ -650,28 +702,6 @@ void expression(void)
         term();
     }
     */
-}
-
-void condition(void)
-{
-    if (accept(oddsym))
-    {
-        expression();
-    }
-    else
-    {
-        expression();
-        if (sym == equal || sym == neq || sym == lss || sym == leq || sym == gtr || sym == geq)
-        {
-            getsym();
-            expression();
-        }
-        else
-        {
-            error("condition: invalid operator");
-            getsym();
-        }
-    }
 }
 
 void statement(void)
@@ -685,9 +715,24 @@ void statement(void)
     {
         expression();
     }
+    else if (accept(ifsym))
+    {
+        expression();
+        bool done=false;
+        accept(eol);
+        do
+        {
+            statement();
+            if (sym==endsym) {
+                getsym();
+                done=true;
+            }
+        }
+        while (accept(eol)&&!done);
+    }
     else
     {
-        fprintf(stderr,"Expect statement: got %s syntax error\n",symnames[sym]);
+        errorMsg("Expect statement: got %s syntax error\n",symnames[sym]);
         getsym();
     }
 }
@@ -707,7 +752,7 @@ int main(int argc,char **argv)
 {
     if (argc<2)
     {
-        fprintf(stderr,"No file to compile\n");
+        errorMsg("No file to compile\n");
         file=fopen("helloworld.rit","r");
     }
     else
@@ -722,6 +767,7 @@ int main(int argc,char **argv)
 
 
     linePos=0;
+    lineNum=0;
     optrStackPtr=0;
     oprnStackPtr=0;
     optrSymStackPtr=0;
