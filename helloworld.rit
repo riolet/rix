@@ -3,7 +3,7 @@ world="World"
 helloWorld=hello+" "+world
 print helloWorld+"!\n"
 i=1
-j=1
+j=2
 k=i+j+0.4
 m=l=2.3
 print l+k
@@ -11,5 +11,10 @@ print "\n"
 print m
 print "\n"
 if j>1
-    print "J>0"
-    print 13.1 .
+    print "J>0\n"
+    print "\n".
+if j/m<2
+    print "I is less than 2\n"
+    print j/m
+    print "\n".
+print "Back to main!"
