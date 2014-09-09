@@ -13,7 +13,7 @@ print "\n"
 if j>1
     print "J>0\n"
     print "\n".
-if j/m<2
+if 2>j/m
     print "I is less than 2\n"
     print j/m
     print "\n".

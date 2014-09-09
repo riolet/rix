@@ -13,18 +13,12 @@ int ritch_i_;
 typedef struct Function_ {
     char name[BUFFLEN];
     char type[BUFFLEN];
+    bool codeBlocks;
+    char defaultObject[BUFFLEN];
 } Function;
 
-Function functions[LABELMAX];
-int funcIdx;
-
-typedef struct shortCutFunction_ {
-    char name[BUFFLEN];
-    char object[BUFFLEN];
-} shortCutFunction;
-
-shortCutFunction shortFuncs[LABELMAX];
-int shortFuncIdx;
+Function funcList[LABELMAX];
+int funcListIdx;
 
 typedef struct Identifier_ {
     char name[BUFFLEN];
@@ -39,7 +33,7 @@ const char * types[LABELMAX]= {
 };
 
 const char * symnames[]= {
-    "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "number",
+    "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "character", "number",
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "forsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
@@ -50,9 +44,9 @@ const char * symnames[]= {
 const char * getFunctionType(const char * func)
 {
     int i;
-    for (i=0; i<funcIdx; i++) {
-        if (strcmp(functions[i].name,func)==0) {
-            return functions[i].type;
+    for (i=0; i<funcListIdx; i++) {
+        if (strcmp(funcList[i].name,func)==0) {
+            return funcList[i].type;
         }
     }
     return NULL;
@@ -72,16 +66,27 @@ const char * getIdentifierType(const char * identifier)
 const char *  getFunctionObject(const char * funcname)
 {
     int i;
-    for (i=0; i<shortFuncIdx; i++) {
-        if (strcmp(shortFuncs[i].name,funcname)==0) {
-            return shortFuncs[i].object;
+    for (i=0; i<funcListIdx; i++) {
+        if (strcmp(funcList[i].name,funcname)==0) {
+            return funcList[i].defaultObject;
         }
     }
     return NULL;
 }
 
+bool  getFunctionCodeBlocks(const char * funcname)
+{
+    int i;
+    for (i=0; i<funcListIdx; i++) {
+        if (strcmp(funcList[i].name,funcname)==0) {
+            return funcList[i].codeBlocks;
+        }
+    }
+    return false;
+}
+
 typedef enum {
-    eol, eof, ident, intnumber, stringlit, floatnumber, number, lparen, rparen, times, slash, plus,
+    eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
     ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
     function, evaluation
@@ -103,7 +108,7 @@ typedef struct SymElem_ {
 typedef struct OperStruct_ {
     Symbol oper;
     char operSymStr[BUFFLEN];
-    next * OperStruct_;
+    int args;
 } OperStruct;
 
 
@@ -117,6 +122,7 @@ char buff[BUFFLEN];
 int linePos;
 int lineNum;
 int scopeLevel;
+int args;
 #define EVAL_BUFF_MAX_LEN 1024
 
 int errorMsg(const char * format,...)
@@ -209,10 +215,13 @@ void evaluate(void)
     }
 
     char * semiColonStr="; ";
-    bool arithmetic=false;
-    bool floatArith=false;
+
+
     /* Iterate through the operators right to left */
     for (tor=optrStackPtr-1; tor>=0; tor--) {
+        bool boolean=false;
+        bool arithmetic=false;
+        bool floatArith=false;
         Symbol torOper = optrStack[tor].oper;
         char * torSym =  optrStack[tor].operSymStr;
         printf ("%s %s\n",symnames[torOper],torSym);
@@ -270,7 +279,11 @@ void evaluate(void)
                                          oprnStack[rnd-1].operSymStr,
                                          holderSymStack);
             } else  if ((!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
-                arithmetic=true;
+                if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
+                    boolean=true;
+                } else {
+                    arithmetic=true;
+                }
                 /* ToDo: Too many strcmps */
                 if (!strcmp(ltype,"Float")||!strcmp(rtype,"Float")) {
                     floatArith=true;
@@ -297,24 +310,28 @@ void evaluate(void)
 
             }
 
-            if (strcmp(fn,"assign")) {
+            if (torOper!=assign) {
                 if (arithmetic) {
                     if (floatArith) {
                         strcpy(rtype,"Float");
                     } else {
                         strcpy(rtype,"Integer");
                     }
+                }  else if (boolean) {
+                    strcpy(rtype,"Boolean");
                 } else {
                     const char * funcType=getFunctionType(funcName);
                     if (funcType==NULL) {
                         errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
                         strcpy(rtype,"void");
+                        if (getFunctionCodeBlocks(funcName)) {
+                            semiColonStr="  ";
+                            scopeLevel++;
+                        }
                     } else {
                         strcpy(rtype,funcType);
                     }
                 }
-            } else {
-                //strcpy(rtype,"void");
             }
             rnd--;
         } else {
@@ -388,6 +405,13 @@ void oprnStackUpdate()
     oprnStackPtr++;
 }
 
+void optrStackUpdate()
+{
+    optrStack[optrStackPtr].oper=sym;
+    optrStackPtr++;
+    args=0;
+}
+
 void getsym(void)
 {
     //printf("We are at %c %d\n",buff[idx],idx);
@@ -415,26 +439,19 @@ void getsym(void)
         }
         symStr[symStrIdx]=0;
         //Todo: Optimize, we know the string lenght
-        if (!strcmp(symStr,"if")) {
-            sym=ifsym;
-            optrStack[optrStackPtr].oper=sym;
-            optrStackPtr++;
+        const char * fnObj=getFunctionObject(symStr);
+        if (fnObj!=NULL) {
+            sym=function;
+            strcpy(optrStack[optrStackPtr].operSymStr,symStr);
+            optrStackUpdate();
+
+            oprnStack[oprnStackPtr].oper=ident;
+            strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
+            oprnStackPtr++;
+
         } else {
-            const char * fnObj=getFunctionObject(symStr);
-            if (fnObj!=NULL) {
-                sym=function;
-                optrStack[optrStackPtr].oper=sym;
-                strcpy(optrStack[optrStackPtr].operSymStr,symStr);
-                optrStackPtr++;
-
-                oprnStack[oprnStackPtr].oper=ident;
-                strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
-                oprnStackPtr++;
-
-            } else {
-                sym=ident;
-                oprnStackUpdate();
-            }
+            sym=ident;
+            oprnStackUpdate();
         }
     }
 
@@ -486,15 +503,12 @@ void getsym(void)
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=equal;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"==");
-            optrStackPtr++;
-
+            optrStackUpdate();
         } else {
             sym=assign;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"=");
-            optrStackPtr++;
+            optrStackUpdate();
 
         }
         linePos++;
@@ -502,45 +516,39 @@ void getsym(void)
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=slashassign;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"/=");
-            optrStackPtr++;
+            optrStackUpdate();
 
         } else {
             sym=slash;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"/");
-            optrStackPtr++;
+            optrStackUpdate();
         }
         linePos++;
     } else if ((buff[linePos]=='*')) {
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=times;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"*=");
-            optrStackPtr++;
+            optrStackUpdate();
 
         } else {
             sym=timesassign;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"*");
-            optrStackPtr++;
+            optrStackUpdate();
         }
         linePos++;
     } else if ((buff[linePos]=='+')) {
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=plusassign;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"+=");
-            optrStackPtr++;
+            optrStackUpdate();
 
         } else {
             sym=plus;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"+");
-            optrStackPtr++;
+            optrStackUpdate();
         }
         linePos++;
     } else if ((buff[linePos]=='>')) {
@@ -549,14 +557,12 @@ void getsym(void)
         } else if (buff[linePos+1]=='=') {
             linePos++;
             sym=geq;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,">=");
-            optrStackPtr++;
+            optrStackUpdate();
         } else {
             sym=gtr;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,">");
-            optrStackPtr++;
+            optrStackUpdate();
         }
         linePos++;
     } else if ((buff[linePos]=='<')) {
@@ -565,14 +571,12 @@ void getsym(void)
         } else if (buff[linePos+1]=='=') {
             linePos++;
             sym=leq;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"<=");
-            optrStackPtr++;
+            optrStackUpdate();
         } else {
             sym=lss;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"<");
-            optrStackPtr++;
+            optrStackUpdate();
         }
         linePos++;
     } else if ((buff[linePos]=='.')) {
@@ -580,10 +584,17 @@ void getsym(void)
             /* Todo : .. */
         } else {
             sym=endsym;
-            optrStack[optrStackPtr].oper=sym;
             strcpy(optrStack[optrStackPtr].operSymStr,"}");
-            optrStackPtr++;
+            optrStackUpdate();
         }
+        linePos++;
+    } else if ((buff[linePos]==',')) {
+      sym=comma;
+      if (optrStackPtr>0)
+        optrStack[optrStackPtr].args++;
+        linePos++;
+    } else {
+        errorMsg("Urecognized symbol %c",buff[linePos]);
         linePos++;
     }
     //printf ("S:%s",symnames[sym]);
@@ -592,11 +603,6 @@ void getsym(void)
     } else {
         //printf ("\n");
     }
-}
-
-void error(const char msg[])
-{
-
 }
 
 void expression(void);
@@ -608,6 +614,24 @@ void parse(void)
     } while (sym!=eof);
 }
 
+void createObject(const char * name, const char * type)
+{
+    strcpy(idents[identIdx].name,name);
+    strcpy(idents[identIdx].type,type);
+    identIdx++;
+}
+
+void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject)
+{
+    strcpy(funcList[funcListIdx].name,name);
+    strcpy(funcList[funcListIdx].type,type);
+    if (defaultObject!=NULL)
+        strcpy(funcList[funcListIdx].defaultObject,defaultObject);
+    else
+        funcList[funcListIdx].defaultObject[0]=NULL;
+    funcList[funcListIdx].codeBlocks=false;
+    funcListIdx++;
+}
 
 int main(int argc,char **argv)
 {
@@ -627,32 +651,30 @@ int main(int argc,char **argv)
     linePos=0;
     lineNum=0;
     scopeLevel=0;
+    args=0;
     optrStackPtr=0;
     oprnStackPtr=0;
 
     identIdx=0;
-    shortFuncIdx=0;
-    funcIdx=0;
+    funcListIdx=0;
 
     /*TODO: This should be done in RL itself *
-    /*Create stdout */
-    strcpy(idents[identIdx].name,"stdout");
-    strcpy(idents[identIdx].type,"Stream");
-    identIdx++;
+    /* print -> stdout.pring */
+    createObject("stdout","Stream");
+    createFunction("print","Stream",false,"stdout");
 
-    /*Setup some function shortcuts */
-    strcpy(shortFuncs[shortFuncIdx].name,"print");
-    strcpy(shortFuncs[shortFuncIdx].object,"stdout");
-    shortFuncIdx++;
+    /* Create Language object */
+    createObject("ritchie","Language");
+    createFunction("Language_if_Boolean","Language",true,"ritchie");
+    createFunction("Language_for","Language",true,"ritchie");
 
     /*Setup some functions signatures */
-    strcpy(functions[funcIdx].name,"String_plus_String");
-    strcpy(functions[funcIdx].type,"String");
-    funcIdx++;
+    createFunction("String_plus_String","String",false,NULL);
+
 
     int i;
     for (i=0;i<STACKDEP;i++) {
-        oprnStack[i].next=NULL;
+        optrStack[optrStackPtr].args=0;
     }
     getln();
     getsym();

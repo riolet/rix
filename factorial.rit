@@ -1,0 +1,5 @@
+n = arguments.get 0
+result = 1
+i for 1,n+1
+    result *= i.
+print result
