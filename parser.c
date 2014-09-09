@@ -42,7 +42,7 @@ const char * symnames[]= {
     "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "number",
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
-    "endsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
+    "endsym", "forsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
     "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
     "evaluation"
 };
@@ -82,7 +82,7 @@ const char *  getFunctionObject(const char * funcname)
 
 typedef enum {
     eol, eof, ident, intnumber, stringlit, floatnumber, number, lparen, rparen, times, slash, plus,
-    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym,
+    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
     ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
     function, evaluation
 }
@@ -103,6 +103,7 @@ typedef struct SymElem_ {
 typedef struct OperStruct_ {
     Symbol oper;
     char operSymStr[BUFFLEN];
+    next * OperStruct_;
 } OperStruct;
 
 
@@ -360,18 +361,21 @@ void evaluate(void)
     }
 }
 
+void evaluateAndReset(void)
+{
+    evaluate();
+    optrStackPtr=0;
+    oprnStackPtr=0;
+}
+
 void getln(void)
 {
     lineNum++;
-
     if (!fgets(buff,BUFFLEN,file)) {
         sym=eof;
     }
-    evaluate();
-
     linePos=0;
-    optrStackPtr=0;
-    oprnStackPtr=0;
+    evaluateAndReset();
 }
 
 void oprnStackUpdate()
@@ -397,6 +401,12 @@ void getsym(void)
     if (buff[linePos]=='\n') {
         sym=eol;
         getln();
+    }
+
+    else if (buff[linePos]==';') {
+        sym=semicolon;
+        evaluateAndReset();
+        linePos++;
     }
     /* Identifier */
     else if ((buff[linePos]>='a'&&buff[linePos]<='z')||(buff[linePos]>='A'&&buff[linePos]<='Z')) {
@@ -591,104 +601,11 @@ void error(const char msg[])
 
 void expression(void);
 
-int accept(Symbol s)
-{
-    if (sym == s) {
-        getsym();
-        return 1;
-    }
-    return 0;
-}
-
-int expect(Symbol s)
-{
-    if (accept(s))
-        return 1;
-    errorMsg("expect: %s unexpected symbol %s\n",symnames[s],symnames[sym]);
-    return 0;
-}
-
-void expression(void)
-{
-    if (accept(intnumber)) {
-        while (sym == plus ) {
-            getsym();
-            expression();
-        }
-    } else if (accept(floatnumber)) {
-        while (sym == plus ) {
-            getsym();
-            expression();
-        }
-    } else if (accept(stringlit)) {
-        while (sym == plus ) {
-            getsym();
-            expression();
-        }
-    } else if (accept(ident)) {
-        if (accept(gtr)||accept(lss)||accept(leq)||accept(geq)) {
-            expression();
-        } else if (accept(assign)) {
-            getsym();
-            expression();
-        } else {
-            while (sym == plus ) {
-                getsym();
-                expression();
-            }
-        }
-
-    } else if (accept(function)) {
-        expression();
-    } else {
-        errorMsg("Expecting expression. Got %s \n",symnames[sym]);
-    }
-    /*
-    if (sym == plus || sym == minus)
-        getsym();
-    term();
-    while (sym == plus || sym == minus) {
-        getsym();
-        term();
-    }
-    */
-}
-
-void statement(void)
-{
-    if (accept(ident)) {
-        expect(assign);
-        expression();
-    } else if (accept(function)) {
-        expression();
-    } else if (accept(ifsym)) {
-        expression();
-        bool done=false;
-        accept(eol);
-        do {
-            getsym();
-            printf ("Sym : %s\n",symnames[sym]);
-            if (sym==eol) {
-                break;
-            } else if (sym!=endsym) {
-                statement();
-            } else {
-                done=true;
-                accept(eol);
-            }
-        } while (!done);
-    } else {
-        errorMsg("Expect statement: got %s syntax error\n",symnames[sym]);
-        getsym();
-    }
-}
-
-void block(void)
+void parse(void)
 {
     do {
-        statement();
-    } while (accept(eol));
-    //printf ("End of block\n");
+        getsym();
+    } while (sym!=eof);
 }
 
 
@@ -733,12 +650,13 @@ int main(int argc,char **argv)
     strcpy(functions[funcIdx].type,"String");
     funcIdx++;
 
+    int i;
+    for (i=0;i<STACKDEP;i++) {
+        oprnStack[i].next=NULL;
+    }
     getln();
     getsym();
-    block();
-    if (sym!=eof)
-        expect(eof);
-
+    parse();
     fprintf(outfile,"\treturn 0;\n}\n");
     close(outfile);
     close(file);
