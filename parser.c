@@ -168,6 +168,9 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
                 } else {
                     if (strcmp(idType,rtype)!=0)
                         errorMsg("You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
+                    else
+                        fprintf(outfile,"\t%s = %s;\n",oprnStack[rnd-1].operSymStr,holderSymStack);
+                        return true;
                 }
                 return false;
 }
@@ -262,13 +265,7 @@ void evaluate(void)
             char funcName[BUFFLEN];
 
             //errorMsg("TOR %s %d\n",symnames[optrStack[tor]],optrStack[tor]);
-            if (torOper==ifsym) {
-                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
-                                     holderSymStack);
-                semiColonStr="  ";
-                scopeLevel++;
-            } else if (torOper==endsym) {
+            if (torOper==endsym) {
                 semiColonStr=";}";
                 scopeLevel--;
                 continue;
@@ -324,13 +321,15 @@ void evaluate(void)
                     if (funcType==NULL) {
                         errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
                         strcpy(rtype,"void");
-                        if (getFunctionCodeBlocks(funcName)) {
-                            semiColonStr="  ";
-                            scopeLevel++;
-                        }
+
                     } else {
                         strcpy(rtype,funcType);
                     }
+                }
+                printf ("Code blocks %s %d\n",funcName,getFunctionCodeBlocks(funcName));
+                if (getFunctionCodeBlocks(funcName)) {
+                    semiColonStr="{";
+                    scopeLevel++;
                 }
             }
             rnd--;
@@ -338,13 +337,7 @@ void evaluate(void)
             /*Unary funcs*/
             char tempRtype[BUFFLEN];
             char funcName[BUFFLEN];
-            if (torOper==ifsym) {
-                snprintf(funcName,BUFFLEN,"%s_%s",ltype,fn);
-                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"if (%s) {",
-                                     holderSymStack);
-                semiColonStr="  ";
-                scopeLevel++;
-            } else if (torOper==endsym) {
+            if (torOper==endsym) {
                 semiColonStr=";}";
                 scopeLevel--;
                 continue;
@@ -360,7 +353,7 @@ void evaluate(void)
     }
     if (evalBuffLen>0&&!singleLineAssign) {
         i=0;
-        if (!strcmp(semiColonStr,"  ")) {
+        if (!strcmp(semiColonStr,"{")) {
             i=1;
         }
         if (!strcmp(semiColonStr,";}")) {
@@ -528,12 +521,12 @@ void getsym(void)
     } else if ((buff[linePos]=='*')) {
         if (buff[linePos+1]=='=') {
             linePos++;
-            sym=times;
+            sym=timesassign;
             strcpy(optrStack[optrStackPtr].operSymStr,"*=");
             optrStackUpdate();
 
         } else {
-            sym=timesassign;
+            sym=times;
             strcpy(optrStack[optrStackPtr].operSymStr,"*");
             optrStackUpdate();
         }
@@ -629,7 +622,7 @@ void createFunction(const char * name, const char * type, bool codeBlock, char *
         strcpy(funcList[funcListIdx].defaultObject,defaultObject);
     else
         funcList[funcListIdx].defaultObject[0]=NULL;
-    funcList[funcListIdx].codeBlocks=false;
+    funcList[funcListIdx].codeBlocks=codeBlock;
     funcListIdx++;
 }
 
@@ -665,8 +658,10 @@ int main(int argc,char **argv)
 
     /* Create Language object */
     createObject("ritchie","Language");
+    createFunction("if","Language",true,"ritchie");
     createFunction("Language_if_Boolean","Language",true,"ritchie");
-    createFunction("Language_for","Language",true,"ritchie");
+    createFunction("while","Language",true,"ritchie");
+    createFunction("Language_while_Boolean","Language",true,"ritchie");
 
     /*Setup some functions signatures */
     createFunction("String_plus_String","String",false,NULL);

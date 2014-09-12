@@ -1,5 +1,8 @@
-n = arguments.get 0
+n = 5
 result = 1
-i for 1,n+1
-    result *= i.
+i = 1
+while i<=n
+    result = result * i
+    i = i+1 .
 print result
+print "\n"
