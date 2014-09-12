@@ -139,28 +139,33 @@ int errorMsg(const char * format,...)
 bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char * rtype)
 {
                 const char * idType=getIdentifierType(oprnStack[rnd-1].operSymStr);
+                int i;
+                for (i=0; i<=scopeLevel; i++) {
+                    fprintf(outfile,"\t");
+                }
                 if (idType==NULL) {
                     strcpy(idents[identIdx].name,oprnStack[rnd-1].operSymStr);
                     strcpy(idents[identIdx].type,rtype);
                     //printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
+
                     if (tor==0) {
                         if (!strcmp(idents[identIdx].type,"Integer")) {
-                            fprintf(outfile,"\tint %s = %s;\n",idents[identIdx].name,holderSymStack);
+                            fprintf(outfile,"int %s = %s;\n",idents[identIdx].name,holderSymStack);
                         } else  if (!strcmp(idents[identIdx].type,"Float")) {
-                            fprintf(outfile,"\tfloat %s = %s;\n",idents[identIdx].name,holderSymStack);
+                            fprintf(outfile,"float %s = %s;\n",idents[identIdx].name,holderSymStack);
                         } else {
-                            fprintf(outfile,"\t%s * %s = %s;\n",idents[identIdx].type,idents[identIdx].name,holderSymStack);
+                            fprintf(outfile,"%s * %s = %s;\n",idents[identIdx].type,idents[identIdx].name,holderSymStack);
                         }
                         identIdx++;
                         /*TODO: This could be trouble*/
                         return true;
                     } else {
                         if (!strcmp(idents[identIdx].type,"Integer")) {
-                            fprintf(outfile,"\tint %s;\n",idents[identIdx].name);
+                            fprintf(outfile,"int %s;\n",idents[identIdx].name);
                         } else  if (!strcmp(idents[identIdx].type,"Float")) {
-                            fprintf(outfile,"\tfloat %s;\n",idents[identIdx].name);
+                            fprintf(outfile,"float %s;\n",idents[identIdx].name);
                         } else {
-                            fprintf(outfile,"\t%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
+                            fprintf(outfile,"%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
                         }
                         identIdx++;
 
@@ -169,7 +174,7 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
                     if (strcmp(idType,rtype)!=0)
                         errorMsg("You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
                     else
-                        fprintf(outfile,"\t%s = %s;\n",oprnStack[rnd-1].operSymStr,holderSymStack);
+                        fprintf(outfile,"%s = %s;\n",oprnStack[rnd-1].operSymStr,holderSymStack);
                         return true;
                 }
                 return false;
@@ -352,6 +357,7 @@ void evaluate(void)
         //printf("%d %s\n",evalBuffLen,evalBuff);
     }
     if (evalBuffLen>0&&!singleLineAssign) {
+        printf ("Scope level %d %s\n",scopeLevel,evalBuff);
         i=0;
         if (!strcmp(semiColonStr,"{")) {
             i=1;
@@ -364,7 +370,7 @@ void evaluate(void)
         }
         fprintf(outfile,"%s%s\n",evalBuff,semiColonStr);
     } else if (!strcmp(semiColonStr,";}")) {
-        for (i=0; i<=(scopeLevel+1); i++) {
+        for (i=0; i<=scopeLevel; i++) {
             fprintf(outfile,"\t");
         }
         fprintf(outfile,"}\n");
@@ -478,10 +484,9 @@ void getsym(void)
                 sym=floatnumber;
                 oprnStackUpdate();
             } else {
-                /*sym=equal;
-                optrStack[optrStackPtr]=sym;
-                optrStackPtr++;;*/
-
+                symStr[symStrIdx]=0;
+                sym=intnumber;
+                oprnStackUpdate();
             }
         } else {
             symStr[symStrIdx]=0;
