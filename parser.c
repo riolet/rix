@@ -15,6 +15,7 @@ typedef struct Function_ {
     char type[BUFFLEN];
     bool codeBlocks;
     char defaultObject[BUFFLEN];
+    bool assigns;
 } Function;
 
 Function funcList[LABELMAX];
@@ -23,6 +24,7 @@ int funcListIdx;
 typedef struct Identifier_ {
     char name[BUFFLEN];
     char type[BUFFLEN];
+    char ofType[BUFFLEN];
 } Identifier;
 
 Identifier idents[LABELMAX];
@@ -38,7 +40,7 @@ const char * symnames[]= {
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "forsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
     "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation"
+    "evaluation","range"
 };
 
 const char * getFunctionType(const char * func)
@@ -85,11 +87,22 @@ bool  getFunctionCodeBlocks(const char * funcname)
     return false;
 }
 
+bool  getFunctionAssigns(const char * funcname)
+{
+    int i;
+    for (i=0; i<funcListIdx; i++) {
+        if (strcmp(funcList[i].name,funcname)==0) {
+            return funcList[i].assigns;
+        }
+    }
+    return false;
+}
+
 typedef enum {
     eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
     ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation
+    function, evaluation, range
 }
 Symbol;
 
@@ -239,31 +252,24 @@ void evaluate(void)
         } else {
             strcpy(fn,symnames[torOper]);
         }
+        //bool assigns=getFunctionCodeBlocks(funcName)
         if (rnd>0) {
-            if (torOper==assign) {
-                strcpy(ltype,rtype);
-            } else {
-                if (!lTypeSet) {
-                    if (oprnStack[rnd-1].oper==stringlit) {
-                        strcpy(ltype,"String");
-                    } else if (oprnStack[rnd-1].oper==intnumber) {
-                        strcpy(ltype,"Integer");
-                    } else if (oprnStack[rnd-1].oper==floatnumber) {
-                        strcpy(ltype,"Float");
-                    } else if (oprnStack[rnd-1].oper==ident) {
-                        const char * ltype_=getIdentifierType(oprnStack[rnd-1].operSymStr);
-                        if (ltype_==NULL) {
-                            errorMsg("Type of %s indeterminalbe",oprnStack[rnd-1].operSymStr);
-                        } else {
-                            strcpy(ltype,ltype_);
-                        }
-                    }
-                    //lTypeSet=true;
-                }
-            }
 
-            if (oprnStack[rnd-1].oper==ident&&torOper==assign) {
-                singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
+            if (!lTypeSet) {
+                if (oprnStack[rnd-1].oper==stringlit) {
+                    strcpy(ltype,"String");
+                } else if (oprnStack[rnd-1].oper==intnumber) {
+                    strcpy(ltype,"Integer");
+                } else if (oprnStack[rnd-1].oper==floatnumber) {
+                    strcpy(ltype,"Float");
+                } else if (oprnStack[rnd-1].oper==ident) {
+                    const char * ltype_=getIdentifierType(oprnStack[rnd-1].operSymStr);
+                    if (ltype_==NULL) {
+                        strcpy(ltype,rtype);
+                    } else {
+                        strcpy(ltype,ltype_);
+                    }
+                }
             }
 
             char tempRtype[BUFFLEN];
@@ -274,14 +280,11 @@ void evaluate(void)
                 semiColonStr=";}";
                 scopeLevel--;
                 continue;
-            } else if (torOper==assign) {
-                snprintf(funcName,BUFFLEN,"%s_%s_%s",ltype,fn,rtype);
-                if (tor>0)
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s = %s",
-                                         oprnStack[rnd-1].operSymStr,
-                                         holderSymStack);
             } else  if ((!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
-                if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
+
+                if (torOper==range) {
+                    torOper=function;
+                }if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
                     boolean=true;
                 } else {
                     arithmetic=true;
@@ -312,31 +315,36 @@ void evaluate(void)
 
             }
 
-            if (torOper!=assign) {
-                if (arithmetic) {
-                    if (floatArith) {
-                        strcpy(rtype,"Float");
-                    } else {
-                        strcpy(rtype,"Integer");
-                    }
-                }  else if (boolean) {
-                    strcpy(rtype,"Boolean");
-                } else {
-                    const char * funcType=getFunctionType(funcName);
-                    if (funcType==NULL) {
-                        errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
-                        strcpy(rtype,"void");
+            bool funcAssigns = getFunctionAssigns(funcName);
+            if ((arithmetic&&torOper==assign)||funcAssigns) {
+                printf("Assigning %s %s\n",holderSymStack,oprnStack[rnd-1].operSymStr);
+                singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
+            }
 
-                    } else {
-                        strcpy(rtype,funcType);
-                    }
+            if (arithmetic&&torOper!=function) {
+                if (floatArith) {
+                    strcpy(rtype,"Float");
+                } else {
+                    strcpy(rtype,"Integer");
                 }
-                printf ("Code blocks %s %d\n",funcName,getFunctionCodeBlocks(funcName));
-                if (getFunctionCodeBlocks(funcName)) {
-                    semiColonStr="{";
-                    scopeLevel++;
+            }  else if (boolean) {
+                strcpy(rtype,"Boolean");
+            } else {
+                const char * funcType=getFunctionType(funcName);
+                if (funcType==NULL) {
+                    errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
+                    strcpy(rtype,"void");
+
+                } else {
+                    strcpy(rtype,funcType);
                 }
             }
+            printf ("Code blocks %s %d\n",funcName,getFunctionCodeBlocks(funcName));
+            if (getFunctionCodeBlocks(funcName)) {
+                semiColonStr="{";
+                scopeLevel++;
+            }
+
             rnd--;
         } else {
             /*Unary funcs*/
@@ -440,13 +448,17 @@ void getsym(void)
         //Todo: Optimize, we know the string lenght
         const char * fnObj=getFunctionObject(symStr);
         if (fnObj!=NULL) {
+
+
             sym=function;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
 
-            oprnStack[oprnStackPtr].oper=ident;
-            strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
-            oprnStackPtr++;
+            if (fnObj[0]!=0) {
+                oprnStack[oprnStackPtr].oper=ident;
+                strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
+                oprnStackPtr++;
+            }
 
         } else {
             sym=ident;
@@ -579,7 +591,10 @@ void getsym(void)
         linePos++;
     } else if ((buff[linePos]=='.')) {
         if (buff[linePos+1]=='.') {
-            /* Todo : .. */
+            linePos++;
+            sym=range;
+            strcpy(optrStack[optrStackPtr].operSymStr,"..");
+            optrStackUpdate();
         } else {
             sym=endsym;
             strcpy(optrStack[optrStackPtr].operSymStr,"}");
@@ -592,7 +607,7 @@ void getsym(void)
         optrStack[optrStackPtr].args++;
         linePos++;
     } else {
-        errorMsg("Urecognized symbol %c",buff[linePos]);
+        errorMsg("Urecognized symbol %c\n",buff[linePos]);
         linePos++;
     }
     //printf ("S:%s",symnames[sym]);
@@ -619,7 +634,7 @@ void createObject(const char * name, const char * type)
     identIdx++;
 }
 
-void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject)
+void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns)
 {
     strcpy(funcList[funcListIdx].name,name);
     strcpy(funcList[funcListIdx].type,type);
@@ -628,6 +643,7 @@ void createFunction(const char * name, const char * type, bool codeBlock, char *
     else
         funcList[funcListIdx].defaultObject[0]=NULL;
     funcList[funcListIdx].codeBlocks=codeBlock;
+    funcList[funcListIdx].assigns=assigns;
     funcListIdx++;
 }
 
@@ -659,18 +675,23 @@ int main(int argc,char **argv)
     /*TODO: This should be done in RL itself *
     /* print -> stdout.pring */
     createObject("stdout","Stream");
-    createFunction("print","Stream",false,"stdout");
+    createFunction("print","Stream",false,"stdout",false);
 
     /* Create Language object */
     createObject("ritchie","Language");
-    createFunction("if","Language",true,"ritchie");
-    createFunction("Language_if_Boolean","Language",true,"ritchie");
-    createFunction("while","Language",true,"ritchie");
-    createFunction("Language_while_Boolean","Language",true,"ritchie");
+    createFunction("if","Language",true,"ritchie",false);
+    createFunction("Language_if_Boolean","Language",true,"ritchie",false);
+    createFunction("while","Language",true,"ritchie",false);
+    createFunction("Language_while_Boolean","Language",true,"ritchie",false);
+    createFunction("for","Integer",true,NULL,true);
+
 
     /*Setup some functions signatures */
-    createFunction("String_plus_String","String",false,NULL);
+    createFunction("String_plus_String","String",false,NULL,false);
+    createFunction("String_assign_String","String",false,NULL,true);
 
+    createFunction("Integer_range_Integer","Integer_Range",false,NULL,false);
+    createFunction("Integer_Range_for_Integer_Range","Integer",false,NULL,true);
 
     int i;
     for (i=0;i<STACKDEP;i++) {
