@@ -8,6 +8,6 @@ if 1>n/f
     print "I is more than n/f"
     print n/f
     print "\n".
-i for 1,n
+i for 1, n
 	print i.
 print "Back to main!"
