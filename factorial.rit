@@ -5,4 +5,5 @@ while i<=n
     result = result * i
     i = i+1.
 print result
-print "\n"
+hello="Hellow"
+print hello+"World\n"

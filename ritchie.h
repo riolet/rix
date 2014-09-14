@@ -8,8 +8,11 @@ typedef struct {
     size_t cap;
 } String;
 
-#define Language_if_Boolean(L,B) if (B)
-#define Language_while_Boolean(L,B) while (B)
+#define Boolean_if(B) if (B)
+#define Boolean_while(B) while (B)
+#define Integer_for_Integer(a,b) (a,b)
+#define ident_for_Integer(a,b) for (a=min##b;cond##b;a+=inc##b)
+
 String * String_from_stringlit (const char * strlit) {
     String * tempStr;
     tempStr=malloc(sizeof(String));
@@ -30,8 +33,11 @@ String * String_plus_String (String * left, String * right) {
     return tempStr;
 }
 
-Stream_print_String(FILE *stream,String *s) {
-    fwrite(s->buff,sizeof(char),s->length,stream);
+Stream_print_stringlit(FILE *stream,char *s) {
+    fprintf(stream,"%s",s);
+}
+Stream_print_String(FILE *stream,String s) {
+    fwrite(s.buff,sizeof(char),s.length,stream);
 }
 
 Stream_print_Integer(FILE *stream, int i) {
