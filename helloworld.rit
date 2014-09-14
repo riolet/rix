@@ -2,19 +2,12 @@ hello="Hello"
 world="World"
 helloWorld=hello+" "+world
 print helloWorld+"!\n"
-i=1
-j=2
-k=i+j+0.4
-m=l=2.3
-print l+k
-print "\n"
-print m
-print "\n"
-if j>1
-    print "J>0\n"
+n=5
+f=f1=f2=5.5
+if 1>n/f
+    print "I is more than n/f"
+    print n/f
     print "\n".
-if j/m<2
-    print "I is less than 2\n"
-    print j/m
-    print "\n".
+i for 1, n
+	print i.
 print "Back to main!"
