@@ -17,6 +17,10 @@ float Float_raisedto_Integer (float f, int i) {
     return pow(f,i);
 }
 
+float Integer_raisedto_Integer (int f, int i) {
+    return pow(f,i);
+}
+
 String String_plus_String (String left, String right) {
     String newString;
     newString.buff=malloc(left.length+right.length+1);

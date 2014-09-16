@@ -227,10 +227,8 @@ void evaluate(void)
     holderSymbol=oprnStack[rnd].oper;
     strcpy(holderSymStack,oprnStack[rnd].operSymStr);
 
-
-
-
     printf("Paren mode %d\n",parenMode);
+
     bool rTypeSet=false;
     char rtype[BUFFLEN];
     bool lTypeSet=false;
@@ -273,17 +271,20 @@ void evaluate(void)
         Symbol torOper = optrStack[tor].oper;
         char * torSym =  optrStack[tor].operSymStr;
 
-        if (parenMode&&((torOper==lparen)||(torOper==rparen))) {
-            printf("oprnStack[rnd].operSymStr: %s, HOLDER: %s\n",oprnStack[rnd].operSymStr,holderSymStack);
-            if (torOper==lparen) {
-                strcpy(oprnStack[lParenList[lParenPtr]].operSymStr,holderSymStack);
-                strcpy(oprnStack[lParenList[lParenPtr]].type,rtype);
-                optrStackPtr=tor;
-                oprnStackPtr=lParenList[lParenPtr]+1;
-                lParenPtr--;
-                printf("Symstack: %s Type: %s optrStackPtr %d oprnStackPtr %d\n ",holderSymStack,rtype,optrStackPtr,oprnStackPtr);
-                return;
-            }
+        if (parenMode&&torOper==rparen) {
+            printf("Right paren optrStackPtr %d\n",optrStackPtr);
+            continue;
+        }
+        if (parenMode&&torOper==lparen) {
+            printf("%s oprnStack[rnd].operSymStr: %s, HOLDER: %s\n",torSym,oprnStack[rnd].operSymStr,holderSymStack);
+            lParenPtr--;
+            int lParenIdx=lParenList[lParenPtr];
+            strcpy(oprnStack[lParenIdx].operSymStr,holderSymStack);
+            strcpy(oprnStack[lParenIdx].type,rtype);
+            optrStackPtr=tor;
+            oprnStackPtr=lParenIdx+1;
+            printf("Symstack: %s Type: %s optrStackPtr %d oprnStackPtr %d\n ",holderSymStack,rtype,optrStackPtr,oprnStackPtr);
+            return;
         } else {
 
             char * openingBracket="(";
@@ -315,6 +316,7 @@ void evaluate(void)
                 strcpy(fn,symnames[torOper]);
             }
             //bool assigns=getFunctionCodeBlocks(funcName)
+            printf("RND %d oprnStackPtr %d\n",rnd,oprnStackPtr);
             if (rnd>0) {
 
                 printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
@@ -428,7 +430,6 @@ void evaluate(void)
                     snprintf(funcName,BUFFLEN,"%s_%s",rtype,fn);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
                                          funcName,
-                                         oprnStack[rnd-1].operSymStr,
                                          holderSymStack);
                     if (getFunctionCodeBlocks(funcName)) {
                         semiColonStr="{";
@@ -830,6 +831,8 @@ int main(int argc,char **argv)
 
     /* Some math func signatures */
     createFunction("Float_raisedto_Integer","Float",false,NULL,false);
+    createFunction("Integer_raisedto_Integer","Float",false,NULL,false);
+
     int i;
     for (i=0; i<STACKDEP; i++) {
         optrStack[optrStackPtr].args=0;
