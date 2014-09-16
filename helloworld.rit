@@ -13,5 +13,5 @@ if 1>n/f
     echo "1 is more than "
     print n/f.
 i for 1, n
-	print i.
+    print i.
 print "Back to main!"

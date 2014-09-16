@@ -117,15 +117,11 @@ int symStrIdx;
 FILE *file;
 FILE *outfile;
 
-typedef struct SymElem_ {
-
-} SymElem;
-
-
 typedef struct OperStruct_ {
     Symbol oper;
     char operSymStr[BUFFLEN];
     int args;
+    char type[BUFFLEN];
 } OperStruct;
 
 
@@ -134,6 +130,9 @@ int optrStackPtr;
 
 OperStruct oprnStack[STACKDEP];
 int oprnStackPtr;
+
+int lParenList[STACKDEP];
+int lParenPtr;
 
 char buff[BUFFLEN];
 int linePos;
@@ -221,16 +220,16 @@ void evaluate(void)
 
     Symbol holderSymbol;
     char holderSymStack[BUFFLEN];
-    char holderType[BUFFLEN];
-
-
-    holderSymbol=oprnStack[rnd].oper;
-    strcpy(holderSymStack,oprnStack[rnd].operSymStr);
 
     Symbol invTorOper = optrStack[tor].oper;
     char * invTorSym =  optrStack[tor].operSymStr;
+    bool parenMode = (invTorOper == rparen);
+    holderSymbol=oprnStack[rnd].oper;
+    strcpy(holderSymStack,oprnStack[rnd].operSymStr);
 
-    bool parenMode = invTorOper == rparen;
+
+
+
     printf("Paren mode %d\n",parenMode);
     bool rTypeSet=false;
     char rtype[BUFFLEN];
@@ -239,15 +238,15 @@ void evaluate(void)
 
     bool singleLineAssign=false;
 
-    if (oprnStack[rnd].oper==stringlit) {
+    if (oprnStack[rnd].type[0]!=0) {
+        strcpy(rtype,oprnStack[rnd].type);
+    } else if (oprnStack[rnd].oper==stringlit) {
         strcpy(rtype,"stringlit");
     } else if (oprnStack[rnd].oper==intnumber) {
         strcpy(rtype,"Integer");
     } else if (oprnStack[rnd].oper==floatnumber) {
         strcpy(rtype,"Float");
-    }
-
-    else if (oprnStack[rnd].oper==ident) {
+    } else if (oprnStack[rnd].oper==ident) {
         const char *idType=getIdentifierType(holderSymStack);
         if (idType!=NULL)
             strcpy(rtype,getIdentifierType(holderSymStack));
@@ -277,8 +276,13 @@ void evaluate(void)
         if (parenMode&&((torOper==lparen)||(torOper==rparen))) {
             printf("oprnStack[rnd].operSymStr: %s, HOLDER: %s\n",oprnStack[rnd].operSymStr,holderSymStack);
             if (torOper==lparen) {
-                optrStack[tor].oper=nss;
-                break;
+                strcpy(oprnStack[lParenList[lParenPtr]].operSymStr,holderSymStack);
+                strcpy(oprnStack[lParenList[lParenPtr]].type,rtype);
+                optrStackPtr=tor;
+                oprnStackPtr=lParenList[lParenPtr]+1;
+                lParenPtr--;
+                printf("Symstack: %s Type: %s optrStackPtr %d oprnStackPtr %d\n ",holderSymStack,rtype,optrStackPtr,oprnStackPtr);
+                return;
             }
         } else {
 
@@ -313,22 +317,24 @@ void evaluate(void)
             //bool assigns=getFunctionCodeBlocks(funcName)
             if (rnd>0) {
 
-                if (!lTypeSet) {
-                    if (oprnStack[rnd-1].oper==stringlit) {
-                        strcpy(ltype,"stringlit");
-                    } else if (oprnStack[rnd-1].oper==intnumber) {
-                        strcpy(ltype,"Integer");
-                    } else if (oprnStack[rnd-1].oper==floatnumber) {
-                        strcpy(ltype,"Float");
-                    } else if (oprnStack[rnd-1].oper==ident) {
-                        const char * ltype_=getIdentifierType(oprnStack[rnd-1].operSymStr);
-                        if (ltype_==NULL) {
-                            strcpy(ltype,"ident");
-                        } else {
-                            strcpy(ltype,ltype_);
-                        }
+                printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
+                if (oprnStack[rnd-1].type[0]!=0) {
+                    strcpy(ltype,oprnStack[rnd-1].type);
+                } else if (oprnStack[rnd-1].oper==stringlit) {
+                    strcpy(ltype,"stringlit");
+                } else if (oprnStack[rnd-1].oper==intnumber) {
+                    strcpy(ltype,"Integer");
+                } else if (oprnStack[rnd-1].oper==floatnumber) {
+                    strcpy(ltype,"Float");
+                } else if (oprnStack[rnd-1].oper==ident) {
+                    const char * ltype_=getIdentifierType(oprnStack[rnd-1].operSymStr);
+                    if (ltype_==NULL) {
+                        strcpy(ltype,"ident");
+                    } else {
+                        strcpy(ltype,ltype_);
                     }
                 }
+
 
                 char tempRtype[BUFFLEN];
                 char funcName[BUFFLEN];
@@ -447,9 +453,6 @@ void evaluate(void)
             strcpy(addParam,"");
             strcpy(addParamTypes,"");
         }
-        if (parenMode) {
-            optrStack[tor].oper=nss;
-        }
     }
     if (evalBuffLen>0&&!singleLineAssign) {
         printf ("Scope level %d %s\n",scopeLevel,evalBuff);
@@ -480,6 +483,7 @@ void evaluateAndReset(void)
     expType=method;
     optrStackPtr=0;
     oprnStackPtr=0;
+    lParenPtr=0;
 }
 
 void getln(void)
@@ -497,6 +501,7 @@ void getln(void)
 void oprnStackUpdate()
 {
     oprnStack[oprnStackPtr].oper=sym;
+    oprnStack[oprnStackPtr].type[0]=0;
     if (sym!=stringlit)
         strncpy(oprnStack[oprnStackPtr].operSymStr,symStr,symStrIdx+1);
     else
@@ -519,7 +524,7 @@ void getsym(void)
     /* End of line */
     symStrIdx=0;
 
-    while(buff[linePos]==' ') {
+    while(buff[linePos]==' '||buff[linePos]=='\t') {
         linePos++;
     }
 
@@ -716,6 +721,8 @@ void getsym(void)
         sym=lparen;
         strcpy(optrStack[optrStackPtr].operSymStr,"(");
         optrStackUpdate();
+        lParenList[lParenPtr]=oprnStackPtr;
+        lParenPtr++;
         linePos++;
     } else if ((buff[linePos]==')')) {
         sym=rparen;
@@ -723,8 +730,9 @@ void getsym(void)
         optrStackUpdate();
         linePos++;
     } else {
-        errorMsg("Urecognized symbol %c\n",buff[linePos]);
+        errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
         linePos++;
+        exit(0);
     }
     //printf ("S:%s",symnames[sym]);
     if (symStrIdx>0) {
@@ -787,6 +795,7 @@ int main(int argc,char **argv)
     args=0;
     optrStackPtr=0;
     oprnStackPtr=0;
+    lParenPtr=0;
 
     identIdx=0;
     funcListIdx=0;
