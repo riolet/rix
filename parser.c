@@ -428,7 +428,7 @@ void evaluate(void)
                 char funcName[BUFFLEN];
                 if (torOper==function) {
                     snprintf(funcName,BUFFLEN,"%s_%s",rtype,fn);
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s)",
                                          funcName,
                                          holderSymStack);
                     if (getFunctionCodeBlocks(funcName)) {
