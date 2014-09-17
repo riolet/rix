@@ -1,13 +1,17 @@
 hello="Hello"
 world="World"
-helloWorld=hello+" "+world
+helloWorld=hello+" "+world;
 print helloWorld+"!\n"
 n=5
-f=f1=f2=5.5
+f=f1=f2=5.5^2
+echo "f2 is "
+print f2
+f3=(((2*3)+1)*4)^3
+echo "f3 is "
+print f3
 if 1>n/f
-    print "I is more than n/f"
-    print n/f
-    print "\n".
+    echo "1 is more than "
+    print n/f.
 i for 1, n
-	print i.
+    print i.
 print "Back to main!"

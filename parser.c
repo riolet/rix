@@ -34,13 +34,22 @@ const char * types[LABELMAX]= {
     "String",NULL
 };
 
+typedef enum {
+    nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
+    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
+    ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
+    function, evaluation, range, raisedto
+}
+Symbol;
+
+
 const char * symnames[]= {
-    "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "character", "number",
+    "nss", "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "character", "number",
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "forsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
     "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range"
+    "evaluation","range", "raisedto"
 };
 
 const char * getFunctionType(const char * func)
@@ -98,14 +107,9 @@ bool  getFunctionAssigns(const char * funcname)
     return false;
 }
 
-typedef enum {
-    eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
-    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
-    ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range
-}
-Symbol;
 
+typedef enum { object, method } ExpType;
+ExpType expType;
 
 Symbol sym;
 char symStr[BUFFLEN];
@@ -113,15 +117,11 @@ int symStrIdx;
 FILE *file;
 FILE *outfile;
 
-typedef struct SymElem_ {
-
-} SymElem;
-
-
 typedef struct OperStruct_ {
     Symbol oper;
     char operSymStr[BUFFLEN];
     int args;
+    char type[BUFFLEN];
 } OperStruct;
 
 
@@ -130,6 +130,9 @@ int optrStackPtr;
 
 OperStruct oprnStack[STACKDEP];
 int oprnStackPtr;
+
+int lParenList[STACKDEP];
+int lParenPtr;
 
 char buff[BUFFLEN];
 int linePos;
@@ -177,7 +180,7 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
             } else  if (isFloat) {
                 fprintf(outfile,"float %s = %s;\n",idents[identIdx].name,holderSymStack);
             }  else  if (isStringlit) {
-                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx].name,idents[identIdx].name,holderSymStack,idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"String %s;%s.buff = %s;%s.length=sizeof(%s);\n",idents[identIdx].name,idents[identIdx].name,holderSymStack,idents[identIdx].name,holderSymStack);
             }  else  if (isString) {
                 fprintf(outfile,"String %s = %s;\n",idents[identIdx].name,holderSymStack);
             }  else {
@@ -210,18 +213,21 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
 
 void evaluate(void)
 {
-    int tor;
+    int tor=optrStackPtr-1;
     int rnd=oprnStackPtr-1;
     char evalBuff[EVAL_BUFF_MAX_LEN];
     int evalBuffLen=0;
 
     Symbol holderSymbol;
     char holderSymStack[BUFFLEN];
-    char holderType[BUFFLEN];
 
-
+    Symbol invTorOper = optrStack[tor].oper;
+    char * invTorSym =  optrStack[tor].operSymStr;
+    bool parenMode = (invTorOper == rparen);
     holderSymbol=oprnStack[rnd].oper;
     strcpy(holderSymStack,oprnStack[rnd].operSymStr);
+
+    printf("Paren mode %d\n",parenMode);
 
     bool rTypeSet=false;
     char rtype[BUFFLEN];
@@ -230,15 +236,15 @@ void evaluate(void)
 
     bool singleLineAssign=false;
 
-    if (oprnStack[rnd].oper==stringlit) {
+    if (oprnStack[rnd].type[0]!=0) {
+        strcpy(rtype,oprnStack[rnd].type);
+    } else if (oprnStack[rnd].oper==stringlit) {
         strcpy(rtype,"stringlit");
     } else if (oprnStack[rnd].oper==intnumber) {
         strcpy(rtype,"Integer");
     } else if (oprnStack[rnd].oper==floatnumber) {
         strcpy(rtype,"Float");
-    }
-
-    else if (oprnStack[rnd].oper==ident) {
+    } else if (oprnStack[rnd].oper==ident) {
         const char *idType=getIdentifierType(holderSymStack);
         if (idType!=NULL)
             strcpy(rtype,getIdentifierType(holderSymStack));
@@ -255,6 +261,7 @@ void evaluate(void)
 
     strcpy(addParam,"");
     strcpy(addParamTypes,"");
+
     for (tor=optrStackPtr-1; tor>=0; tor--) {
         int arg;
 
@@ -263,28 +270,59 @@ void evaluate(void)
         bool floatArith=false;
         Symbol torOper = optrStack[tor].oper;
         char * torSym =  optrStack[tor].operSymStr;
-        if (torOper==comma) {
-            char temp[BUFFLEN];
-            snprintf(temp,BUFFLEN,"%s,(%s)",addParam,holderSymStack);
-            strcpy(addParam,temp);
-            snprintf(temp,BUFFLEN,"%s_%s",addParamTypes,rtype);
-            strcpy(addParamTypes,temp);
-            rnd--;
-            strcpy(holderSymStack,oprnStack[rnd].operSymStr);
+
+        if (parenMode&&torOper==rparen) {
+            printf("Right paren optrStackPtr %d\n",optrStackPtr);
             continue;
         }
-        printf ("%s %s\n",symnames[torOper],torSym);
-        char fn[BUFFLEN];
-        if (optrStack[tor].oper==function) {
-            strcpy(fn,torSym);
+        if (parenMode&&torOper==lparen) {
+            printf("%s oprnStack[rnd].operSymStr: %s, HOLDER: %s\n",torSym,oprnStack[rnd].operSymStr,holderSymStack);
+            lParenPtr--;
+            int lParenIdx=lParenList[lParenPtr];
+            strcpy(oprnStack[lParenIdx].operSymStr,holderSymStack);
+            strcpy(oprnStack[lParenIdx].type,rtype);
+            optrStackPtr=tor;
+            oprnStackPtr=lParenIdx+1;
+            printf("Symstack: %s Type: %s optrStackPtr %d oprnStackPtr %d\n ",holderSymStack,rtype,optrStackPtr,oprnStackPtr);
+            return;
         } else {
-            strcpy(fn,symnames[torOper]);
-        }
-        //bool assigns=getFunctionCodeBlocks(funcName)
-        if (rnd>0) {
 
-            if (!lTypeSet) {
-                if (oprnStack[rnd-1].oper==stringlit) {
+            char * openingBracket="(";
+            char * closingBracket=")";
+            if (tor==0||optrStack[tor-1].oper==comma) {
+                openingBracket="";
+                closingBracket="";
+            }
+
+            if (torOper==nss) {
+                continue;
+            } else if (torOper==comma) {
+                char temp[BUFFLEN];
+                snprintf(temp,BUFFLEN,"%s,(%s)",addParam,holderSymStack);
+                strcpy(addParam,temp);
+                snprintf(temp,BUFFLEN,"%s_%s",addParamTypes,rtype);
+                strcpy(addParamTypes,temp);
+                rnd--;
+                strcpy(holderSymStack,oprnStack[rnd].operSymStr);
+                continue;
+            }
+
+
+            printf ("%s %s\n",symnames[torOper],torSym);
+            char fn[BUFFLEN];
+            if (optrStack[tor].oper==function) {
+                strcpy(fn,torSym);
+            } else {
+                strcpy(fn,symnames[torOper]);
+            }
+            //bool assigns=getFunctionCodeBlocks(funcName)
+            printf("RND %d oprnStackPtr %d\n",rnd,oprnStackPtr);
+            if (rnd>0) {
+
+                printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
+                if (oprnStack[rnd-1].type[0]!=0) {
+                    strcpy(ltype,oprnStack[rnd-1].type);
+                } else if (oprnStack[rnd-1].oper==stringlit) {
                     strcpy(ltype,"stringlit");
                 } else if (oprnStack[rnd-1].oper==intnumber) {
                     strcpy(ltype,"Integer");
@@ -298,118 +336,124 @@ void evaluate(void)
                         strcpy(ltype,ltype_);
                     }
                 }
-            }
 
-            char tempRtype[BUFFLEN];
-            char funcName[BUFFLEN];
 
-            errorMsg("TOR %s %d\n",symnames[torOper],torOper);
-            if (torOper==endsym) {
-                semiColonStr=";}";
-                scopeLevel--;
-                continue;
-            } else  if ((!strcmp(ltype,"ident")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
+                char tempRtype[BUFFLEN];
+                char funcName[BUFFLEN];
 
-                if (torOper==range) {
-                    torOper=function;
-                }
-                if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
-                    boolean=true;
+                errorMsg("TOR %s %d\n",symnames[torOper],torOper);
+                if (torOper==endsym) {
+                    semiColonStr=";}";
+                    scopeLevel--;
+                    continue;
+                } else  if ((!strcmp(ltype,"ident")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
+
+                    if (torOper==range||torOper==raisedto) {
+                        torOper=function;
+                    }
+                    if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
+                        boolean=true;
+                    } else {
+                        arithmetic=true;
+                    }
+                    /* ToDo: Too many strcmps */
+                    if (!strcmp(ltype,"Float")||!strcmp(rtype,"Float")) {
+                        floatArith=true;
+                    }
+                    if (torOper==function) {
+                        snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
+                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
+                                             openingBracket,
+                                             funcName,
+                                             oprnStack[rnd-1].operSymStr,
+                                             holderSymStack,
+                                             addParam,
+                                             closingBracket);
+                    } else {
+                        snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
+                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
+                                             openingBracket,
+                                             oprnStack[rnd-1].operSymStr,
+                                             torSym,
+                                             holderSymStack,
+                                             addParam,
+                                             closingBracket);
+                    }
                 } else {
-                    arithmetic=true;
-                }
-                /* ToDo: Too many strcmps */
-                if (!strcmp(ltype,"Float")||!strcmp(rtype,"Float")) {
-                    floatArith=true;
-                }
-                if (torOper==function) {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s((%s),(%s)%s)",
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
+                                         openingBracket,
                                          funcName,
                                          oprnStack[rnd-1].operSymStr,
                                          holderSymStack,
-                                         addParam);
-                } else {
-                    snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"(%s) %s (%s)%s",
-                                         oprnStack[rnd-1].operSymStr,
-                                         torSym,
-                                         holderSymStack,
-                                         addParam);
+                                         addParam,
+                                         closingBracket);
+
                 }
-            } else {
-                snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s((%s),(%s)%s)",
-                                     funcName,
-                                     oprnStack[rnd-1].operSymStr,
-                                     holderSymStack,
-                                     addParam);
 
-            }
-
-            bool funcAssigns = getFunctionAssigns(funcName);
-            if ((arithmetic&&torOper==assign)||funcAssigns) {
-                printf("Assigning %s %s\n",holderSymStack,oprnStack[rnd-1].operSymStr);
-                singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
-            }
-
-            if (arithmetic&&torOper!=function) {
-                if (floatArith) {
-                    strcpy(rtype,"Float");
-                } else {
-                    strcpy(rtype,"Integer");
+                bool funcAssigns = getFunctionAssigns(funcName);
+                if ((arithmetic&&torOper==assign)||funcAssigns) {
+                    printf("Assigning %s %s\n",holderSymStack,oprnStack[rnd-1].operSymStr);
+                    singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
                 }
-            }  else if (boolean) {
-                strcpy(rtype,"Boolean");
-            } else {
-                const char * funcType=getFunctionType(funcName);
-                if (funcType==NULL) {
-                    errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
-                    strcpy(rtype,"void");
 
+                if (arithmetic&&torOper!=function) {
+                    if (floatArith) {
+                        strcpy(rtype,"Float");
+                    } else {
+                        strcpy(rtype,"Integer");
+                    }
+                }  else if (boolean) {
+                    strcpy(rtype,"Boolean");
                 } else {
-                    strcpy(rtype,funcType);
-                }
-            }
-            printf ("Code blocks %s %d\n",funcName,getFunctionCodeBlocks(funcName));
-            if (getFunctionCodeBlocks(funcName)) {
-                semiColonStr="{";
-                scopeLevel++;
-            }
+                    const char * funcType=getFunctionType(funcName);
+                    if (funcType==NULL) {
+                        errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
+                        strcpy(rtype,"void");
 
-            rnd--;
-        } else {
-            /*Unary funcs*/
-            char tempRtype[BUFFLEN];
-            char funcName[BUFFLEN];
-            if (torOper==function) {
-                snprintf(funcName,BUFFLEN,"%s_%s",rtype,fn);
-                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s,%s)",
-                                     funcName,
-                                     oprnStack[rnd-1].operSymStr,
-                                     holderSymStack);
+                    } else {
+                        strcpy(rtype,funcType);
+                    }
+                }
+                printf ("Code blocks %s %d\n",funcName,getFunctionCodeBlocks(funcName));
                 if (getFunctionCodeBlocks(funcName)) {
                     semiColonStr="{";
                     scopeLevel++;
                 }
-            }
+
+                rnd--;
+            } else {
+                /*Unary funcs*/
+                char tempRtype[BUFFLEN];
+                char funcName[BUFFLEN];
+                if (torOper==function) {
+                    snprintf(funcName,BUFFLEN,"%s_%s",rtype,fn);
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s(%s)",
+                                         funcName,
+                                         holderSymStack);
+                    if (getFunctionCodeBlocks(funcName)) {
+                        semiColonStr="{";
+                        scopeLevel++;
+                    }
+                }
 
 
-            if (torOper==endsym) {
-                semiColonStr=";}";
-                scopeLevel--;
-                continue;
-            }  else {
-                evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
+                if (torOper==endsym) {
+                    semiColonStr=";}";
+                    scopeLevel--;
+                    continue;
+                }  else {
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s_%s(%s)",rtype,fn,holderSymStack);
+                }
+                rnd--;
             }
-            rnd--;
+
+            holderSymbol=evaluation;
+            strncpy(holderSymStack,evalBuff,evalBuffLen+1);
+            //printf("%d %s\n",evalBuffLen,evalBuff);
+            strcpy(addParam,"");
+            strcpy(addParamTypes,"");
         }
-
-        holderSymbol=evaluation;
-        strncpy(holderSymStack,evalBuff,evalBuffLen+1);
-        //printf("%d %s\n",evalBuffLen,evalBuff);
-        strcpy(addParam,"");
-        strcpy(addParamTypes,"");
     }
     if (evalBuffLen>0&&!singleLineAssign) {
         printf ("Scope level %d %s\n",scopeLevel,evalBuff);
@@ -437,8 +481,10 @@ void evaluate(void)
 void evaluateAndReset(void)
 {
     evaluate();
+    expType=method;
     optrStackPtr=0;
     oprnStackPtr=0;
+    lParenPtr=0;
 }
 
 void getln(void)
@@ -451,14 +497,18 @@ void getln(void)
     evaluateAndReset();
 }
 
+
+
 void oprnStackUpdate()
 {
     oprnStack[oprnStackPtr].oper=sym;
+    oprnStack[oprnStackPtr].type[0]=0;
     if (sym!=stringlit)
         strncpy(oprnStack[oprnStackPtr].operSymStr,symStr,symStrIdx+1);
     else
         snprintf(oprnStack[oprnStackPtr].operSymStr,BUFFLEN,"\"%s\"",symStr);
     oprnStackPtr++;
+    expType=object;
 }
 
 void optrStackUpdate()
@@ -466,6 +516,7 @@ void optrStackUpdate()
     optrStack[optrStackPtr].oper=sym;
     optrStackPtr++;
     args=0;
+    expType=method;
 }
 
 void getsym(void)
@@ -474,7 +525,7 @@ void getsym(void)
     /* End of line */
     symStrIdx=0;
 
-    while(buff[linePos]==' ') {
+    while(buff[linePos]==' '||buff[linePos]=='\t') {
         linePos++;
     }
 
@@ -495,23 +546,30 @@ void getsym(void)
         }
         symStr[symStrIdx]=0;
         //Todo: Optimize, we know the string lenght
-        const char * fnObj=getFunctionObject(symStr);
-        if (fnObj!=NULL) {
-
-
+        printf ("%s %d\n",symStr,expType);
+        if (expType==object) {
             sym=function;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
-
-            if (fnObj[0]!=0) {
-                oprnStack[oprnStackPtr].oper=ident;
-                strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
-                oprnStackPtr++;
-            }
-
         } else {
-            sym=ident;
-            oprnStackUpdate();
+            const char * fnObj=getFunctionObject(symStr);
+            if (fnObj!=NULL) {
+
+
+                sym=function;
+                strcpy(optrStack[optrStackPtr].operSymStr,symStr);
+                optrStackUpdate();
+
+                if (fnObj[0]!=0) {
+                    oprnStack[oprnStackPtr].oper=ident;
+                    strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
+                    oprnStackPtr++;
+                }
+
+            } else {
+                sym=ident;
+                oprnStackUpdate();
+            }
         }
     }
 
@@ -655,9 +713,27 @@ void getsym(void)
         strcpy(optrStack[optrStackPtr].operSymStr,",");
         optrStackUpdate();
         linePos++;
-    } else {
-        errorMsg("Urecognized symbol %c\n",buff[linePos]);
+    } else if ((buff[linePos]=='^')) {
+        sym=raisedto;
+        strcpy(optrStack[optrStackPtr].operSymStr,"^");
+        optrStackUpdate();
         linePos++;
+    } else if ((buff[linePos]=='(')) {
+        sym=lparen;
+        strcpy(optrStack[optrStackPtr].operSymStr,"(");
+        optrStackUpdate();
+        lParenList[lParenPtr]=oprnStackPtr;
+        lParenPtr++;
+        linePos++;
+    } else if ((buff[linePos]==')')) {
+        sym=rparen;
+        strcpy(optrStack[optrStackPtr].operSymStr,")");
+        optrStackUpdate();
+        linePos++;
+    } else {
+        errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
+        linePos++;
+        exit(0);
     }
     //printf ("S:%s",symnames[sym]);
     if (symStrIdx>0) {
@@ -673,6 +749,9 @@ void parse(void)
 {
     do {
         getsym();
+        if (sym==rparen) {
+            evaluate();
+        }
     } while (sym!=eof);
 }
 
@@ -717,14 +796,17 @@ int main(int argc,char **argv)
     args=0;
     optrStackPtr=0;
     oprnStackPtr=0;
+    lParenPtr=0;
 
     identIdx=0;
     funcListIdx=0;
 
+    expType=method;
     /*TODO: This should be done in RL itself *
     /* print -> stdout.pring */
     createObject("stdout","Stream");
     createFunction("print","Stream",false,"stdout",false);
+    createFunction("echo","Stream",false,"stdout",false);
 
     /* Create Language object */
     createObject("ritchie","Language");
@@ -732,7 +814,7 @@ int main(int argc,char **argv)
     createFunction("Boolean_if","Language",true,NULL,false);
     createFunction("while","Language",true,NULL,false);
     createFunction("Boolean_while","Language",true,NULL,false);
-    createFunction("for","Integer",true,NULL,true);
+    //createFunction("for","Integer",true,NULL,true);
 
 
     /*Setup some functions signatures */
@@ -746,6 +828,10 @@ int main(int argc,char **argv)
     createFunction("ident_assign_Integer","Integer",false,NULL,true);
 
     createFunction("ident_for_Integer_Integer","Integer",true,NULL,true);
+
+    /* Some math func signatures */
+    createFunction("Float_raisedto_Integer","Float",false,NULL,false);
+    createFunction("Integer_raisedto_Integer","Float",false,NULL,false);
 
     int i;
     for (i=0; i<STACKDEP; i++) {
