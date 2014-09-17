@@ -31,14 +31,13 @@ Identifier idents[LABELMAX];
 int identIdx;
 
 const char * types[LABELMAX]= {
-    "String",NULL
+    "String","Integer","Float",NULL
 };
 
 typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
-    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, forsym,
-    ifsym, whilesym, becomes, thensym, dosym, constsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range, raisedto
+    minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
+    function, evaluation, range, raisedto, cinc, comment
 }
 Symbol;
 
@@ -47,9 +46,8 @@ const char * symnames[]= {
     "nss", "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "character", "number",
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
-    "endsym", "forsym", "ifsym", "whilesym", "becomes", "thensym", "dosym", "constsym",
-    "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range", "raisedto"
+    "endsym", "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
+    "evaluation","range", "raisedto", "cinc", "comment"
 };
 
 const char * getFunctionType(const char * func)
@@ -116,6 +114,7 @@ char symStr[BUFFLEN];
 int symStrIdx;
 FILE *file;
 FILE *outfile;
+FILE *outHeaderFile;
 
 typedef struct OperStruct_ {
     Symbol oper;
@@ -521,8 +520,6 @@ void optrStackUpdate()
 
 void getsym(void)
 {
-    //printf("We are at %c %d\n",buff[idx],idx);
-    /* End of line */
     symStrIdx=0;
 
     while(buff[linePos]==' '||buff[linePos]=='\t') {
@@ -635,7 +632,9 @@ void getsym(void)
             sym=slashassign;
             strcpy(optrStack[optrStackPtr].operSymStr,"/=");
             optrStackUpdate();
-
+        } else if (buff[linePos+1]=='/') {
+            linePos++;
+            sym=comment;
         } else {
             sym=slash;
             strcpy(optrStack[optrStackPtr].operSymStr,"/");
@@ -730,6 +729,9 @@ void getsym(void)
         strcpy(optrStack[optrStackPtr].operSymStr,")");
         optrStackUpdate();
         linePos++;
+    } else if ((buff[linePos]=='#')) {
+        sym=cinc;
+        linePos++;
     } else {
         errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
         linePos++;
@@ -743,15 +745,34 @@ void getsym(void)
     }
 }
 
-void expression(void);
+
+void readCinc (void)
+{
+        while(buff[linePos]!='\n') {
+            fputc(buff[linePos],stdout);
+            fputc(buff[linePos],outfile);
+            linePos++;
+        }
+        fputc('\n',outfile);
+        sym=eol;
+        getln();
+}
 
 void parse(void)
 {
     do {
-        getsym();
         if (sym==rparen) {
             evaluate();
         }
+        else if (sym==cinc) {
+            readCinc();
+        }
+        else if (sym==comment) {
+            fputs("//",outfile);
+            readCinc();
+        }
+        if (sym!=eof)
+            getsym();
     } while (sym!=eof);
 }
 
@@ -785,9 +806,8 @@ int main(int argc,char **argv)
     }
 
     outfile=fopen("out.c","w");
+    outHeaderFile=fopen("out.h","w");
 
-    fprintf(outfile,"#include \"ritchie.h\"\n");
-    fprintf(outfile,"int main(void) {\n");
 
 
     linePos=0;
@@ -819,6 +839,8 @@ int main(int argc,char **argv)
 
     /*Setup some functions signatures */
     createFunction("String_plus_String","String",false,NULL,false);
+    createFunction("String_plus_Float","String",false,NULL,false);
+    createFunction("stringlit_plus_Float","String",false,NULL,false);
     createFunction("stringlit_plus_String","String",false,NULL,false);
     createFunction("String_plus_stringlit","String",false,NULL,false);
     createFunction("ident_assign_stringlit","String",false,NULL,true);
@@ -833,6 +855,10 @@ int main(int argc,char **argv)
     createFunction("Float_raisedto_Integer","Float",false,NULL,false);
     createFunction("Integer_raisedto_Integer","Float",false,NULL,false);
 
+    fprintf(outfile,"#include \"rsl.h\"\n");
+    fprintf(outfile,"#include \"out.h\"\n");
+    fprintf(outfile,"int main(void) {\n");
+
     int i;
     for (i=0; i<STACKDEP; i++) {
         optrStack[optrStackPtr].args=0;
@@ -841,6 +867,8 @@ int main(int argc,char **argv)
     getsym();
     parse();
     fprintf(outfile,"\treturn 0;\n}\n");
+
+    close(outHeaderFile);
     close(outfile);
     close(file);
 

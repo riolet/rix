@@ -1,17 +1,24 @@
+//Type inferencing
 hello="Hello"
 world="World"
+//Way better string handling
 helloWorld=hello+" "+world;
-print helloWorld+"!\n"
+//Semicolons are optional
+print helloWorld
 n=5
+//pow is now ^
 f=f1=f2=5.5^2
-echo "f2 is "
-print f2
+//echo does not print newline
+echo "f2 is and "+f2
 f3=(((2*3)+1)*4)^3
-echo "f3 is "
-print f3
+//print does
+print " and f3 is "+f3
+//No curly braces (if is not actually a keyword)
 if 1>n/f
-    echo "1 is more than "
-    print n/f.
+	//End code block with .
+    print "1 is more than " + n/f. 
+//Nicer for loops, (for is not a keyword)
 i for 1, n
     print i.
-print "Back to main!"
+//You can embed C code 
+#printf ("This is in C :) \n");
