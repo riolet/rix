@@ -30,14 +30,19 @@ typedef struct Identifier_ {
 Identifier idents[LABELMAX];
 int identIdx;
 
-const char * types[LABELMAX]= {
-    "String","Integer","Float",NULL
-};
+typedef struct Type_ {
+    char name[BUFFLEN];
+    char parent[BUFFLEN];
+} Type;
+
+Type typeList[LABELMAX];
+int typeIdx;
+char currentType[BUFFLEN];
 
 typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range, raisedto, cinc, comment
+    function, evaluation, range, raisedto, cinc, comment, notsym, type, retsym, fundec
 }
 Symbol;
 
@@ -47,8 +52,35 @@ const char * symnames[]= {
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range", "raisedto", "cinc", "comment"
+    "evaluation","range", "raisedto", "cinc", "comment", "notsym", "type", "retsym", "fundec"
 };
+
+void createType (const char * name, const char * parent)
+{
+    strcpy(typeList[typeIdx].name,name);
+    strcpy(typeList[typeIdx].parent,parent);
+    typeIdx++;
+}
+
+void createObject(const char * name, const char * type)
+{
+    strcpy(idents[identIdx].name,name);
+    strcpy(idents[identIdx].type,type);
+    identIdx++;
+}
+
+void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns)
+{
+    strcpy(funcList[funcListIdx].name,name);
+    strcpy(funcList[funcListIdx].type,type);
+    if (defaultObject!=NULL)
+        strcpy(funcList[funcListIdx].defaultObject,defaultObject);
+    else
+        funcList[funcListIdx].defaultObject[0]=0;
+    funcList[funcListIdx].codeBlocks=codeBlock;
+    funcList[funcListIdx].assigns=assigns;
+    funcListIdx++;
+}
 
 const char * getFunctionType(const char * func)
 {
@@ -56,6 +88,17 @@ const char * getFunctionType(const char * func)
     for (i=0; i<funcListIdx; i++) {
         if (strcmp(funcList[i].name,func)==0) {
             return funcList[i].type;
+        }
+    }
+    return NULL;
+}
+
+const char * getTypeParent(const char * func)
+{
+    int i;
+    for (i=0; i<typeIdx; i++) {
+        if (strcmp(typeList[i].name,func)==0) {
+            return typeList[i].parent;
         }
     }
     return NULL;
@@ -114,6 +157,7 @@ char symStr[BUFFLEN];
 int symStrIdx;
 FILE *file;
 FILE *outfile;
+FILE *outMainFile;
 FILE *outHeaderFile;
 
 typedef struct OperStruct_ {
@@ -270,6 +314,11 @@ void evaluate(void)
         Symbol torOper = optrStack[tor].oper;
         char * torSym =  optrStack[tor].operSymStr;
 
+        if (torOper==retsym) {
+            fprintf(outfile,"return (%s);",holderSymStack);
+            continue;
+        }
+
         if (parenMode&&torOper==rparen) {
             printf("Right paren optrStackPtr %d\n",optrStackPtr);
             continue;
@@ -316,7 +365,7 @@ void evaluate(void)
             }
             //bool assigns=getFunctionCodeBlocks(funcName)
             printf("RND %d oprnStackPtr %d\n",rnd,oprnStackPtr);
-            if (rnd>0) {
+            if ((!parenMode&&rnd>0)||(parenMode&&rnd>lParenList[lParenPtr-1])) {
 
                 printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
                 if (oprnStack[rnd-1].type[0]!=0) {
@@ -475,6 +524,9 @@ void evaluate(void)
         }
         fprintf(outfile,"}\n");
     }
+    if (!strcmp(semiColonStr,";}")&&(scopeLevel==0)&&(outfile==outHeaderFile)) {
+        outfile=outMainFile;
+    }
 }
 
 void evaluateAndReset(void)
@@ -544,15 +596,19 @@ void getsym(void)
         symStr[symStrIdx]=0;
         //Todo: Optimize, we know the string lenght
         printf ("%s %d\n",symStr,expType);
-        if (expType==object) {
+        const char * typeParent=getTypeParent(symStr);
+        if (typeParent!=NULL) {
+            sym=type;
+            strcpy(optrStack[optrStackPtr].operSymStr,symStr);
+            optrStackUpdate();
+        }
+        else if (expType==object) {
             sym=function;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
         } else {
             const char * fnObj=getFunctionObject(symStr);
             if (fnObj!=NULL) {
-
-
                 sym=function;
                 strcpy(optrStack[optrStackPtr].operSymStr,symStr);
                 optrStackUpdate();
@@ -560,6 +616,11 @@ void getsym(void)
                 if (fnObj[0]!=0) {
                     oprnStack[oprnStackPtr].oper=ident;
                     strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
+                    oprnStackPtr++;
+                } else {
+                    oprnStack[oprnStackPtr].oper=ident;
+                    strcpy(oprnStack[oprnStackPtr].operSymStr,"UNKNOWNOBJECT");
+                    strcpy(oprnStack[oprnStackPtr].type,"UNKNOWNTYPE");
                     oprnStackPtr++;
                 }
 
@@ -667,6 +728,19 @@ void getsym(void)
             optrStackUpdate();
         }
         linePos++;
+    } else if ((buff[linePos]=='-')) {
+        if (buff[linePos+1]=='=') {
+            linePos++;
+            sym=minusassign;
+            strcpy(optrStack[optrStackPtr].operSymStr,"-=");
+            optrStackUpdate();
+
+        } else {
+            sym=minus;
+            strcpy(optrStack[optrStackPtr].operSymStr,"-");
+            optrStackUpdate();
+        }
+        linePos++;
     } else if ((buff[linePos]=='>')) {
         if (buff[linePos+1]=='>') {
             /* Todo : << */
@@ -684,6 +758,11 @@ void getsym(void)
     } else if ((buff[linePos]=='<')) {
         if (buff[linePos+1]=='<') {
             /* Todo : << */
+        } else if (buff[linePos+1]=='>') {
+            linePos++;
+            sym=retsym;
+            strcpy(optrStack[optrStackPtr].operSymStr,"return ");
+            optrStackUpdate();
         } else if (buff[linePos+1]=='=') {
             linePos++;
             sym=leq;
@@ -735,7 +814,6 @@ void getsym(void)
     } else {
         errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
         linePos++;
-        exit(0);
     }
     //printf ("S:%s",symnames[sym]);
     if (symStrIdx>0) {
@@ -758,6 +836,55 @@ void readCinc (void)
         getln();
 }
 
+
+void readFunDec (void)
+{
+    outfile=outHeaderFile;
+    scopeLevel++;
+    int i=0;
+    char funcName[BUFFLEN]="";
+    char argList[BUFFLEN]="";
+    char returnType[BUFFLEN];
+    char lastArgType[BUFFLEN];
+
+    do {
+        optrStackPtr=0;
+        i++;
+        if (i==1) {
+            strcpy(returnType,symStr);
+            fprintf(outfile,"%s ",returnType);
+        }
+        else if (i==2) {
+            snprintf(funcName,BUFFLEN,"%s_%s",currentType,symStr);
+            printf(outfile," %s_%s\n",currentType,symStr);
+            createFunction(symStr,returnType,false,NULL,false);
+            snprintf(argList,BUFFLEN,"(%s %s,",currentType,"self");
+        } else {
+            if (sym!=comma) {
+                if (i%2) {
+                    char temp[BUFFLEN];
+                    snprintf(temp,BUFFLEN,"%s_%s",funcName,symStr);
+                    strcpy(lastArgType,symStr);
+                    strcpy(funcName,temp);
+                }
+                createObject(symStr,lastArgType);
+                char temp[BUFFLEN];
+                snprintf(temp,BUFFLEN,"%s %s",argList,symStr);
+                strcpy(argList,temp);
+            } else {
+                char temp[BUFFLEN];
+                snprintf(temp,BUFFLEN,"%s,",argList);
+                strcpy(argList,temp);
+                i--;
+            }
+        }
+        getsym();
+    } while (sym!=eol);
+    printf("Creating function %s\n",funcName);
+    createFunction(funcName,returnType,false,NULL,false);
+    fprintf(outfile,"%s%s)\n{\n",funcName,argList);
+}
+
 void parse(void)
 {
     do {
@@ -771,30 +898,15 @@ void parse(void)
             fputs("//",outfile);
             readCinc();
         }
+        else if ((sym==type)&&(optrStackPtr==1)) {
+            sym=fundec;
+            readFunDec();
+        }
         if (sym!=eof)
             getsym();
     } while (sym!=eof);
 }
 
-void createObject(const char * name, const char * type)
-{
-    strcpy(idents[identIdx].name,name);
-    strcpy(idents[identIdx].type,type);
-    identIdx++;
-}
-
-void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns)
-{
-    strcpy(funcList[funcListIdx].name,name);
-    strcpy(funcList[funcListIdx].type,type);
-    if (defaultObject!=NULL)
-        strcpy(funcList[funcListIdx].defaultObject,defaultObject);
-    else
-        funcList[funcListIdx].defaultObject[0]=0;
-    funcList[funcListIdx].codeBlocks=codeBlock;
-    funcList[funcListIdx].assigns=assigns;
-    funcListIdx++;
-}
 
 int main(int argc,char **argv)
 {
@@ -805,9 +917,9 @@ int main(int argc,char **argv)
         file=fopen(argv[1],"r");
     }
 
-    outfile=fopen("out.c","w");
+    outMainFile=fopen("out.c","w");
     outHeaderFile=fopen("out.h","w");
-
+    outfile=outMainFile;
 
 
     linePos=0;
@@ -820,26 +932,39 @@ int main(int argc,char **argv)
 
     identIdx=0;
     funcListIdx=0;
-
+    typeIdx=0;
     expType=method;
+
     /*TODO: This should be done in RL itself *
+    /*Create some Types */
+    char * baseType = "RitcheBaseType";
+    strcpy(currentType,"UNKNOWNTYPE");
+    createType("Number",baseType);
+    createType("String",baseType);
+    createType("Integer","Number");
+    createType("Float","Number");
+    createType("Boolean",baseType);
+    createType("Char",baseType);
+
     /* print -> stdout.pring */
     createObject("stdout","Stream");
+    createObject("UNKNOWNOBJECT","UNKNOWNTYPE");
     createFunction("print","Stream",false,"stdout",false);
     createFunction("echo","Stream",false,"stdout",false);
 
     /* Create Language object */
     createObject("ritchie","Language");
     createFunction("if","Language",true,NULL,false);
-    createFunction("Boolean_if","Language",true,NULL,false);
+    createFunction("UNKNOWNTYPE_if_Boolean","Language",true,NULL,false);
     createFunction("while","Language",true,NULL,false);
-    createFunction("Boolean_while","Language",true,NULL,false);
+    createFunction("UNKNOWNTYPE_while_Boolean","Language",true,NULL,false);
     //createFunction("for","Integer",true,NULL,true);
 
 
     /*Setup some functions signatures */
     createFunction("String_plus_String","String",false,NULL,false);
     createFunction("String_plus_Float","String",false,NULL,false);
+    createFunction("stringlit_plus_Integer","String",false,NULL,false);
     createFunction("stringlit_plus_Float","String",false,NULL,false);
     createFunction("stringlit_plus_String","String",false,NULL,false);
     createFunction("String_plus_stringlit","String",false,NULL,false);
