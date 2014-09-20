@@ -14,18 +14,19 @@ Ritchie Language is being developed by a lazy ~~programmer~~ cloud DevOps engine
 SomeClass someInstance = new SomeClass (someArgument)
 ```
 
-becomes a short Ritchie statement:
+  becomes a short Ritchie statement:  
 ```
 someInstance = SomeClass someArgument
 ```
-Smooth, eh?
+  Smooth, eh?  
 
 
 2. Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
 
-Subject Verb Object
+  Subject Verb Object  
 
-Currently, the grammar of Ritchie Language is as follows:
+  Currently, the grammar of Ritchie Language is as follows:  
+
 
 ```
 Program := Expressions
@@ -36,7 +37,7 @@ Subject := Noun | '(' Expression ')'
 Object := Noun | Expression | '(' Expression ')'
 ```
 
-The following parses as:
+  The following parses as:  
 
 ```
 hello = "Hello"
@@ -49,18 +50,18 @@ object: "Hello"
 
 3. Every unknown identifier belongs to the built in class Identifier. Nouns of the Identifier type are the only nouns that can change type.
 
-In 
+  In  
 
 ```
 hello = "Hello"
 ```
 
-hello starts out life as an "Identifier" but becomes a "String".
+  hello starts out life as an "Identifier" but becomes a "String".  
 
 
 4. We are still debating whether to support operator precedence or not. 
 
-Right now
+  Right now  
 
 
 ```
@@ -68,7 +69,7 @@ f = 2 * 3 + 4
 ```
 
 
-is parsed right to left as
+  is parsed right to left as  
 
 
 ```
