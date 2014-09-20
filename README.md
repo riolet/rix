@@ -67,9 +67,8 @@ Right now
 f = 2 * 3 + 4
 ```
 
-Statement := Subject Verb Object
-Object := 
-is parsed right to lef as
+
+is parsed right to left as
 
 
 ```
