@@ -19,7 +19,7 @@ SomeClass someInstance = new SomeClass (someArgument)
 ```
 someInstance = SomeClass someArgument
 ```
-  Smooth, eh?  
+  Smooth, eh?
 
 
 2. Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
