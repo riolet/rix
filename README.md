@@ -15,6 +15,7 @@ SomeClass someInstance = new SomeClass (someArgument)
 ```
 
   becomes a short Ritchie statement:  
+  
 ```
 someInstance = SomeClass someArgument
 ```
@@ -44,8 +45,11 @@ hello = "Hello"
 ```
 
 subject: hello
+
 verb: =
+
 object: "Hello"
+
 
 
 3. Every unknown identifier belongs to the built in class Identifier. Nouns of the Identifier type are the only nouns that can change type.
