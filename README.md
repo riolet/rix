@@ -28,7 +28,7 @@ Subject Verb Object
 Currently, the grammar of Ritchie Language is as follows:
 
 ```
-Program := Statements
+Program := Expressions
 Expressions := Expression | Expression, NEWLINE, {Expressions}
 Expression := Subject Verb Objects
 Objects := Object | Object, ',', {Objects}
