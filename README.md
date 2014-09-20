@@ -6,7 +6,7 @@ Ritchie is an expressive and efficient language for the C eco system. Ritchie us
 Features
 ========
 
-Ritchie Language is being developed by a lazy ~~programmer~~ cloud DevOps engineer (Rohana) for lazy ~~programmers~~ cloud DevOps engineers (Jonas, Christ _et al._) who want both the conciseness of Python and the efficiency of C.
+Ritchie Language is being developed by a lazy ~~programmer~~ cloud DevOps engineer (Rohana) for lazy ~~programmers~~ cloud DevOps engineers (Jonas _et al._) who want both the conciseness of Python and the efficiency of C.
 
 1. Ritchie uses type inferencing, so the boilerplate Java statement:
 
