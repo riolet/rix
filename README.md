@@ -6,7 +6,7 @@ Ritchie is an expressive and efficient language for the C eco system. Ritchie us
 Features
 ========
 
-Ritchie Language is being developed by a lazy ~~programmer~~ cloud DevOps engineer (Rohana) for lazy ~~programmers~~ cloud DevOps engineers (Jonas _et al._) who want both the conciseness of Python and the efficiency of C.
+Ritchie Language is being developed by a lazy ~~programmers~~ cloud DevOps engineer for lazy ~~programmers~~ cloud DevOps engineers who want both the conciseness of Python and the efficiency of C.
 
 1. Ritchie uses type inferencing, so the boilerplate Java statement:
 
@@ -79,3 +79,43 @@ f = 2 * 3 + 4
 ```
 f = (2 * (3+4))
 ```
+
+5. Ritchie has no keywords. More on that later.
+
+
+6. We call verbs what the constructs called functions, methods or subroutines in other languages
+
+  Plain vanilla verbs behave like C functions  
+  
+```
+Integer: factorial Integer n
+	result = 1
+	i for 1,n+1
+		result = result * i.
+	->result.
+```
+
+  Had we written the the above verb as an assignment verb
+	
+```
+Integer: factorial Identifier ident, Integer n
+	result = 1
+	i for 1,n+1
+		result = result * i.
+	ident=result.
+```	
+
+  we could then call the function as  
+  
+```
+  result factorial 5
+```
+
+  which would first create the variable result and then assign 5! to it.
+  
+  There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.  
+  
+7. A special type of verb is a control flow verb. 
+
+`if`, `while` and `for`  in Ritchie are all such verbs. They are not keywords, as you can redefine them, although this is probably not a good idea.
+
