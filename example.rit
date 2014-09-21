@@ -16,9 +16,9 @@ helloWorld=hello+" "+world;
 print helloWorld
 
 num=5
-f=f1=f2=5.5^2
+f=f1=f2=5.5^^2
 echo "f2 is and "+f2
-f3=(((2*3)+1)*4)^3
+f3=(((2*3)+1)*4)^^3
 print " and f3 is "+f3
 print ("Factorial of "+num)+(" is "+(factorial num))
 print ("Sum of first "+num)+(" integers is "+(sum num))

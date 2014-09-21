@@ -1,6 +1,6 @@
 all:
-	gcc -ggdb -o parser parser.c
-	./parser example.rit
-	gcc -ggdb -o example out.c -lm
+	gcc -ggdb -o ritc ritc.c
+	./ritc -o example example.rit
+	gcc -ggdb -o example example.c -lm
 clean:
 	rm parser

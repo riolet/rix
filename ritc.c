@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <unistd.h>
 
 typedef enum {false, true} bool;
 int ritch_i_;
@@ -42,7 +43,7 @@ char currentType[BUFFLEN];
 typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range, raisedto, cinc, comment, notsym, type, retsym, fundec
+    function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor
 }
 Symbol;
 
@@ -52,7 +53,7 @@ const char * symnames[]= {
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range", "raisedto", "cinc", "comment", "notsym", "type", "retsym", "fundec"
+    "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor"
 };
 
 void createType (const char * name, const char * parent)
@@ -396,7 +397,7 @@ void evaluate(void)
                     continue;
                 } else  if ((!strcmp(ltype,"ident")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
 
-                    if (torOper==range||torOper==raisedto) {
+                    if (torOper==range||torOper==exponent) {
                         torOper=function;
                     }
                     if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
@@ -734,7 +735,11 @@ void getsym(void)
             sym=minusassign;
             strcpy(optrStack[optrStackPtr].operSymStr,"-=");
             optrStackUpdate();
-
+        } else if (buff[linePos+1]=='>') {
+            linePos++;
+            sym=retsym;
+            strcpy(optrStack[optrStackPtr].operSymStr,"return ");
+            optrStackUpdate();
         } else {
             sym=minus;
             strcpy(optrStack[optrStackPtr].operSymStr,"-");
@@ -758,12 +763,7 @@ void getsym(void)
     } else if ((buff[linePos]=='<')) {
         if (buff[linePos+1]=='<') {
             /* Todo : << */
-        } else if (buff[linePos+1]=='>') {
-            linePos++;
-            sym=retsym;
-            strcpy(optrStack[optrStackPtr].operSymStr,"return ");
-            optrStackUpdate();
-        } else if (buff[linePos+1]=='=') {
+        }  else if (buff[linePos+1]=='=') {
             linePos++;
             sym=leq;
             strcpy(optrStack[optrStackPtr].operSymStr,"<=");
@@ -792,9 +792,16 @@ void getsym(void)
         optrStackUpdate();
         linePos++;
     } else if ((buff[linePos]=='^')) {
-        sym=raisedto;
-        strcpy(optrStack[optrStackPtr].operSymStr,"^");
-        optrStackUpdate();
+        if (buff[linePos+1]=='^') {
+            linePos++;
+            sym=exponent;
+            strcpy(optrStack[optrStackPtr].operSymStr,"..");
+            optrStackUpdate();
+        } else {
+            sym=bitwisexor;
+            strcpy(optrStack[optrStackPtr].operSymStr,"}");
+            optrStackUpdate();
+        }
         linePos++;
     } else if ((buff[linePos]=='(')) {
         sym=lparen;
@@ -810,6 +817,11 @@ void getsym(void)
         linePos++;
     } else if ((buff[linePos]=='#')) {
         sym=cinc;
+        linePos++;
+    } else if ((buff[linePos]==':')) {
+        sym=colon;
+        strcpy(optrStack[optrStackPtr].operSymStr,":");
+        optrStackUpdate();
         linePos++;
     } else {
         errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
@@ -836,6 +848,9 @@ void readCinc (void)
         getln();
 }
 
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
 
 void readFunDec (void)
 {
@@ -847,21 +862,22 @@ void readFunDec (void)
     char returnType[BUFFLEN];
     char lastArgType[BUFFLEN];
 
+    strcpy(returnType,optrStack[0].operSymStr);
+    fprintf(outfile,"%s ",returnType);
+    optrStackPtr=0;
+    getsym(); //Skip :
+    errorMsg(ANSI_COLOR_MAGENTA "symstr %s\n" ANSI_COLOR_RESET,symStr);
     do {
         optrStackPtr=0;
         i++;
         if (i==1) {
-            strcpy(returnType,symStr);
-            fprintf(outfile,"%s ",returnType);
-        }
-        else if (i==2) {
             snprintf(funcName,BUFFLEN,"%s_%s",currentType,symStr);
-            printf(outfile," %s_%s\n",currentType,symStr);
+            errorMsg(ANSI_COLOR_MAGENTA "%s %s_%s\n" ANSI_COLOR_RESET,returnType,currentType,symStr);
             createFunction(symStr,returnType,false,NULL,false);
             snprintf(argList,BUFFLEN,"(%s %s,",currentType,"self");
         } else {
             if (sym!=comma) {
-                if (i%2) {
+                if (i%2==0) {
                     char temp[BUFFLEN];
                     snprintf(temp,BUFFLEN,"%s_%s",funcName,symStr);
                     strcpy(lastArgType,symStr);
@@ -898,7 +914,7 @@ void parse(void)
             fputs("//",outfile);
             readCinc();
         }
-        else if ((sym==type)&&(optrStackPtr==1)) {
+        else if ((sym==colon)&&(optrStackPtr==2)) {
             sym=fundec;
             readFunDec();
         }
@@ -910,15 +926,58 @@ void parse(void)
 
 int main(int argc,char **argv)
 {
-    if (argc<2) {
+    int c,i;
+    int bflg, aflg, errflg=0;
+    char *ifile = NULL;
+    char *ofile = NULL;
+    extern char *optarg;
+    extern int optind, optopt;
+
+    while ((c = getopt(argc, argv, "o:")) != -1) {
+        switch (c) {
+            case 'o':
+            ofile = optarg;
+            break;
+                    case ':':       /* -f or -o without operand */
+                fprintf(stderr,
+                        "Option -%c requires an operand\n", optopt);
+                errflg++;
+                break;
+        };
+    }
+
+    if (errflg) {
+        fprintf(stderr, "usage: . . . ");
+        exit(2);
+    }
+
+
+    for (i=0; optind < argc; optind++,i++) {
+            if (i==0) {
+                ifile=argv[optind];
+            }
+    }
+
+
+    if (ifile==NULL) {
         errorMsg("No file to compile\n");
         file=fopen("helloworld.rit","r");
     } else {
-        file=fopen(argv[1],"r");
+        file=fopen(ifile,"r");
     }
 
-    outMainFile=fopen("out.c","w");
-    outHeaderFile=fopen("out.h","w");
+    char oMainFileName[BUFFLEN];
+    char oHeaderFileName[BUFFLEN];
+
+    if (ofile==NULL) {
+        strcpy(oMainFileName,"out.c");
+        strcpy(oHeaderFileName,"out.h");
+    } else {
+        snprintf(oMainFileName,BUFFLEN,"%s.c",ofile);
+        snprintf(oHeaderFileName,BUFFLEN,"%s.h",ofile);
+    }
+    outMainFile=fopen(oMainFileName,"w");
+    outHeaderFile=fopen(oHeaderFileName,"w");
     outfile=outMainFile;
 
 
@@ -977,25 +1036,21 @@ int main(int argc,char **argv)
     createFunction("ident_for_Integer_Integer","Integer",true,NULL,true);
 
     /* Some math func signatures */
-    createFunction("Float_raisedto_Integer","Float",false,NULL,false);
-    createFunction("Integer_raisedto_Integer","Float",false,NULL,false);
+    createFunction("Float_exponent_Integer","Float",false,NULL,false);
+    createFunction("Integer_exponent_Integer","Float",false,NULL,false);
 
     fprintf(outfile,"#include \"rsl.h\"\n");
-    fprintf(outfile,"#include \"out.h\"\n");
+    fprintf(outfile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outfile,"int main(void) {\n");
 
-    int i;
-    for (i=0; i<STACKDEP; i++) {
-        optrStack[optrStackPtr].args=0;
-    }
     getln();
     getsym();
     parse();
     fprintf(outfile,"\treturn 0;\n}\n");
 
-    close(outHeaderFile);
-    close(outfile);
-    close(file);
+    fclose(outHeaderFile);
+    fclose(outMainFile);
+    fclose(file);
 
     return 0;
 }
