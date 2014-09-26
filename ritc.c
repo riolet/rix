@@ -10,6 +10,17 @@ int ritch_i_;
 #define BUFFLEN 256
 #define LABELMAX 8096
 #define STACKDEP 1024
+#define MAXSCOPE 64
+#define EVAL_BUFF_MAX_LEN 1024
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 
 typedef struct Function_ {
     char name[BUFFLEN];
@@ -28,8 +39,8 @@ typedef struct Identifier_ {
     char ofType[BUFFLEN];
 } Identifier;
 
-Identifier idents[LABELMAX];
-int identIdx;
+Identifier idents[LABELMAX][MAXSCOPE];
+int identIdx[MAXSCOPE]={0};
 
 typedef struct Type_ {
     char name[BUFFLEN];
@@ -56,6 +67,40 @@ const char * symnames[]= {
     "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor"
 };
 
+typedef enum { object, method } ExpType;
+ExpType expType;
+
+Symbol sym;
+char symStr[BUFFLEN];
+int symStrIdx;
+FILE *file;
+FILE *outfile;
+FILE *outMainFile;
+FILE *outHeaderFile;
+
+typedef struct OperStruct_ {
+    Symbol oper;
+    char operSymStr[BUFFLEN];
+    int args;
+    char type[BUFFLEN];
+} OperStruct;
+
+OperStruct optrStack[STACKDEP];
+int optrStackPtr;
+
+OperStruct oprnStack[STACKDEP];
+int oprnStackPtr;
+
+int lParenList[STACKDEP];
+int lParenPtr;
+
+char buff[BUFFLEN];
+int linePos;
+int lineNum;
+int scopeLevel;
+int args;
+
+
 void createType (const char * name, const char * parent)
 {
     strcpy(typeList[typeIdx].name,name);
@@ -65,9 +110,9 @@ void createType (const char * name, const char * parent)
 
 void createObject(const char * name, const char * type)
 {
-    strcpy(idents[identIdx].name,name);
-    strcpy(idents[identIdx].type,type);
-    identIdx++;
+    strcpy(idents[identIdx[scopeLevel]][scopeLevel].name,name);
+    strcpy(idents[identIdx[scopeLevel]][scopeLevel].type,type);
+    identIdx[scopeLevel]++;
 }
 
 void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns)
@@ -107,10 +152,13 @@ const char * getTypeParent(const char * func)
 
 const char * getIdentifierType(const char * identifier)
 {
-    int i;
-    for (i=0; i<identIdx; i++) {
-        if (strcmp(idents[i].name,identifier)==0) {
-            return idents[i].type;
+    int i,scope;
+    printf (ANSI_COLOR_CYAN "Identifier %s\n" ANSI_COLOR_RESET,identifier);
+    for (scope=scopeLevel;scope>=0;scope--) {
+        for (i=0; i<identIdx[scope]; i++) {
+            if (strcmp(idents[i][scope].name,identifier)==0) {
+                return idents[i][scope].type;
+            }
         }
     }
     return NULL;
@@ -150,40 +198,7 @@ bool  getFunctionAssigns(const char * funcname)
 }
 
 
-typedef enum { object, method } ExpType;
-ExpType expType;
 
-Symbol sym;
-char symStr[BUFFLEN];
-int symStrIdx;
-FILE *file;
-FILE *outfile;
-FILE *outMainFile;
-FILE *outHeaderFile;
-
-typedef struct OperStruct_ {
-    Symbol oper;
-    char operSymStr[BUFFLEN];
-    int args;
-    char type[BUFFLEN];
-} OperStruct;
-
-
-OperStruct optrStack[STACKDEP];
-int optrStackPtr;
-
-OperStruct oprnStack[STACKDEP];
-int oprnStackPtr;
-
-int lParenList[STACKDEP];
-int lParenPtr;
-
-char buff[BUFFLEN];
-int linePos;
-int lineNum;
-int scopeLevel;
-int args;
-#define EVAL_BUFF_MAX_LEN 1024
 
 int errorMsg(const char * format,...)
 {
@@ -205,11 +220,11 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
         fprintf(outfile,"\t");
     }
     if (idType==NULL) {
-        strcpy(idents[identIdx].name,oprnStack[rnd-1].operSymStr);
+        strcpy(idents[identIdx[scopeLevel]][scopeLevel].name,oprnStack[rnd-1].operSymStr);
         if (!strcmp(rtype,"stringlit")) {
-            strcpy(idents[identIdx].type,"String");
+            strcpy(idents[identIdx[scopeLevel]][scopeLevel].type,"String");
         } else {
-            strcpy(idents[identIdx].type,rtype);
+            strcpy(idents[identIdx[scopeLevel]][scopeLevel].type,rtype);
         }
         //printf("New ident: %s %s;\n",idents[identIdx].type,idents[identIdx].name);
 
@@ -220,30 +235,32 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
 
         if (tor==0&&torOper==assign&&(isInteger||isFloat||isStringlit||isString)) {
             if (isInteger) {
-                fprintf(outfile,"int %s = %s;\n",idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"int %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
             } else  if (isFloat) {
-                fprintf(outfile,"float %s = %s;\n",idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"float %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
             }  else  if (isStringlit) {
-                fprintf(outfile,"String %s;%s.buff = %s;%s.length=sizeof(%s);\n",idents[identIdx].name,idents[identIdx].name,holderSymStack,idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx[scopeLevel]][scopeLevel].name,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
             }  else  if (isString) {
-                fprintf(outfile,"String %s = %s;\n",idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"String %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
             }  else {
                 errorMsg("You shouldn't be here. Really!");
             }
-            identIdx++;
+            identIdx[scopeLevel]++;
             /*TODO: This could be trouble*/
             return true;
         } else {
             if (!strcmp(rtype,"Integer")) {
-                fprintf(outfile,"int %s;\n",idents[identIdx].name);
+                fprintf(outfile,"int %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
             } else  if (!strcmp(rtype,"Float")) {
-                fprintf(outfile,"float %s;\n",idents[identIdx].name);
+                fprintf(outfile,"float %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
             } else  if (!strcmp(rtype,"stringlit")) {
-                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx].name,idents[identIdx].name,holderSymStack,idents[identIdx].name,holderSymStack);
+                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx[scopeLevel]][scopeLevel].name,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
+            } else  if (isString) {
+                fprintf(outfile,"String %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
             } else {
-                fprintf(outfile,"%s * %s;\n",idents[identIdx].type,idents[identIdx].name);
+                fprintf(outfile,"%s * %s;\n",idents[identIdx[scopeLevel]][scopeLevel].type,idents[identIdx[scopeLevel]][scopeLevel].name);
             }
-            identIdx++;
+            identIdx[scopeLevel]++;
         }
     } else {
         if (strcmp(idType,rtype)!=0)
@@ -372,7 +389,7 @@ void evaluate(void)
                 if (oprnStack[rnd-1].type[0]!=0) {
                     strcpy(ltype,oprnStack[rnd-1].type);
                 } else if (oprnStack[rnd-1].oper==stringlit) {
-                    strcpy(ltype,"stringlit");
+                    strcpy(ltype,"String");
                 } else if (oprnStack[rnd-1].oper==intnumber) {
                     strcpy(ltype,"Integer");
                 } else if (oprnStack[rnd-1].oper==floatnumber) {
@@ -420,15 +437,26 @@ void evaluate(void)
                                              closingBracket);
                     } else {
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
-                                             openingBracket,
-                                             oprnStack[rnd-1].operSymStr,
-                                             torSym,
-                                             holderSymStack,
-                                             addParam,
-                                             closingBracket);
+                        if (addParamTypes!=0) {
+                            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
+                                                 openingBracket,
+                                                 oprnStack[rnd-1].operSymStr,
+                                                 torSym,
+                                                 holderSymStack,
+                                                 addParam,
+                                                 closingBracket);
+                        } else {
+                            snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
+                                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
+                                         openingBracket,
+                                         funcName,
+                                         oprnStack[rnd-1].operSymStr,
+                                         holderSymStack,
+                                         addParam,
+                                         closingBracket);
+                        }
                     }
-                } else {
+                }  else {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                          openingBracket,
@@ -441,9 +469,15 @@ void evaluate(void)
                 }
 
                 bool funcAssigns = getFunctionAssigns(funcName);
+
                 if ((arithmetic&&torOper==assign)||funcAssigns) {
-                    printf("Assigning %s %s\n",holderSymStack,oprnStack[rnd-1].operSymStr);
                     singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
+                    if (!strcmp(rtype,"String")||!strcmp(rtype,"stringlit")) {
+                        printf(ANSI_COLOR_BLUE "Assigning %s:%s -> %s:%s %d\n" ANSI_COLOR_RESET,rtype,holderSymStack,ltype,oprnStack[rnd-1].operSymStr),singleLineAssign;
+                        snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
+                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s",
+                                             oprnStack[rnd-1].operSymStr);
+                    }
                 }
 
                 if (arithmetic&&torOper!=function) {
@@ -558,7 +592,7 @@ void oprnStackUpdate()
     if (sym!=stringlit)
         strncpy(oprnStack[oprnStackPtr].operSymStr,symStr,symStrIdx+1);
     else
-        snprintf(oprnStack[oprnStackPtr].operSymStr,BUFFLEN,"\"%s\"",symStr);
+        snprintf(oprnStack[oprnStackPtr].operSymStr,BUFFLEN,"String_stringlit(\"%s\")",symStr);
     oprnStackPtr++;
     expType=object;
 }
@@ -614,9 +648,13 @@ void getsym(void)
                 strcpy(optrStack[optrStackPtr].operSymStr,symStr);
                 optrStackUpdate();
 
+                printf (ANSI_COLOR_MAGENTA "symstr fnObj %s:%s\n" ANSI_COLOR_RESET,fnObj,symStr);
+
                 if (fnObj[0]!=0) {
                     oprnStack[oprnStackPtr].oper=ident;
                     strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
+                    char * fnObjType = getIdentifierType(fnObj);
+                    strcpy(oprnStack[oprnStackPtr].type,fnObjType);
                     oprnStackPtr++;
                 } else {
                     oprnStack[oprnStackPtr].oper=ident;
@@ -624,6 +662,11 @@ void getsym(void)
                     strcpy(oprnStack[oprnStackPtr].type,"UNKNOWNTYPE");
                     oprnStackPtr++;
                 }
+
+                printf (ANSI_COLOR_MAGENTA "operSymStr type %s:%s\n" ANSI_COLOR_RESET,
+                    oprnStack[oprnStackPtr-1].operSymStr,
+                    oprnStack[oprnStackPtr-1].type);
+
 
             } else {
                 sym=ident;
@@ -775,16 +818,10 @@ void getsym(void)
         }
         linePos++;
     } else if ((buff[linePos]=='.')) {
-        if (buff[linePos+1]=='.') {
-            linePos++;
-            sym=range;
-            strcpy(optrStack[optrStackPtr].operSymStr,"..");
-            optrStackUpdate();
-        } else {
-            sym=endsym;
-            strcpy(optrStack[optrStackPtr].operSymStr,"}");
-            optrStackUpdate();
-        }
+        sym=endsym;
+        strcpy(optrStack[optrStackPtr].operSymStr,"}");
+        optrStackUpdate();
+        evaluateAndReset();
         linePos++;
     } else if ((buff[linePos]==',')) {
         sym=comma;
@@ -795,11 +832,11 @@ void getsym(void)
         if (buff[linePos+1]=='^') {
             linePos++;
             sym=exponent;
-            strcpy(optrStack[optrStackPtr].operSymStr,"..");
+            strcpy(optrStack[optrStackPtr].operSymStr,"^^");
             optrStackUpdate();
         } else {
             sym=bitwisexor;
-            strcpy(optrStack[optrStackPtr].operSymStr,"}");
+            strcpy(optrStack[optrStackPtr].operSymStr,"^");
             optrStackUpdate();
         }
         linePos++;
@@ -847,10 +884,6 @@ void readCinc (void)
         sym=eol;
         getln();
 }
-
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
 
 void readFunDec (void)
 {
@@ -989,7 +1022,7 @@ int main(int argc,char **argv)
     oprnStackPtr=0;
     lParenPtr=0;
 
-    identIdx=0;
+
     funcListIdx=0;
     typeIdx=0;
     expType=method;
@@ -1015,6 +1048,10 @@ int main(int argc,char **argv)
     createObject("ritchie","Language");
     createFunction("if","Language",true,NULL,false);
     createFunction("UNKNOWNTYPE_if_Boolean","Language",true,NULL,false);
+    createFunction("elif","Language",true,NULL,false);
+    createFunction("UNKNOWNTYPE_elif_Boolean","Language",true,NULL,false);
+    createFunction("else","Language",true,NULL,false);
+    createFunction("UNKNOWNTYPE_else","Language",true,NULL,false);
     createFunction("while","Language",true,NULL,false);
     createFunction("UNKNOWNTYPE_while_Boolean","Language",true,NULL,false);
     //createFunction("for","Integer",true,NULL,true);
@@ -1027,8 +1064,9 @@ int main(int argc,char **argv)
     createFunction("stringlit_plus_Float","String",false,NULL,false);
     createFunction("stringlit_plus_String","String",false,NULL,false);
     createFunction("String_plus_stringlit","String",false,NULL,false);
-    createFunction("ident_assign_stringlit","String",false,NULL,true);
+    createFunction("String_assign_String","String",false,NULL,true);
 
+    createFunction("ident_assign_stringlit","String",false,NULL,true);
     createFunction("ident_assign_String","String",false,NULL,true);
     createFunction("ident_assign_Float","Float",false,NULL,true);
     createFunction("ident_assign_Integer","Integer",false,NULL,true);
