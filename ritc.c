@@ -300,7 +300,7 @@ void evaluate(void)
     if (oprnStack[rnd].type[0]!=0) {
         strcpy(rtype,oprnStack[rnd].type);
     } else if (oprnStack[rnd].oper==stringlit) {
-        strcpy(rtype,"stringlit");
+        strcpy(rtype,"String");
     } else if (oprnStack[rnd].oper==intnumber) {
         strcpy(rtype,"Integer");
     } else if (oprnStack[rnd].oper==floatnumber) {
@@ -491,7 +491,7 @@ void evaluate(void)
                 } else {
                     const char * funcType=getFunctionType(funcName);
                     if (funcType==NULL) {
-                        errorMsg("Warning: Unknown method %s. Assuming void\n",funcName);
+                        errorMsg(ANSI_COLOR_RED "Warning: Unknown method %s. Assuming void\n" ANSI_COLOR_RESET,funcName);
                         strcpy(rtype,"void");
 
                     } else {
@@ -1060,13 +1060,10 @@ int main(int argc,char **argv)
     /*Setup some functions signatures */
     createFunction("String_plus_String","String",false,NULL,false);
     createFunction("String_plus_Float","String",false,NULL,false);
-    createFunction("stringlit_plus_Integer","String",false,NULL,false);
-    createFunction("stringlit_plus_Float","String",false,NULL,false);
-    createFunction("stringlit_plus_String","String",false,NULL,false);
-    createFunction("String_plus_stringlit","String",false,NULL,false);
+    createFunction("String_plus_Integer","String",false,NULL,false);
+    createFunction("String_stringlit","String",false,NULL,false);
     createFunction("String_assign_String","String",false,NULL,true);
 
-    createFunction("ident_assign_stringlit","String",false,NULL,true);
     createFunction("ident_assign_String","String",false,NULL,true);
     createFunction("ident_assign_Float","Float",false,NULL,true);
     createFunction("ident_assign_Integer","Integer",false,NULL,true);
