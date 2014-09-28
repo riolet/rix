@@ -1,18 +1,9 @@
 String: bottles Integer b
-	if b>1 
-		->(" "+b)+" bottles".
-	elif b>0
-		->(" "+b)+" bottle".
-	else
-		->"No more bottles". .
+	if b>1; ->(""+b)+" bottles".
+	elif b>0; ->(""+b)+" bottle".
+	else; ->"No more bottles"..
 		
-line = (bottles (b=99)) + " of beer"
+line = (bottles (b=99)) + (ob = " of beer")
 
-print "Hi"
 while b>0
-	print line + " on the wall"
-	print line
-	print "Take one down and pass it around"
-	b=b-1
-	line = (bottles b) + " of beer"
-	print line + " on the wall".
+	print line + (w = " on the wall\n") + line + "\nTake one down and pass it around\n" + (line = (bottles (b = b-1)) + ob) + w.

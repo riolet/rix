@@ -7,11 +7,11 @@ typedef enum {false, true} bool;
 int ritch_i_;
 #define foreach(item,array) for (ritch_i_=0;(item=array[ritch_i_])!=NULL;ritch_i_++)
 
-#define BUFFLEN 256
+#define BUFFLEN 1024
 #define LABELMAX 8096
 #define STACKDEP 1024
 #define MAXSCOPE 64
-#define EVAL_BUFF_MAX_LEN 1024
+#define EVAL_BUFF_MAX_LEN 4096
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -233,41 +233,20 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
         bool isStringlit=!strcmp(rtype,"stringlit");
         bool isString=!strcmp(rtype,"String");
 
-        if (tor==0&&torOper==assign&&(isInteger||isFloat||isStringlit||isString)) {
-            if (isInteger) {
-                fprintf(outfile,"int %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
-            } else  if (isFloat) {
-                fprintf(outfile,"float %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
-            }  else  if (isStringlit) {
-                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx[scopeLevel]][scopeLevel].name,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
-            }  else  if (isString) {
-                fprintf(outfile,"String %s = %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
-            }  else {
-                errorMsg("You shouldn't be here. Really!");
-            }
-            identIdx[scopeLevel]++;
-            /*TODO: This could be trouble*/
-            return true;
+        if (!strcmp(rtype,"Integer")) {
+            fprintf(outfile,"int %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
+        } else  if (!strcmp(rtype,"Float")) {
+            fprintf(outfile,"float %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
+        } else  if (isString) {
+            fprintf(outfile,"String %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
         } else {
-            if (!strcmp(rtype,"Integer")) {
-                fprintf(outfile,"int %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
-            } else  if (!strcmp(rtype,"Float")) {
-                fprintf(outfile,"float %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
-            } else  if (!strcmp(rtype,"stringlit")) {
-                fprintf(outfile,"String %s;%s.buffer = %s;%s.length=sizeof(%s);\n",idents[identIdx[scopeLevel]][scopeLevel].name,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack,idents[identIdx[scopeLevel]][scopeLevel].name,holderSymStack);
-            } else  if (isString) {
-                fprintf(outfile,"String %s;\n",idents[identIdx[scopeLevel]][scopeLevel].name);
-            } else {
-                fprintf(outfile,"%s * %s;\n",idents[identIdx[scopeLevel]][scopeLevel].type,idents[identIdx[scopeLevel]][scopeLevel].name);
-            }
-            identIdx[scopeLevel]++;
+            fprintf(outfile,"%s * %s;\n",idents[identIdx[scopeLevel]][scopeLevel].type,idents[identIdx[scopeLevel]][scopeLevel].name);
         }
+        identIdx[scopeLevel]++;
+
     } else {
         if (strcmp(idType,rtype)!=0)
             errorMsg("You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
-        else
-            fprintf(outfile,"%s = %s;\n",oprnStack[rnd-1].operSymStr,holderSymStack);
-        return true;
     }
     return false;
 }
@@ -397,7 +376,7 @@ void evaluate(void)
                 } else if (oprnStack[rnd-1].oper==ident) {
                     const char * ltype_=getIdentifierType(oprnStack[rnd-1].operSymStr);
                     if (ltype_==NULL) {
-                        strcpy(ltype,"ident");
+                        strcpy(ltype,"Identifier");
                     } else {
                         strcpy(ltype,ltype_);
                     }
@@ -412,7 +391,7 @@ void evaluate(void)
                     semiColonStr=";}";
                     scopeLevel--;
                     continue;
-                } else  if ((!strcmp(ltype,"ident")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
+                } else  if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
 
                     if (torOper==range||torOper==exponent) {
                         torOper=function;
@@ -456,6 +435,14 @@ void evaluate(void)
                                          closingBracket);
                         }
                     }
+                }  else  if (!strcmp(rtype,"String")&&torOper==assign)  {
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
+                                         openingBracket,
+                                         oprnStack[rnd-1].operSymStr,
+                                         torSym,
+                                         holderSymStack,
+                                         addParam,
+                                         closingBracket);
                 }  else {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
@@ -470,14 +457,8 @@ void evaluate(void)
 
                 bool funcAssigns = getFunctionAssigns(funcName);
 
-                if ((arithmetic&&torOper==assign)||funcAssigns) {
+                if ((arithmetic&&torOper==assign)||(!strcmp(rtype,"String")&&torOper==assign)||funcAssigns) {
                     singleLineAssign=doAssignDeclare(tor, rnd, holderSymStack, ltype, rtype);
-                    if (!strcmp(rtype,"String")||!strcmp(rtype,"stringlit")) {
-                        printf(ANSI_COLOR_BLUE "Assigning %s:%s -> %s:%s %d\n" ANSI_COLOR_RESET,rtype,holderSymStack,ltype,oprnStack[rnd-1].operSymStr),singleLineAssign;
-                        snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s",
-                                             oprnStack[rnd-1].operSymStr);
-                    }
                 }
 
                 if (arithmetic&&torOper!=function) {
@@ -593,6 +574,7 @@ void oprnStackUpdate()
         strncpy(oprnStack[oprnStackPtr].operSymStr,symStr,symStrIdx+1);
     else
         snprintf(oprnStack[oprnStackPtr].operSymStr,BUFFLEN,"String_stringlit(\"%s\")",symStr);
+
     oprnStackPtr++;
     expType=object;
 }
@@ -678,9 +660,11 @@ void getsym(void)
     /* String Literal */
     else if ((buff[linePos]=='"')) {
         linePos++;
-        do {
+
+        while(buff[linePos]!='"') {
             symStr[symStrIdx++]=buff[linePos++];
-        } while (buff[linePos]!='"');
+        }
+
         symStr[symStrIdx]=0;
         sym=stringlit;
 
@@ -1064,11 +1048,11 @@ int main(int argc,char **argv)
     createFunction("String_stringlit","String",false,NULL,false);
     createFunction("String_assign_String","String",false,NULL,true);
 
-    createFunction("ident_assign_String","String",false,NULL,true);
-    createFunction("ident_assign_Float","Float",false,NULL,true);
-    createFunction("ident_assign_Integer","Integer",false,NULL,true);
+    createFunction("Identifier_assign_String","String",false,NULL,true);
+    createFunction("Identifier_assign_Float","Float",false,NULL,true);
+    createFunction("Identifier_assign_Integer","Integer",false,NULL,true);
 
-    createFunction("ident_for_Integer_Integer","Integer",true,NULL,true);
+    createFunction("Identifier_for_Integer_Integer","Integer",true,NULL,true);
 
     /* Some math func signatures */
     createFunction("Float_exponent_Integer","Float",false,NULL,false);
