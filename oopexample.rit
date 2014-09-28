@@ -1,0 +1,26 @@
+Greeter <:
+
+	String greeting
+	
+	:Greeter String greeting 
+		$.greeting=greeting.
+		
+	Integer: greet String person 
+		message=greeting+" "+person+"!"
+		-> print message..
+	
+SurprisedGreeter <: Greeter	
+
+	Integer: greet String person
+		echo "Oh !"
+		$$ greet person.
+		
+	Intger: length
+		-> ((a.x-b.x)^2+(a.y-b.y)^2)^(1/2)..
+				
+greeter = Greeter "hello" 
+greeter greet "world"
+surprisedGreeter = SurprisedGreeter greeter
+surprisedGreeter greet "world"
+
+
