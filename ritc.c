@@ -54,7 +54,7 @@ char currentType[BUFFLEN];
 typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor
+    function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor,compare
 }
 Symbol;
 
@@ -64,7 +64,7 @@ const char * symnames[]= {
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor"
+    "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor","compare"
 };
 
 typedef enum { object, method } ExpType;
@@ -382,7 +382,6 @@ void evaluate(void)
                     }
                 }
 
-
                 char tempRtype[BUFFLEN];
                 char funcName[BUFFLEN];
 
@@ -392,11 +391,9 @@ void evaluate(void)
                     scopeLevel--;
                     continue;
                 } else  if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
-
-                    if (torOper==range||torOper==exponent) {
+                    if (torOper==range||torOper==exponent||torOper==compare) {
                         torOper=function;
-                    }
-                    if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
+                    } else if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
                         boolean=true;
                     } else {
                         arithmetic=true;
@@ -795,6 +792,11 @@ void getsym(void)
             sym=leq;
             strcpy(optrStack[optrStackPtr].operSymStr,"<=");
             optrStackUpdate();
+        } else if (buff[linePos+1]=='>') {
+            linePos++;
+            sym=compare;
+            strcpy(optrStack[optrStackPtr].operSymStr,"<>");
+            optrStackUpdate();
         } else {
             sym=lss;
             strcpy(optrStack[optrStackPtr].operSymStr,"<");
@@ -835,6 +837,7 @@ void getsym(void)
         sym=rparen;
         strcpy(optrStack[optrStackPtr].operSymStr,")");
         optrStackUpdate();
+        expType=object;
         linePos++;
     } else if ((buff[linePos]=='#')) {
         sym=cinc;
@@ -1057,6 +1060,13 @@ int main(int argc,char **argv)
     /* Some math func signatures */
     createFunction("Float_exponent_Integer","Float",false,NULL,false);
     createFunction("Integer_exponent_Integer","Float",false,NULL,false);
+    createFunction("Integer_exponent_Integer","Float",false,NULL,false);
+
+
+
+    /*Some Ternary Functions */
+    createFunction("Integer_compare_Integer","Ternary",false,NULL,false);
+    createFunction("Ternary_pick_String_String_String","String",false,NULL,false);
 
     fprintf(outfile,"#include \"rsl.h\"\n");
     fprintf(outfile,"#include \"%s\"\n",oHeaderFileName);
