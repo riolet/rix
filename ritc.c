@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 typedef enum {false, true} bool;
 int ritch_i_;
@@ -40,7 +41,7 @@ typedef struct Identifier_ {
 } Identifier;
 
 Identifier idents[LABELMAX][MAXSCOPE];
-int identIdx[MAXSCOPE]={0};
+int identIdx[MAXSCOPE]= {0};
 
 typedef struct Type_ {
     char name[BUFFLEN];
@@ -98,8 +99,9 @@ char buff[BUFFLEN];
 int linePos;
 int lineNum;
 int scopeLevel;
+int indentLevel[MAXSCOPE];
 int args;
-
+bool expectScopeIncrease;
 
 void createType (const char * name, const char * parent)
 {
@@ -154,7 +156,7 @@ const char * getIdentifierType(const char * identifier)
 {
     int i,scope;
     printf (ANSI_COLOR_CYAN "Identifier %s\n" ANSI_COLOR_RESET,identifier);
-    for (scope=scopeLevel;scope>=0;scope--) {
+    for (scope=scopeLevel; scope>=0; scope--) {
         for (i=0; i<identIdx[scope]; i++) {
             if (strcmp(idents[i][scope].name,identifier)==0) {
                 return idents[i][scope].type;
@@ -301,7 +303,7 @@ void evaluate(void)
 
     strcpy(addParam,"");
     strcpy(addParamTypes,"");
-
+    bool skip = false;
     for (tor=optrStackPtr-1; tor>=0; tor--) {
         int arg;
 
@@ -313,6 +315,14 @@ void evaluate(void)
 
         if (torOper==retsym) {
             fprintf(outfile,"return (%s);",holderSymStack);
+            skip=true;
+            continue;
+        }
+
+        if (torOper==endsym) {
+            errorMsg(ANSI_COLOR_YELLOW "TOR %s %d\n" ANSI_COLOR_RESET,symnames[torOper],torOper);
+            semiColonStr=";}";
+            scopeLevel--;
             continue;
         }
 
@@ -320,6 +330,7 @@ void evaluate(void)
             printf("Right paren optrStackPtr %d\n",optrStackPtr);
             continue;
         }
+
         if (parenMode&&torOper==lparen) {
             printf("%s oprnStack[rnd].operSymStr: %s, HOLDER: %s\n",torSym,oprnStack[rnd].operSymStr,holderSymStack);
             lParenPtr--;
@@ -386,11 +397,7 @@ void evaluate(void)
                 char funcName[BUFFLEN];
 
                 errorMsg("TOR %s %d\n",symnames[torOper],torOper);
-                if (torOper==endsym) {
-                    semiColonStr=";}";
-                    scopeLevel--;
-                    continue;
-                } else  if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
+                if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
                     if (torOper==range||torOper==exponent||torOper==compare) {
                         torOper=function;
                     } else if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
@@ -423,13 +430,13 @@ void evaluate(void)
                                                  closingBracket);
                         } else {
                             snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
-                                         openingBracket,
-                                         funcName,
-                                         oprnStack[rnd-1].operSymStr,
-                                         holderSymStack,
-                                         addParam,
-                                         closingBracket);
+                            evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
+                                                 openingBracket,
+                                                 funcName,
+                                                 oprnStack[rnd-1].operSymStr,
+                                                 holderSymStack,
+                                                 addParam,
+                                                 closingBracket);
                         }
                     }
                 }  else  if (!strcmp(rtype,"String")&&torOper==assign)  {
@@ -480,6 +487,7 @@ void evaluate(void)
                 if (getFunctionCodeBlocks(funcName)) {
                     semiColonStr="{";
                     scopeLevel++;
+                    expectScopeIncrease=true;
                 }
 
                 rnd--;
@@ -495,6 +503,7 @@ void evaluate(void)
                     if (getFunctionCodeBlocks(funcName)) {
                         semiColonStr="{";
                         scopeLevel++;
+                        expectScopeIncrease=true;
                     }
                 }
 
@@ -516,6 +525,8 @@ void evaluate(void)
             strcpy(addParamTypes,"");
         }
     }
+    if (skip)
+        return;
     if (evalBuffLen>0&&!singleLineAssign) {
         printf ("Scope level %d %s\n",scopeLevel,evalBuff);
         int
@@ -551,18 +562,6 @@ void evaluateAndReset(void)
     lParenPtr=0;
 }
 
-void getln(void)
-{
-    lineNum++;
-    if (!fgets(buff,BUFFLEN,file)) {
-        sym=eof;
-    }
-    linePos=0;
-    evaluateAndReset();
-}
-
-
-
 void oprnStackUpdate()
 {
     oprnStack[oprnStackPtr].oper=sym;
@@ -584,12 +583,44 @@ void optrStackUpdate()
     expType=method;
 }
 
+void getln(void)
+{
+    lineNum++;
+    if (!fgets(buff,BUFFLEN,file)) {
+        sym=eof;
+    }
+    linePos=0;
+    evaluateAndReset();
+}
+
 void getsym(void)
 {
     symStrIdx=0;
+    bool lineBegins = false;
+
+    if (linePos==0)
+        lineBegins = true;
 
     while(buff[linePos]==' '||buff[linePos]=='\t') {
         linePos++;
+    }
+
+    if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
+        errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],indentLevel[scopeLevel]);
+        if (linePos>indentLevel[scopeLevel-1]) {
+            if (expectScopeIncrease) {
+                indentLevel[scopeLevel]=linePos;
+                //expectScopeIncrease=false;
+            } else {
+                printf(ANSI_COLOR_RED "Unexpected scope increase\n" ANSI_COLOR_RESET);
+                exit(0);
+            }
+        } else if (linePos<indentLevel[scopeLevel]) {
+            sym=endsym;
+            strcpy(optrStack[optrStackPtr].operSymStr,"}");
+            optrStackUpdate();
+            evaluateAndReset();
+        }
     }
 
     if (buff[linePos]=='\n') {
@@ -615,8 +646,7 @@ void getsym(void)
             sym=type;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
-        }
-        else if (expType==object) {
+        } else if (expType==object) {
             sym=function;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
@@ -643,8 +673,8 @@ void getsym(void)
                 }
 
                 printf (ANSI_COLOR_MAGENTA "operSymStr type %s:%s\n" ANSI_COLOR_RESET,
-                    oprnStack[oprnStackPtr-1].operSymStr,
-                    oprnStack[oprnStackPtr-1].type);
+                        oprnStack[oprnStackPtr-1].operSymStr,
+                        oprnStack[oprnStackPtr-1].type);
 
 
             } else {
@@ -862,20 +892,21 @@ void getsym(void)
 
 void readCinc (void)
 {
-        while(buff[linePos]!='\n') {
-            fputc(buff[linePos],stdout);
-            fputc(buff[linePos],outfile);
-            linePos++;
-        }
-        fputc('\n',outfile);
-        sym=eol;
-        getln();
+    while(buff[linePos]!='\n') {
+        fputc(buff[linePos],stdout);
+        fputc(buff[linePos],outfile);
+        linePos++;
+    }
+    fputc('\n',outfile);
+    sym=eol;
+    getln();
 }
 
 void readFunDec (void)
 {
     outfile=outHeaderFile;
     scopeLevel++;
+    expectScopeIncrease=true;
     int i=0;
     char funcName[BUFFLEN]="";
     char argList[BUFFLEN]="";
@@ -926,21 +957,22 @@ void parse(void)
     do {
         if (sym==rparen) {
             evaluate();
-        }
-        else if (sym==cinc) {
+        } else if (sym==cinc) {
             readCinc();
-        }
-        else if (sym==comment) {
+        } else if (sym==comment) {
             fputs("//",outfile);
             readCinc();
-        }
-        else if ((sym==colon)&&(optrStackPtr==2)) {
+        } else if ((sym==colon)&&(optrStackPtr==2)) {
             sym=fundec;
             readFunDec();
         }
         if (sym!=eof)
             getsym();
     } while (sym!=eof);
+    int i;
+    for (i=scopeLevel;i>0;i--) {
+        fprintf(outfile,"}\n");
+    }
 }
 
 
@@ -955,14 +987,14 @@ int main(int argc,char **argv)
 
     while ((c = getopt(argc, argv, "o:")) != -1) {
         switch (c) {
-            case 'o':
+        case 'o':
             ofile = optarg;
             break;
-                    case ':':       /* -f or -o without operand */
-                fprintf(stderr,
-                        "Option -%c requires an operand\n", optopt);
-                errflg++;
-                break;
+        case ':':       /* -f or -o without operand */
+            fprintf(stderr,
+                    "Option -%c requires an operand\n", optopt);
+            errflg++;
+            break;
         };
     }
 
@@ -973,9 +1005,9 @@ int main(int argc,char **argv)
 
 
     for (i=0; optind < argc; optind++,i++) {
-            if (i==0) {
-                ifile=argv[optind];
-            }
+        if (i==0) {
+            ifile=argv[optind];
+        }
     }
 
 
@@ -1014,6 +1046,7 @@ int main(int argc,char **argv)
     typeIdx=0;
     expType=method;
 
+    expectScopeIncrease=false;
     /*TODO: This should be done in RL itself *
     /*Create some Types */
     char * baseType = "RitcheBaseType";
@@ -1068,6 +1101,10 @@ int main(int argc,char **argv)
     createFunction("Integer_compare_Integer","Ternary",false,NULL,false);
     createFunction("Ternary_pick_String_String_String","String",false,NULL,false);
 
+    errorMsg(ANSI_COLOR_MAGENTA "**********************************\n"
+    "**********************************\n"
+    "**********************************\n"
+    "**********************************\n" ANSI_COLOR_RESET);
     fprintf(outfile,"#include \"rsl.h\"\n");
     fprintf(outfile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outfile,"int main(void) {\n");
