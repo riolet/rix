@@ -10,6 +10,10 @@ Integer: sum Integer n
 		->n
 	->n + (sum (n-1))      
 
+Integer: dum Integer n
+	if n==0
+		->n
+	
 hello="Hello"
 world="World"
 helloWorld=hello+" "+world;

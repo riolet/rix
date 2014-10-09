@@ -247,8 +247,10 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
         identIdx[scopeLevel]++;
 
     } else {
-        if (strcmp(idType,rtype)!=0)
+        if (strcmp(idType,rtype)!=0) {
             errorMsg("You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
+            exit(0);
+        }
     }
     return false;
 }
@@ -606,20 +608,26 @@ void getsym(void)
     }
 
     if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
-        errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],indentLevel[scopeLevel]);
+        errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
         if (linePos>indentLevel[scopeLevel-1]) {
             if (expectScopeIncrease) {
-                indentLevel[scopeLevel]=linePos;
+                indentLevel[scopeLevel-1]=linePos;
+                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                //errorMsg(ANSI_COLOR_YELLOW "After Linepos %d identLevel %d %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],indentLevel[scopeLevel]);
                 //expectScopeIncrease=false;
             } else {
                 printf(ANSI_COLOR_RED "Unexpected scope increase\n" ANSI_COLOR_RESET);
                 exit(0);
             }
-        } else if (linePos<indentLevel[scopeLevel]) {
-            sym=endsym;
-            strcpy(optrStack[optrStackPtr].operSymStr,"}");
-            optrStackUpdate();
-            evaluateAndReset();
+        } else if (linePos<indentLevel[scopeLevel-1]) {
+            while (linePos<indentLevel[scopeLevel-1]) {
+                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                sym=endsym;
+                strcpy(optrStack[optrStackPtr].operSymStr,"}");
+                optrStackUpdate();
+                evaluateAndReset();
+                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+            }
         }
     }
 
@@ -879,6 +887,7 @@ void getsym(void)
         linePos++;
     } else {
         errorMsg("Urecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
+        exit(0);
         linePos++;
     }
     //printf ("S:%s",symnames[sym]);
