@@ -1,18 +1,18 @@
 Integer: factorial Integer n
 	result = 1
 	i for 1,n+1
-		result = result * i.
-	->result.
+		result = result * i
+	->result
 
 
 Integer: sum Integer n
-    if n==0
-		->n.
-   ->n + (sum (n-1)).      
+	if n==0
+		->n
+	->n + (sum (n-1))      
 
 hello="Hello"
 world="World"
-helloWorld=hello+" "+world;
+helloWorld=hello+" "+world
 print helloWorld
 
 num=5
@@ -22,5 +22,3 @@ f3=(((2*3)+1)*4)^^3
 print " and f3 is "+f3
 print ("Factorial of "+num)+(" is "+(factorial num))
 print ("Sum of first "+num)+(" integers is "+(sum num))
-
-#printf ("You can embed C code too\n");

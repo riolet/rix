@@ -1,0 +1,193 @@
+gcc -ggdb -o parser parser.c
+./parser helloworld.rit
+Paren mode 0
+hello 1
+Paren mode 0
+assign =
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Assigning "Hello" hello
+Code blocks ident_assign_stringlit 0
+world 1
+Paren mode 0
+assign =
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Assigning "World" world
+Code blocks ident_assign_stringlit 0
+helloWorld 1
+hello 1
+world 1
+Paren mode 0
+plus +
+RND 3 oprnStackPtr 4
+oprnStack[rnd-1].type : 
+Code blocks stringlit_plus_String 0
+plus +
+RND 2 oprnStackPtr 4
+oprnStack[rnd-1].type : 
+Code blocks String_plus_String 0
+assign =
+RND 1 oprnStackPtr 4
+oprnStack[rnd-1].type : 
+Assigning (String_plus_String(hello,(stringlit_plus_String(" ",world)))) helloWorld
+Code blocks ident_assign_String 0
+Paren mode 0
+print 1
+helloWorld 1
+Paren mode 0
+plus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks String_plus_stringlit 0
+function print
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_String 0
+Scope level 0 Stream_print_String(stdout,(String_plus_stringlit(helloWorld,"!\n")))
+n 1
+Paren mode 0
+assign =
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Assigning 5 n
+Code blocks ident_assign_Integer 0
+f 1
+f1 1
+f2 1
+Paren mode 0
+raisedto ^
+RND 4 oprnStackPtr 5
+oprnStack[rnd-1].type : 
+Code blocks Float_raisedto_Integer 0
+assign =
+RND 3 oprnStackPtr 5
+oprnStack[rnd-1].type : 
+Assigning (Float_raisedto_Integer(5.5,2)) f2
+Code blocks ident_assign_Float 0
+assign =
+RND 2 oprnStackPtr 5
+oprnStack[rnd-1].type : 
+Assigning (f2 = (Float_raisedto_Integer(5.5,2))) f1
+Code blocks ident_assign_Float 0
+assign =
+RND 1 oprnStackPtr 5
+oprnStack[rnd-1].type : 
+Assigning (f1 = (f2 = (Float_raisedto_Integer(5.5,2)))) f
+Code blocks ident_assign_Float 0
+echo 1
+Paren mode 0
+function echo
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_echo_stringlit 0
+Scope level 0 Stream_echo_stringlit(stdout,"f2 is ")
+print 1
+f2 1
+Paren mode 0
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_Float 0
+Scope level 0 Stream_print_Float(stdout,f2)
+f3 1
+Paren mode 1
+Right paren optrStackPtr 4
+times *
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Integer_times_Integer 0
+( oprnStack[rnd].operSymStr: 2, HOLDER: (2 * 3)
+Symstack: (2 * 3) Type: Integer optrStackPtr 1 oprnStackPtr 2
+ Paren mode 0
+plus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : Integer
+Code blocks Integer_plus_Integer 0
+assign =
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Assigning ((2 * 3) + 1) f3
+Code blocks ident_assign_Integer 0
+echo 1
+Paren mode 0
+function echo
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_echo_stringlit 0
+Scope level 0 Stream_echo_stringlit(stdout,"f3 is ")
+print 1
+f3 1
+Paren mode 0
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_Integer 0
+Scope level 0 Stream_print_Integer(stdout,f3)
+if 1
+n 1
+f 1
+Paren mode 0
+slash /
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Integer_slash_Float 0
+gtr >
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Integer_gtr_Float 0
+function if
+RND 0 oprnStackPtr 3
+Scope level 1 Boolean_if((1 > (n / f)))
+echo 1
+Paren mode 0
+function echo
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_echo_stringlit 0
+Scope level 1 Stream_echo_stringlit(stdout,"1 is more than ")
+print 1
+n 1
+f 1
+Paren mode 0
+endsym }
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+slash /
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Integer_slash_Float 0
+function print
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_Float 0
+Scope level 0 Stream_print_Float(stdout,(n / f))
+i 1
+for 0
+n 1
+Paren mode 0
+function for
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+Assigning 1 i
+Code blocks ident_for_Integer_Integer 1
+Scope level 1 ident_for_Integer_Integer(i,1,(n))
+print 1
+i 1
+Paren mode 0
+endsym }
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_Integer 0
+Scope level 0 Stream_print_Integer(stdout,i)
+print 1
+Paren mode 0
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks Stream_print_stringlit 0
+Scope level 0 Stream_print_stringlit(stdout,"Back to main!")
+gcc -ggdb -o out out.c -lm

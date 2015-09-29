@@ -1,0 +1,270 @@
+Paren mode 0
+String 1
+bottles 1
+Integer 0
+b 1
+Paren mode 0
+[36mIdentifier b
+[0m[36mIdentifier b
+[0mCreating function UNKNOWNTYPE_bottles_Integer
+if 1
+[35msymstr fnObj :if
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mb 1
+Paren mode 0
+gtr >
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mCode blocks Integer_gtr_Integer 0
+function if
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : UNKNOWNTYPE
+Code blocks UNKNOWNTYPE_if_Boolean 1
+Scope level 2 UNKNOWNTYPE_if_Boolean(UNKNOWNOBJECT,(b > 1))
+b 1
+Paren mode 1
+[36mIdentifier b
+[0m[36mIdentifier b
+[0mRight paren optrStackPtr 4
+plus +
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks stringlit_plus_Integer 0
+( oprnStack[rnd].operSymStr: " ", HOLDER: (stringlit_plus_Integer(" ",b))
+Symstack: (stringlit_plus_Integer(" ",b)) Type: String optrStackPtr 1 oprnStackPtr 1
+ Paren mode 0
+endsym }
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : String
+plus +
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : String
+Code blocks String_plus_stringlit 0
+Scope level 1 (String_plus_stringlit((stringlit_plus_Integer(" ",b))," bottles"))
+Paren mode 0
+elif 1
+[35msymstr fnObj :elif
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mb 1
+Paren mode 0
+gtr >
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mCode blocks Integer_gtr_Integer 0
+function elif
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : UNKNOWNTYPE
+Code blocks UNKNOWNTYPE_elif_Boolean 1
+Scope level 2 UNKNOWNTYPE_elif_Boolean(UNKNOWNOBJECT,(b > 0))
+b 1
+Paren mode 1
+[36mIdentifier b
+[0m[36mIdentifier b
+[0mRight paren optrStackPtr 4
+plus +
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+Code blocks stringlit_plus_Integer 0
+( oprnStack[rnd].operSymStr: " ", HOLDER: (stringlit_plus_Integer(" ",b))
+Symstack: (stringlit_plus_Integer(" ",b)) Type: String optrStackPtr 1 oprnStackPtr 1
+ Paren mode 0
+endsym }
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : String
+plus +
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : String
+Code blocks String_plus_stringlit 0
+Scope level 1 (String_plus_stringlit((stringlit_plus_Integer(" ",b))," bottle"))
+Paren mode 0
+else 1
+[35msymstr fnObj :else
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mParen mode 0
+function else
+RND 0 oprnStackPtr 1
+Scope level 2 UNKNOWNTYPE_else(UNKNOWNOBJECT)
+s 1
+Paren mode 0
+endsym }
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+[36mIdentifier s
+[0massign =
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : 
+[36mIdentifier s
+[0mAssigning "No more bottles" s
+[36mIdentifier s
+[0mCode blocks ident_assign_stringlit 0
+Scope level 1 (ident_assign_stringlit(s,"No more bottles"))
+Paren mode 0
+endsym }
+RND -1 oprnStackPtr 0
+Paren mode 0
+Paren mode 0
+line 1
+bottles 1
+[35msymstr fnObj :bottles
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mb 1
+Paren mode 1
+Right paren optrStackPtr 6
+assign =
+RND 3 oprnStackPtr 4
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mAssigning 99 b
+[36mIdentifier b
+[0mCode blocks ident_assign_Integer 0
+( oprnStack[rnd].operSymStr: b, HOLDER: (b = 99)
+Symstack: (b = 99) Type: Integer optrStackPtr 3 oprnStackPtr 3
+ Paren mode 1
+Right paren optrStackPtr 4
+function bottles
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : UNKNOWNTYPE
+Code blocks UNKNOWNTYPE_bottles_Integer 0
+( oprnStack[rnd].operSymStr: UNKNOWNOBJECT, HOLDER: (UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,(b = 99)))
+Symstack: (UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,(b = 99))) Type: String optrStackPtr 1 oprnStackPtr 2
+ Paren mode 0
+plus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : String
+Code blocks String_plus_stringlit 0
+assign =
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier line
+[0mAssigning (String_plus_stringlit((UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,(b = 99)))," of beer")) line
+[36mIdentifier line
+[0mCode blocks ident_assign_String 0
+Paren mode 0
+print 1
+[35msymstr fnObj stdout:print
+[0m[36mIdentifier stdout
+[0m[35moperSymStr type stdout:Stream
+[0mParen mode 0
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : Stream
+Code blocks Stream_print_stringlit 0
+Scope level 0 Stream_print_stringlit(stdout,"Hi")
+while 1
+[35msymstr fnObj :while
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mb 1
+Paren mode 0
+gtr >
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mCode blocks Integer_gtr_Integer 0
+function while
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : UNKNOWNTYPE
+Code blocks UNKNOWNTYPE_while_Boolean 1
+Scope level 1 UNKNOWNTYPE_while_Boolean(UNKNOWNOBJECT,(b > 0))
+print 1
+[35msymstr fnObj stdout:print
+[0m[36mIdentifier stdout
+[0m[35moperSymStr type stdout:Stream
+[0mline 1
+Paren mode 0
+plus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier line
+[0mCode blocks String_plus_stringlit 0
+function print
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : Stream
+Code blocks Stream_print_String 0
+Scope level 1 Stream_print_String(stdout,(String_plus_stringlit(line," on the wall")))
+print 1
+[35msymstr fnObj stdout:print
+[0m[36mIdentifier stdout
+[0m[35moperSymStr type stdout:Stream
+[0mline 1
+Paren mode 0
+[36mIdentifier line
+[0m[36mIdentifier line
+[0mfunction print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : Stream
+Code blocks Stream_print_String 0
+Scope level 1 Stream_print_String(stdout,line)
+print 1
+[35msymstr fnObj stdout:print
+[0m[36mIdentifier stdout
+[0m[35moperSymStr type stdout:Stream
+[0mParen mode 0
+function print
+RND 1 oprnStackPtr 2
+oprnStack[rnd-1].type : Stream
+Code blocks Stream_print_stringlit 0
+Scope level 1 Stream_print_stringlit(stdout,"Take one down and pass it around")
+b 1
+b 1
+Paren mode 0
+minus -
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mCode blocks Integer_minus_Integer 0
+assign =
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier b
+[0mAssigning (b - 1) b
+[36mIdentifier b
+[0mCode blocks Integer_assign_Integer 0
+line 1
+bottles 1
+[35msymstr fnObj :bottles
+[0m[35moperSymStr type UNKNOWNOBJECT:UNKNOWNTYPE
+[0mb 1
+Paren mode 1
+[36mIdentifier b
+[0m[36mIdentifier b
+[0mRight paren optrStackPtr 4
+function bottles
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : UNKNOWNTYPE
+Code blocks UNKNOWNTYPE_bottles_Integer 0
+( oprnStack[rnd].operSymStr: UNKNOWNOBJECT, HOLDER: (UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,b))
+Symstack: (UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,b)) Type: String optrStackPtr 1 oprnStackPtr 2
+ Paren mode 0
+plus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : String
+Code blocks String_plus_stringlit 0
+assign =
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier line
+[0mCode blocks String_assign_String 0
+Scope level 1 String_assign_String(line,(String_plus_stringlit((UNKNOWNTYPE_bottles_Integer(UNKNOWNOBJECT,b))," of beer")))
+print 1
+[35msymstr fnObj stdout:print
+[0m[36mIdentifier stdout
+[0m[35moperSymStr type stdout:Stream
+[0mline 1
+Paren mode 0
+endsym }
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier line
+[0mplus +
+RND 2 oprnStackPtr 3
+oprnStack[rnd-1].type : 
+[36mIdentifier line
+[0mCode blocks String_plus_stringlit 0
+function print
+RND 1 oprnStackPtr 3
+oprnStack[rnd-1].type : Stream
+Code blocks Stream_print_String 0
+Scope level 0 Stream_print_String(stdout,(String_plus_stringlit(line," the wall")))
+Paren mode 0
