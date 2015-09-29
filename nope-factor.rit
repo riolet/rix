@@ -1,0 +1,8 @@
+request route "/factor"
+	unlessNull input = QuickHtmlForm text request, response, "Number to factor:"
+		number = Long input
+		respond "Factors of "+n+" are: "
+		l for 2,n+1
+			if 0 == n %l
+				response echo l
+				

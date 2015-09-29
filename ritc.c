@@ -442,6 +442,7 @@ void evaluate(void)
                         }
                     }
                 }  else  if (!strcmp(rtype,"String")&&torOper==assign)  {
+                    snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
                                          openingBracket,
                                          oprnStack[rnd-1].operSymStr,
@@ -608,11 +609,11 @@ void getsym(void)
     }
 
     if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
-        errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+        errorMsg(ANSI_COLOR_YELLOW "Top Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
         if (linePos>indentLevel[scopeLevel-1]) {
             if (expectScopeIncrease) {
                 indentLevel[scopeLevel-1]=linePos;
-                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                errorMsg(ANSI_COLOR_YELLOW "If Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
                 //errorMsg(ANSI_COLOR_YELLOW "After Linepos %d identLevel %d %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],indentLevel[scopeLevel]);
                 //expectScopeIncrease=false;
             } else {
@@ -621,12 +622,12 @@ void getsym(void)
             }
         } else if (linePos<indentLevel[scopeLevel-1]) {
             while (linePos<indentLevel[scopeLevel-1]) {
-                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                errorMsg(ANSI_COLOR_YELLOW "while before Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
                 sym=endsym;
                 strcpy(optrStack[optrStackPtr].operSymStr,"}");
                 optrStackUpdate();
                 evaluateAndReset();
-                errorMsg(ANSI_COLOR_YELLOW "Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                errorMsg(ANSI_COLOR_YELLOW "while after Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
             }
         }
     }

@@ -1,26 +1,33 @@
-Greeter <:
+Point :: BaseType
+	Integer x
+	Integer y
 
-	String greeting
 	
-	:Greeter String greeting 
-		$.greeting=greeting.
-		
-	Integer: greet String person 
-		message=greeting+" "+person+"!"
-		-> print message..
+Shape :: BaseType
+	Float: area
+	Float: perimiter
+	Boolean: contains Point point
+
 	
-SurprisedGreeter <: Greeter	
+Rectangle :: Shape
+	Point topLeftHand
+	Integer width
+	Integer height
+	
+	Float: area 
+		-> Float (width * height)
 
-	Integer: greet String person
-		echo "Oh !"
-		$$ greet person.
+	Boolean: contains Point point
+		 -> (topLeftHand.x >=  point.x) && (topLeftHand.x <= point.x + width) && (topLeftHand.y >= point.y && topLeftHand.y <= point.y + height)
+		 
+Circle :: Shape
+	Point centre
+	Integer radius
+	
+	Float: area
+		-> PI * radius ^^ 2
 		
-	Intger: length
-		-> ((a.x-b.x)^2+(a.y-b.y)^2)^(1/2)..
-				
-greeter = Greeter "hello" vda
-greeter greet "world"
-surprisedGreeter = SurprisedGreeter greeter
-surprisedGreeter greet "world"
-
-
+	Float: radius
+		-> 2 * PI * radius
+		
+	
