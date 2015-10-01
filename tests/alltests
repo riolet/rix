@@ -1,0 +1,49 @@
+#!/bin/bash
+
+ritc="../../bin/Debug/ritc"
+rsl=".."
+
+#This is a comment, I hope
+
+
+runtest() {
+  #compile .rit file
+  bash -c "$ritc $1 >/dev/null 2>/dev/null"
+  
+  #compile out.c
+  bash -c "gcc -I$rsl out.c -lm >/dev/null 2>$1.my.out"
+  
+  if [ $? -ne 0 ]; then
+    printf "FAILED: %s\n" "$1"
+    return
+  fi
+  
+  #run a.out
+  bash -c "./a.out >$1.my.out 2> /dev/null"
+  
+  #compare output of a.out to expected.
+  cmp $1.target $1.my.out > /dev/null 2> /dev/null
+  if [ $? -eq 0 ]; then
+    printf "pass:   "
+  else
+    printf "FAILED: "
+  fi
+  printf "%s\n" "$1"
+}
+
+echo "Delete previous test results?"
+echo "Press ctl-c to abort, any other key to delete prior .my.out files & run tests"
+read x
+rm -f *.my.out out.c out.h a.out
+
+for filename in ./*.rit; do
+  runtest $filename
+done
+#runtest hello.rit
+#runtest intDeclaration.rit
+#runtest floatDeclaration.rit
+#runtest strings.rit
+#runtest expressionsInt.rit
+#runtest expressionsFloat.rit
+#runtest comparison.rit
+

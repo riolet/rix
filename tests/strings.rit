@@ -1,0 +1,10 @@
+a = "hello"
+//TODO: not sure if this is supposed to work or not. Right now it doesn't
+//String b = " "
+b = " "
+c = "world"
+d = a + c
+e = b
+
+print a + b+c
+print d + "|" + e + "|"

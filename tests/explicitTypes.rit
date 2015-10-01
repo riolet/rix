@@ -1,0 +1,10 @@
+String s
+s = "hello"
+Integer i
+i = 42
+Float f
+f = 3.141592
+
+print "s = " + s
+print "i = " + i
+print "f = " + f

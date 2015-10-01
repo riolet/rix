@@ -1,0 +1,25 @@
+a = 13
+b = 17
+addition = a + b
+subtraction = a - b
+multiplication = a * b
+division = a / b
+exponent = a ^^ b
+reassign  = 4
+reassign  = 9
+copyValues = addition
+copyValues = multiplication / a
+precedenceA = 3+3*3+3
+precedenceB = (3+3)*3+3
+
+print "a = " + a
+print "b = " + b
+print "addition = " + addition
+print "subtraction = " + subtraction
+print "multiplication = " + multiplication
+print "division = " + division
+print "exponent = " + exponent
+print "reassign = " + reassign
+print "copyValues = " + copyValues
+print "precedenceA = " + precedenceA
+print "precedenceB = " + precedenceB

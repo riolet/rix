@@ -1,0 +1,26 @@
+a = 13.0
+b = 17.0
+addition = a + b
+subtraction = a - b
+multiplication = a * b
+division = a / b
+//TODO: float_exponent_float doesn't exist yet
+exponent = a ^^ 17
+reassign  = 4.123456
+reassign  = 9.876543
+copyValues = addition
+copyValues = multiplication / a
+precedenceA = 3.0+3.0*3.0+3.0
+precedenceB = (3.0+3.0)*3.0+3.0
+
+print "a = " + a
+print "b = " + b
+print "addition = " + addition
+print "subtraction = " + subtraction
+print "multiplication = " + multiplication
+print "division = " + division
+print "exponent = " + exponent
+print "reassign = " + reassign
+print "copyValues = " + copyValues
+print "precedenceA = " + precedenceA
+print "precedenceB = " + precedenceB

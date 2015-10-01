@@ -1,0 +1,71 @@
+if 1 > 2
+  print "1 > 2 = True"
+else
+  print "1 > 2 = False"
+
+if 2 > 1
+  print "2 > 1 = True"
+else
+  print "2 > 1 = False"
+
+if 1 < 2
+  print "1 < 2 = True"
+else
+  print "1 < 2 = False"
+
+if 2 < 1
+  print "2 < 1 = True"
+else
+  print "2 < 1 = False"
+
+if 3 == 2
+  print "3 == 2 = True"
+else
+  print "3 == 2 = False"
+
+if 3 == 3
+  print "3 == 3 = True"
+else
+  print "3 == 3 = False"
+
+if 1.0 > 2.0
+  print "1.0 > 2.0 = True"
+else
+  print "1.0 > 2.0 = False"
+
+if 2.0 > 1.0
+  print "2.0 > 1.0 = True"
+else
+  print "2.0 > 1.0 = False"
+
+if 1.0 < 2.0
+  print "1.0 < 2.0 = True"
+else
+  print "1.0 < 2.0 = False"
+
+if 2.0 < 1.0
+  print "2.0 < 1.0 = True"
+else
+  print "2.0 < 1.0 = False"
+
+if 3.0 == 2.0
+  print "3.0 == 2.0 = True"
+else
+  print "3.0 == 2.0 = False"
+
+if 3.0 == 3.0
+  print "3.0 == 3.0 = True"
+else
+  print "3.0 == 3.0 = False"
+
+
+print "1<>2 = " + ((1<>2) pick "Greater", "Equal", "Lesser")
+print "1<>1 = " + ((1<>1) pick "Greater", "Equal", "Lesser")
+print "1<>0 = " + ((1<>0) pick "Greater", "Equal", "Lesser")
+print "1.0<>2.0 = " + ((1<>2) pick "Greater", "Equal", "Lesser")
+print "1.0<>1.0 = " + ((1<>1) pick "Greater", "Equal", "Lesser")
+print "1.0<>0.0 = " + ((1<>0) pick "Greater", "Equal", "Lesser")
+
+
+
+
