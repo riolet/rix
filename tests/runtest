@@ -2,7 +2,7 @@
 
 #path to compiler
 ritc="../../bin/Debug/ritc"
-#path to rsl.h file (ritchie standard library)
+#path to folder with rsl.h (ritchie standard library)
 rsl=".."
 
 runtest() {

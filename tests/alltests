@@ -3,9 +3,6 @@
 ritc="../../bin/Debug/ritc"
 rsl=".."
 
-#This is a comment, I hope
-
-
 runtest() {
   #compile .rit file
   bash -c "$ritc $1 >/dev/null 2>/dev/null"
@@ -39,11 +36,5 @@ rm -f *.my.out out.c out.h a.out
 for filename in ./*.rit; do
   runtest $filename
 done
-#runtest hello.rit
-#runtest intDeclaration.rit
-#runtest floatDeclaration.rit
-#runtest strings.rit
-#runtest expressionsInt.rit
-#runtest expressionsFloat.rit
-#runtest comparison.rit
+
 
