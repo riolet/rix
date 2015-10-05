@@ -375,7 +375,7 @@ void evaluate(void)
             }
             //bool assigns=getFunctionCodeBlocks(funcName)
             printf("RND %d oprnStackPtr %d\n",rnd,oprnStackPtr);
-            if ((!parenMode&&rnd>0)||(parenMode&&rnd>lParenList[lParenPtr-1])) {
+            if ( (!parenMode && rnd>0) || (parenMode && rnd>lParenList[lParenPtr-1]) ) {
 
                 printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
                 if (oprnStack[rnd-1].type[0]!=0) {
@@ -688,6 +688,7 @@ void getsym(void)
 
             } else {
                 sym=ident;
+
                 oprnStackUpdate();
             }
         }
@@ -697,7 +698,7 @@ void getsym(void)
     else if ((buff[linePos]=='"')) {
         linePos++;
 
-        while(buff[linePos]!='"') {
+        while(buff[linePos]!='"' || buff[linePos-1]=='\\') {
             symStr[symStrIdx++]=buff[linePos++];
         }
 

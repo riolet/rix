@@ -5,6 +5,9 @@ b = " "
 c = "world"
 d = a + c
 e = b
+//TODO: doesn't work.
+f = "escaped \"quotation\" marks"
 
 print a + b+c
 print d + "|" + e + "|"
+print f
