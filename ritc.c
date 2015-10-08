@@ -29,6 +29,7 @@ typedef struct Function_ {
     bool codeBlocks;
     char defaultObject[BUFFLEN];
     bool assigns;
+    int numberOfParams;
 } Function;
 
 Function funcList[LABELMAX];
@@ -55,7 +56,7 @@ char currentType[BUFFLEN];
 typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
-    function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor,compare
+    function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor,compare,emptyParam
 }
 Symbol;
 
@@ -65,7 +66,7 @@ const char * symnames[]= {
     "lparen", "rparen", "times", "slash", "plus", "minus", "assign", "equal",
     "neq", "lss", "leq", "gtr", "geq", "callsym", "beginsym", "semicolon",
     "endsym", "comma", "varsym", "procsym", "period", "oddsym", "plusassign", "minusassign","timesassign","slashassign","function",
-    "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor","compare"
+    "evaluation","range", "exponent", "cinc", "comment", "notsym", "type", "retsym", "fundec", "colon", "bitwisexor","compare","emptyParam"
 };
 
 typedef enum { object, method } ExpType;
@@ -117,7 +118,7 @@ void createObject(const char * name, const char * type)
     identIdx[scopeLevel]++;
 }
 
-void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns)
+void createFunction(const char * name, const char * type, bool codeBlock, char * defaultObject, bool assigns, const int numParams)
 {
     strcpy(funcList[funcListIdx].name,name);
     strcpy(funcList[funcListIdx].type,type);
@@ -127,6 +128,7 @@ void createFunction(const char * name, const char * type, bool codeBlock, char *
         funcList[funcListIdx].defaultObject[0]=0;
     funcList[funcListIdx].codeBlocks=codeBlock;
     funcList[funcListIdx].assigns=assigns;
+    funcList[funcListIdx].numberOfParams=numParams;
     funcListIdx++;
 }
 
@@ -136,6 +138,17 @@ const char * getFunctionType(const char * func)
     for (i=0; i<funcListIdx; i++) {
         if (strcmp(funcList[i].name,func)==0) {
             return funcList[i].type;
+        }
+    }
+    return NULL;
+}
+
+const int * getFunctionParamCount(const char * func)
+{
+    int i;
+    for (i=0; i<funcListIdx; i++) {
+        if (strcmp(funcList[i].name,func)==0) {
+            return &funcList[i].numberOfParams;
         }
     }
     return NULL;
@@ -166,7 +179,7 @@ const char * getIdentifierType(const char * identifier)
     return NULL;
 }
 
-const char *  getFunctionObject(const char * funcname)
+const char * getFunctionObject(const char * funcname)
 {
     int i;
     for (i=0; i<funcListIdx; i++) {
@@ -215,6 +228,7 @@ int errorMsg(const char * format,...)
 
 bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char * rtype)
 {
+    printf("=====------ doAssignDeclare()\n");
     const char * idType=getIdentifierType(oprnStack[rnd-1].operSymStr);
     Symbol torOper=optrStack[tor].oper;
     int i;
@@ -257,6 +271,7 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
 
 void evaluate(void)
 {
+    printf("=====------ evaluate()\n");
     int tor=optrStackPtr-1;
     int rnd=oprnStackPtr-1;
     char evalBuff[EVAL_BUFF_MAX_LEN];
@@ -294,6 +309,8 @@ void evaluate(void)
             strcpy(rtype,getIdentifierType(holderSymStack));
         else
             strcpy(rtype,"???");
+    } else if (oprnStack[rnd].oper==emptyParam) {
+        strcpy(rtype, "");
     }
 
     char * semiColonStr="; ";
@@ -343,7 +360,9 @@ void evaluate(void)
             oprnStackPtr=lParenIdx+1;
             printf("Symstack: %s Type: %s optrStackPtr %d oprnStackPtr %d\n ",holderSymStack,rtype,optrStackPtr,oprnStackPtr);
             return;
-        } else {
+        }
+        else
+        {
 
             char * openingBracket="(";
             char * closingBracket=")";
@@ -356,9 +375,9 @@ void evaluate(void)
                 continue;
             } else if (torOper==comma) {
                 char temp[BUFFLEN];
-                snprintf(temp,BUFFLEN,"%s,(%s)",addParam,holderSymStack);
+                snprintf(temp,BUFFLEN,",(%s)%s",holderSymStack, addParam);
                 strcpy(addParam,temp);
-                snprintf(temp,BUFFLEN,"%s_%s",addParamTypes,rtype);
+                snprintf(temp,BUFFLEN,"_%s%s",rtype, addParamTypes);
                 strcpy(addParamTypes,temp);
                 rnd--;
                 strcpy(holderSymStack,oprnStack[rnd].operSymStr);
@@ -375,7 +394,8 @@ void evaluate(void)
             }
             //bool assigns=getFunctionCodeBlocks(funcName)
             printf("RND %d oprnStackPtr %d\n",rnd,oprnStackPtr);
-            if ( (!parenMode && rnd>0) || (parenMode && rnd>lParenList[lParenPtr-1]) ) {
+            if ( (!parenMode && rnd>0) || (parenMode && rnd>lParenList[lParenPtr-1]) )
+            {
 
                 printf ("oprnStack[rnd-1].type : %s\n",oprnStack[rnd-1].type);
                 if (oprnStack[rnd-1].type[0]!=0) {
@@ -399,7 +419,8 @@ void evaluate(void)
                 char funcName[BUFFLEN];
 
                 errorMsg("TOR %s %d\n",symnames[torOper],torOper);
-                if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float"))) {
+                if ((!strcmp(ltype,"Identifier")||!strcmp(ltype,"Integer")||!strcmp(ltype,"Float"))&&(!strcmp(rtype,"Integer")||!strcmp(rtype,"Float")))
+                {
                     if (torOper==range||torOper==exponent||torOper==compare) {
                         torOper=function;
                     } else if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
@@ -411,7 +432,8 @@ void evaluate(void)
                     if (!strcmp(ltype,"Float")||!strcmp(rtype,"Float")) {
                         floatArith=true;
                     }
-                    if (torOper==function) {
+                    if (torOper==function)
+                    {
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                              openingBracket,
@@ -420,7 +442,9 @@ void evaluate(void)
                                              holderSymStack,
                                              addParam,
                                              closingBracket);
-                    } else {
+                    }
+                    else
+                    {
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                         if (addParamTypes!=0) {
                             evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
@@ -430,7 +454,9 @@ void evaluate(void)
                                                  holderSymStack,
                                                  addParam,
                                                  closingBracket);
-                        } else {
+                        }
+                        else
+                        {
                             snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                             evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                                  openingBracket,
@@ -441,7 +467,9 @@ void evaluate(void)
                                                  closingBracket);
                         }
                     }
-                }  else  if (!strcmp(rtype,"String")&&torOper==assign)  {
+                }
+                else  if (!strcmp(rtype,"String")&&torOper==assign)
+                {
                     snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
                                          openingBracket,
@@ -450,9 +478,24 @@ void evaluate(void)
                                          holderSymStack,
                                          addParam,
                                          closingBracket);
-                }  else {
-                    snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
+                }
+                else
+                {
+                    //This part fails on valid functions that take no arguments.
+                    if (rtype[0]==0)
+                        snprintf(funcName,BUFFLEN,"%s_%s%s",ltype,fn,addParamTypes);
+                    else
+                        snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
+                    fprintf(stderr, "\nfuncNameD: %s\n\n", funcName);
+                    if (holderSymStack[0]==0) //if function takes no arguments
+                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s%s)%s",
+                                         openingBracket,
+                                         funcName,
+                                         oprnStack[rnd-1].operSymStr,
+                                         addParam,
+                                         closingBracket);
+                    else
+                        evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                          openingBracket,
                                          funcName,
                                          oprnStack[rnd-1].operSymStr,
@@ -494,7 +537,9 @@ void evaluate(void)
                 }
 
                 rnd--;
-            } else {
+            }
+            else
+            {
                 /*Unary funcs*/
                 char tempRtype[BUFFLEN];
                 char funcName[BUFFLEN];
@@ -558,6 +603,7 @@ void evaluate(void)
 
 void evaluateAndReset(void)
 {
+    printf("=====------ evaluateAndReset()\n");
     evaluate();
     expType=method;
     optrStackPtr=0;
@@ -588,6 +634,7 @@ void optrStackUpdate()
 
 void getln(void)
 {
+    printf("=====------ getln()\n");
     lineNum++;
     if (!fgets(buff,BUFFLEN,file)) {
         sym=eof;
@@ -598,6 +645,7 @@ void getln(void)
 
 void getsym(void)
 {
+    printf("=====------ getSym()\n");
     symStrIdx=0;
     bool lineBegins = false;
 
@@ -651,6 +699,7 @@ void getsym(void)
         //Todo: Optimize, we know the string lenght
         printf ("%s %d\n",symStr,expType);
         const char * typeParent=getTypeParent(symStr);
+        //If the Identifier is a type
         if (typeParent!=NULL) {
             sym=type;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
@@ -661,19 +710,23 @@ void getsym(void)
             optrStackUpdate();
         } else {
             const char * fnObj=getFunctionObject(symStr);
+            //If the Identifier is a function
             if (fnObj!=NULL) {
+                const int * numParams;
                 sym=function;
                 strcpy(optrStack[optrStackPtr].operSymStr,symStr);
                 optrStackUpdate();
 
                 printf (ANSI_COLOR_MAGENTA "symstr fnObj %s:%s\n" ANSI_COLOR_RESET,fnObj,symStr);
 
+                //If the function has a default parameter
                 if (fnObj[0]!=0) {
                     oprnStack[oprnStackPtr].oper=ident;
                     strcpy(oprnStack[oprnStackPtr].operSymStr,fnObj);
-                    char * fnObjType = getIdentifierType(fnObj);
+                    const char * fnObjType = getIdentifierType(fnObj);
                     strcpy(oprnStack[oprnStackPtr].type,fnObjType);
                     oprnStackPtr++;
+                //else the function does not have a default parameter
                 } else {
                     oprnStack[oprnStackPtr].oper=ident;
                     strcpy(oprnStack[oprnStackPtr].operSymStr,"UNKNOWNOBJECT");
@@ -681,11 +734,19 @@ void getsym(void)
                     oprnStackPtr++;
                 }
 
+                numParams = getFunctionParamCount(symStr);
+                if (numParams && *numParams == 0) {
+                    oprnStack[oprnStackPtr].oper=emptyParam;
+                    strcpy(oprnStack[oprnStackPtr].operSymStr,"");
+                    strcpy(oprnStack[oprnStackPtr].type,"");
+                    oprnStackPtr++;
+                }
+
                 printf (ANSI_COLOR_MAGENTA "operSymStr type %s:%s\n" ANSI_COLOR_RESET,
                         oprnStack[oprnStackPtr-1].operSymStr,
                         oprnStack[oprnStackPtr-1].type);
 
-
+            //else identifier is a variable
             } else {
                 sym=ident;
 
@@ -915,11 +976,14 @@ void readCinc (void)
 
 void readFunDec (void)
 {
+    printf("=====------ readFunDec()\n");
     outfile=outHeaderFile;
     scopeLevel++;
     expectScopeIncrease=true;
     int i=0;
+    int paramCount = 0;
     char funcName[BUFFLEN]="";
+    char funcSymStr[BUFFLEN]="";
     char argList[BUFFLEN]="";
     char returnType[BUFFLEN];
     char lastArgType[BUFFLEN];
@@ -935,8 +999,8 @@ void readFunDec (void)
         if (i==1) {
             snprintf(funcName,BUFFLEN,"%s_%s",currentType,symStr);
             errorMsg(ANSI_COLOR_MAGENTA "%s %s_%s\n" ANSI_COLOR_RESET,returnType,currentType,symStr);
-            createFunction(symStr,returnType,false,NULL,false);
-            snprintf(argList,BUFFLEN,"(%s %s,",currentType,"self");
+            strcpy(funcSymStr,symStr);
+            snprintf(argList,BUFFLEN,"(%s %s",currentType,"self");
         } else {
             if (sym!=comma) {
                 if (i%2==0) {
@@ -947,25 +1011,34 @@ void readFunDec (void)
                 }
                 createObject(symStr,lastArgType);
                 char temp[BUFFLEN];
-                snprintf(temp,BUFFLEN,"%s %s",argList,symStr);
+                if (i%2==0) {
+                    paramCount++;
+                    snprintf(temp,BUFFLEN,"%s, %s",argList,symStr);
+                } else {
+                    snprintf(temp,BUFFLEN,"%s %s",argList,symStr);
+                }
                 strcpy(argList,temp);
             } else {
-                char temp[BUFFLEN];
-                snprintf(temp,BUFFLEN,"%s,",argList);
-                strcpy(argList,temp);
+                //char temp[BUFFLEN];
+                //snprintf(temp,BUFFLEN,"%s,",argList);
+                //strcpy(argList,temp);
                 i--;
             }
         }
         getsym();
     } while (sym!=eol);
     printf("Creating function %s\n",funcName);
-    createFunction(funcName,returnType,false,NULL,false);
+    //creating function as "sum" and "UNKNOWNTYPE_sum_Integer_Integer"
+    createFunction(funcSymStr,returnType,false,NULL,false, paramCount);
+    createFunction(funcName,returnType,false,NULL,false, paramCount);
     fprintf(outfile,"%s%s)\n{\n",funcName,argList);
+    printf("=====------ leaving readFunDec()\n");
 }
 
 void parse(void)
 {
     do {
+        printf("=====------ parse()\n");
         if (sym==rparen) {
             evaluate();
         } else if (sym==cinc) {
@@ -1072,45 +1145,45 @@ int main(int argc,char **argv)
     /* print -> stdout.pring */
     createObject("stdout","Stream");
     createObject("UNKNOWNOBJECT","UNKNOWNTYPE");
-    createFunction("print","Stream",false,"stdout",false);
-    createFunction("echo","Stream",false,"stdout",false);
+    createFunction("print","Stream",false,"stdout",false, 1);
+    createFunction("echo","Stream",false,"stdout",false, 1);
 
     /* Create Language object */
     createObject("ritchie","Language");
-    createFunction("if","Language",true,NULL,false);
-    createFunction("UNKNOWNTYPE_if_Boolean","Language",true,NULL,false);
-    createFunction("elif","Language",true,NULL,false);
-    createFunction("UNKNOWNTYPE_elif_Boolean","Language",true,NULL,false);
-    createFunction("else","Language",true,NULL,false);
-    createFunction("UNKNOWNTYPE_else","Language",true,NULL,false);
-    createFunction("while","Language",true,NULL,false);
-    createFunction("UNKNOWNTYPE_while_Boolean","Language",true,NULL,false);
+    createFunction("if","Language",true,NULL,false, 1);
+    createFunction("UNKNOWNTYPE_if_Boolean","Language",true,NULL,false, 1);
+    createFunction("elif","Language",true,NULL,false, 1);
+    createFunction("UNKNOWNTYPE_elif_Boolean","Language",true,NULL,false, 1);
+    createFunction("else","Language",true,NULL,false, 0);
+    createFunction("UNKNOWNTYPE_else","Language",true,NULL,false, 0);
+    createFunction("while","Language",true,NULL,false, 1);
+    createFunction("UNKNOWNTYPE_while_Boolean","Language",true,NULL,false, 1);
     //createFunction("for","Integer",true,NULL,true);
 
 
     /*Setup some functions signatures */
-    createFunction("String_plus_String","String",false,NULL,false);
-    createFunction("String_plus_Float","String",false,NULL,false);
-    createFunction("String_plus_Integer","String",false,NULL,false);
-    createFunction("String_stringlit","String",false,NULL,false);
-    createFunction("String_assign_String","String",false,NULL,true);
+    createFunction("String_plus_String","String",false,NULL,false, 2);
+    createFunction("String_plus_Float","String",false,NULL,false, 2);
+    createFunction("String_plus_Integer","String",false,NULL,false, 2);
+    createFunction("String_stringlit","String",false,NULL,false, 2);
+    createFunction("String_assign_String","String",false,NULL,true, 2);
 
-    createFunction("Identifier_assign_String","String",false,NULL,true);
-    createFunction("Identifier_assign_Float","Float",false,NULL,true);
-    createFunction("Identifier_assign_Integer","Integer",false,NULL,true);
+    createFunction("Identifier_assign_String","String",false,NULL,true, 2);
+    createFunction("Identifier_assign_Float","Float",false,NULL,true, 2);
+    createFunction("Identifier_assign_Integer","Integer",false,NULL,true, 2);
 
-    createFunction("Identifier_for_Integer_Integer","Integer",true,NULL,true);
+    createFunction("Identifier_for_Integer_Integer","Integer",true,NULL,true, 2);
 
     /* Some math func signatures */
-    createFunction("Float_exponent_Integer","Float",false,NULL,false);
-    createFunction("Integer_exponent_Integer","Float",false,NULL,false);
-    createFunction("Integer_exponent_Integer","Float",false,NULL,false);
+    createFunction("Float_exponent_Integer","Float",false,NULL,false, 2);
+    createFunction("Integer_exponent_Integer","Float",false,NULL,false, 2);
+    createFunction("Integer_exponent_Integer","Float",false,NULL,false, 2);
 
 
 
     /*Some Ternary Functions */
-    createFunction("Integer_compare_Integer","Ternary",false,NULL,false);
-    createFunction("Ternary_pick_String_String_String","String",false,NULL,false);
+    createFunction("Integer_compare_Integer","Ternary",false,NULL,false, 2);
+    createFunction("Ternary_pick_String_String_String","String",false,NULL,false, 4);
 
     errorMsg(ANSI_COLOR_MAGENTA "**********************************\n"
     "**********************************\n"
@@ -1125,9 +1198,22 @@ int main(int argc,char **argv)
     parse();
     fprintf(outfile,"\treturn 0;\n}\n");
 
+
+    //print functionlist into out.c
+    /*
+    while (funcListIdx-- > 0) {
+        fprintf(outfile, "Function:\n");
+        fprintf(outfile, "\tName: %s\n", funcList[funcListIdx].name);
+        fprintf(outfile, "\tType: %s\n", funcList[funcListIdx].type);
+        fprintf(outfile, "\tParamCount: %d\n", funcList[funcListIdx].numberOfParams);
+        fprintf(outfile, "\tBlock/Assign/Default: %d %d \"%s\"\n", funcList[funcListIdx].codeBlocks, funcList[funcListIdx].assigns, funcList[funcListIdx].defaultObject);
+    }
+    */
+
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(file);
+
 
     return 0;
 }
