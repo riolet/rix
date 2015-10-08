@@ -10,6 +10,7 @@
 2.0 < 1.0 = False
 3.0 == 2.0 = False
 3.0 == 3.0 = True
+1 is less than 3
 1<>2 = Lesser
 1<>1 = Equal
 1<>0 = Greater
