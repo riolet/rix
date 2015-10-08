@@ -1,0 +1,8 @@
+#!/bin/bash
+
+ritc="../../bin/Debug/ritc"
+
+if [ -n "$1" ]; then
+  bash -c "$ritc $1 >stdout.out 2>stderr.out"
+fi
+

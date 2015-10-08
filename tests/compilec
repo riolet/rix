@@ -1,0 +1,12 @@
+#!/bin/bash
+
+rsl=".."
+
+
+if [ -z "$1" ]; then
+  bash -c "gcc -I$rsl out.c -lm >stdout.out 2>stderr.out"
+else
+  bash -c "gcc -I$rsl $1.c -lm >stdout.out 2>stderr.out"
+fi
+
+bash -c "./a.out"
