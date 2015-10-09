@@ -9,3 +9,5 @@ reassign = 9
 copyValues = 17
 precedenceA = 15
 precedenceB = 21
+linearAssign = 20
+geometricAssign = 27
