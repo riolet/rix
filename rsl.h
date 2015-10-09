@@ -27,7 +27,11 @@ float Float_exponent_Integer (float f, int i) {
     return pow(f,i);
 }
 
-float Integer_exponent_Integer (int f, int i) {
+int Integer_exponent_Integer (int f, int i) {
+    return (int)pow(f,i);
+}
+
+float Integer_exponent_Float (int f, float i) {
     return pow(f,i);
 }
 
@@ -65,6 +69,18 @@ String String_plus_Integer (String left, int right) {
     return newString;
 }
 
+String Integer_plus_String (int left, String right) {
+    String newString;
+    char leftStr[BUFFLEN];
+    int left_length=snprintf(leftStr,BUFFLEN,"%i",left);
+    newString.buffer=malloc(right.length+left_length+1);
+    memcpy(newString.buffer,leftStr,left_length);
+    memcpy(newString.buffer+left_length,right.buffer,right.length);
+    newString.length=right.length+left_length;
+    newString.buffer[newString.length]=0;
+    return newString;
+}
+
 String String_plus_Float (String left, float right) {
     String newString;
     char rightStr[BUFFLEN];
@@ -73,6 +89,19 @@ String String_plus_Float (String left, float right) {
     memcpy(newString.buffer,left.buffer,left.length);
     memcpy(newString.buffer+left.length,rightStr,right_length);
     newString.length=left.length+right_length;
+    newString.buffer[newString.length]=0;
+    return newString;
+}
+
+String Float_plus_String (float left, String right) {
+    String newString;
+    char leftStr[BUFFLEN];
+    int left_length=snprintf(leftStr,BUFFLEN,"%f",left);
+    newString.buffer=malloc(right.length+left_length+1);
+    memcpy(newString.buffer+left_length,right.buffer,right.length);
+    memcpy(newString.buffer,leftStr,left_length);
+
+    newString.length=right.length+left_length;
     newString.buffer[newString.length]=0;
     return newString;
 }

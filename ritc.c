@@ -481,12 +481,11 @@ void evaluate(void)
                 }
                 else
                 {
-                    //This part fails on valid functions that take no arguments.
+                    //if function takes no arguments
                     if (rtype[0]==0)
                         snprintf(funcName,BUFFLEN,"%s_%s%s",ltype,fn,addParamTypes);
                     else
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                    fprintf(stderr, "\nfuncNameD: %s\n\n", funcName);
                     if (holderSymStack[0]==0) //if function takes no arguments
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s%s)%s",
                                          openingBracket,
@@ -656,6 +655,7 @@ void getsym(void)
         linePos++;
     }
 
+    //make sure code is indented as expected in relation to nesting code
     if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
         errorMsg(ANSI_COLOR_YELLOW "Top Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
         if (linePos>indentLevel[scopeLevel-1]) {
@@ -690,7 +690,7 @@ void getsym(void)
         evaluateAndReset();
         linePos++;
     }
-    /* Identifier */
+    /* Identifier (variable, function, loop, conditional) */
     else if ((buff[linePos]>='a'&&buff[linePos]<='z')||(buff[linePos]>='A'&&buff[linePos]<='Z')) {
         while ((buff[linePos]>='a'&&buff[linePos]<='z')||(buff[linePos]>='A'&&buff[linePos]<='Z')||(buff[linePos]>='0'&&buff[linePos]<='9')) {
             symStr[symStrIdx++]=buff[linePos++];
@@ -705,6 +705,7 @@ void getsym(void)
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
         } else if (expType==object) {
+            //for loops get processed here.
             sym=function;
             strcpy(optrStack[optrStackPtr].operSymStr,symStr);
             optrStackUpdate();
@@ -1164,7 +1165,9 @@ int main(int argc,char **argv)
     /*Setup some functions signatures */
     createFunction("String_plus_String","String",false,NULL,false, 2);
     createFunction("String_plus_Float","String",false,NULL,false, 2);
+    createFunction("Float_plus_String","String",false,NULL,false, 2);
     createFunction("String_plus_Integer","String",false,NULL,false, 2);
+    createFunction("Integer_plus_String","String",false,NULL,false, 2);
     createFunction("String_stringlit","String",false,NULL,false, 2);
     createFunction("String_assign_String","String",false,NULL,true, 2);
 
@@ -1176,8 +1179,8 @@ int main(int argc,char **argv)
 
     /* Some math func signatures */
     createFunction("Float_exponent_Integer","Float",false,NULL,false, 2);
-    createFunction("Integer_exponent_Integer","Float",false,NULL,false, 2);
-    createFunction("Integer_exponent_Integer","Float",false,NULL,false, 2);
+    createFunction("Integer_exponent_Integer","Integer",false,NULL,false, 2);
+    createFunction("Integer_exponent_Float","Float",false,NULL,false, 2);
 
 
 
