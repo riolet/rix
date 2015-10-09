@@ -1178,6 +1178,7 @@ int main(int argc,char **argv)
     createFunction("Identifier_for_Integer_Integer","Integer",true,NULL,true, 2);
 
     /* Some math func signatures */
+    createFunction("Float_exponent_Float","Float",false,NULL,false, 2);
     createFunction("Float_exponent_Integer","Float",false,NULL,false, 2);
     createFunction("Integer_exponent_Integer","Integer",false,NULL,false, 2);
     createFunction("Integer_exponent_Float","Float",false,NULL,false, 2);

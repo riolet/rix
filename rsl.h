@@ -35,6 +35,10 @@ float Integer_exponent_Float (int f, float i) {
     return pow(f,i);
 }
 
+float Float_exponent_Float (float f, float i) {
+    return pow(f,i);
+}
+
 String String_stringlit (const char * strlit) {
     String s;
     s.buffer = strlit;
