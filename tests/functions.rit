@@ -1,15 +1,23 @@
 Integer: sum0
   ->0
+
 Integer: sum1 Integer a
   ->a
+
 Integer: sum2 Integer a, Integer b
   ->a+b
+
 Integer: sum3 Integer a, Integer b, Integer c
   print "sum3:"
   print "  arg 1: " + a
   print "  arg 2: " + b
   print "  arg 3: " + c
   ->a+b+c
+
+//
+//Void : returnVoid
+//  print "returnVoid"
+
 
 
 print "returned: " + sum0
@@ -18,4 +26,5 @@ print "returned: " + sum2 100, 200
 print "returned: " + sum3 100, 200, 300
 //This only works with the parentheses in place.
 print "func(func(), func()): " + (sum2 (sum2 10, 20), sum2 300, 400)
+//returnVoid
 
