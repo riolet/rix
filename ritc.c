@@ -637,7 +637,7 @@ void oprnStackUpdate(Symbol operSymbol, const char* operSymbolString, int symStr
     expType=object;
 }
 
-void optrStackUpdate(Symbol operSymbol, char* operSymbolString, int symStrLen, int args, char* type)
+void optrStackUpdate(Symbol operSymbol, const char* operSymbolString, int symStrLen, int args, const char* type)
 {
     optrStack[optrStackPtr].oper=operSymbol;
 
@@ -951,7 +951,7 @@ void getsym(void)
         sym=colon;
         //to handle void functions
         if (optrStackPtr == 0)
-            oprnStackUpdate(type, "void", 4, 0, NULL);
+            optrStackUpdate(type, "void", 4, 0, NULL);
         optrStackUpdate(colon, ":", 1, 0, NULL);
         linePos++;
     } else {
