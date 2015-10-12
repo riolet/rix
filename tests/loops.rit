@@ -4,8 +4,8 @@ i for 4, 9
 print ""
 
 echo "For (negative): "
-j for (0-10), (2^^0)
-  echo (j + " ")
+i for (0-10), (2^^0)
+  echo (i + " ")
 print ""
 
 //draw addition table. 11..15 + 11..15

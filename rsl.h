@@ -22,6 +22,7 @@ typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 #define UNKNOWNTYPE_else(A) else
 #define UNKNOWNTYPE_while_Boolean(A,B) while (B)
 #define Identifier_for_Integer_Integer(i,a,b) for (i=a;i<b;i++)
+#define Integer_for_Integer_Integer(i,a,b) for (i=a;i<b;i++)
 
 float Float_exponent_Integer (float f, int i) {
     return pow(f,i);
