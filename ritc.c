@@ -429,7 +429,7 @@ void evaluate(void)
                 {
                     if (torOper==range||torOper==exponent||torOper==compare) {
                         torOper=function;
-                    } else if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq||torOper==booland||torOper==boolor) {
+                    } else if (torOper==gtr||torOper==equal||torOper==lss||torOper==leq||torOper==geq) {
                         boolean=true;
                     } else {
                         arithmetic=true;
@@ -441,7 +441,6 @@ void evaluate(void)
                     if (torOper==function)
                     {
                         //for statements are handled here
-                        printf("whoop whoop part A\n");
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                              openingBracket,
@@ -455,6 +454,7 @@ void evaluate(void)
                     {
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                         if (addParamTypes!=0) {
+                            // infix operators (+, -, *, /, =, <, >) end up here
                             evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
                                                  openingBracket,
                                                  oprnStack[rnd-1].operSymStr,
@@ -477,9 +477,24 @@ void evaluate(void)
                     }
                 }
 
-                //for assigning a string to a different string  (String_assign_String)
+                //boolean operations:  && and || should go here
+                else if (!strcmp(rtype,"Boolean")&&!strcmp(ltype,"Boolean")&&(torOper==booland||torOper==boolor))
+                {
+                    evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
+                                         openingBracket,
+                                         oprnStack[rnd-1].operSymStr,
+                                         torSym,
+                                         holderSymStack,
+                                         addParam,
+                                         closingBracket);
+                    boolean = true;
+                }
+
+                //if rtype is String and we're doing assignment
                 else  if (!strcmp(rtype,"String")&&torOper==assign)
                 {
+                    //For things like (me = "Bob"; myself = me; me = "differentBob"
+                    //note: funcName ("String_assign_String") isn't actually used here.
                     snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                     evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s %s %s%s%s",
                                          openingBracket,
@@ -489,21 +504,23 @@ void evaluate(void)
                                          addParam,
                                          closingBracket);
                 }
+
                 else
                 {
-                    //if function takes no arguments
+                    //if the function takes no arguments
                     if (rtype[0]==0)
                         snprintf(funcName,BUFFLEN,"%s_%s%s",ltype,fn,addParamTypes);
                     else
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
-                    if (holderSymStack[0]==0) //if function takes no arguments
+                    if (holderSymStack[0]==0) { //to handle excess commas.
+                        //print, echo, if, while statements go here
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s%s)%s",
                                          openingBracket,
                                          funcName,
                                          oprnStack[rnd-1].operSymStr,
                                          addParam,
                                          closingBracket);
-                    else
+                    } else {
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                          openingBracket,
                                          funcName,
@@ -511,6 +528,7 @@ void evaluate(void)
                                          holderSymStack,
                                          addParam,
                                          closingBracket);
+                     }
 
                 }
 
@@ -585,8 +603,8 @@ void evaluate(void)
         return;
     if (evalBuffLen>0&&!singleLineAssign) {
         printf ("Scope level %d %s\n",scopeLevel,evalBuff);
-        int
-        i=0;
+        int i=0;
+
         if (!strcmp(semiColonStr,"{")) {
             i=1;
         }

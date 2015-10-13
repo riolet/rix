@@ -2,6 +2,7 @@
 
 rsl=".."
 
+rm -f output.out
 
 if [ -z "$1" ]; then
   bash -c "gcc -I$rsl out.c -lm >stdout.out 2>stderr.out"
@@ -9,4 +10,10 @@ else
   bash -c "gcc -I$rsl $1.c -lm >stdout.out 2>stderr.out"
 fi
 
-bash -c "./a.out"
+if [ $? -ne 0 ]; then
+  printf "FAILED: C code file couldn't be compiled.\n"
+else
+  bash -c "./a.out"
+fi
+
+
