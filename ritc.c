@@ -367,7 +367,6 @@ void evaluate(void)
         }
         else
         {
-
             char * openingBracket="(";
             char * closingBracket=")";
             if (tor==0 || optrStack[tor-1].oper==comma) {
@@ -441,6 +440,13 @@ void evaluate(void)
                     if (torOper==function)
                     {
                         //for statements are handled here
+
+                        //TODO: This is a band-aid that makes for special. It needs a proper fix.
+                        //  The proper fix probably needs to differentiating between intliteral
+                        //  and integer variables as types.
+                        if (!strcmp(fn, "for") && oprnStack[rnd-1].oper==ident) {
+                            strcpy(ltype, "Identifier");
+                        }
                         snprintf(funcName,BUFFLEN,"%s_%s_%s%s",ltype,fn,rtype,addParamTypes);
                         evalBuffLen=snprintf(evalBuff,EVAL_BUFF_MAX_LEN,"%s%s(%s,%s%s)%s",
                                              openingBracket,
@@ -1201,7 +1207,6 @@ int main(int argc,char **argv)
     createFunction("Identifier_assign_Integer","Integer",false,NULL,true, 2);
 
     createFunction("Identifier_for_Integer_Integer","Integer",true,NULL,true, 2);
-    createFunction("Integer_for_Integer_Integer","Integer",true,NULL,true, 2);
 
     /* Some math func signatures */
     createFunction("Float_exponent_Float","Float",false,NULL,false, 2);
