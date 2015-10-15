@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#path to compiler
-ritc="../../bin/Debug/ritc"
-#path to folder with rsl.h (ritchie standard library)
+#compiler path
+compiler="../ritc"
+#location of rsl.h
 rsl=".."
 
 runtest() {
   #compile .rit file
-  bash -c "$ritc $1 >/dev/null 2>/dev/null"
+  bash -c "$compiler $1 >/dev/null 2>/dev/null"
   
   #compile out.c
   bash -c "gcc -I$rsl out.c -lm >/dev/null 2>$1.my.out"

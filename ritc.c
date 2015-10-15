@@ -643,14 +643,14 @@ void evaluateAndReset(void)
     lParenPtr=0;
 }
 
-void oprnStackUpdate(Symbol operSymbol, const char* operSymbolString, int symStrLen, int args, const char* type)
+void oprnStackUpdate(Symbol operSymbol, const char* operSymbolString, int args, const char* type)
 {
     oprnStack[oprnStackPtr].oper=operSymbol;
 
     if (operSymbol==stringlit)
         snprintf(oprnStack[oprnStackPtr].operSymStr,BUFFLEN,"String_stringlit(\"%s\")",operSymbolString);
     else
-        strncpy(oprnStack[oprnStackPtr].operSymStr,operSymbolString,symStrLen+1);
+        strcpy( oprnStack[oprnStackPtr].operSymStr, operSymbolString);
 
     oprnStack[oprnStackPtr].args=args;
 
@@ -663,19 +663,16 @@ void oprnStackUpdate(Symbol operSymbol, const char* operSymbolString, int symStr
     expType=object;
 }
 
-void optrStackUpdate(Symbol operSymbol, const char* operSymbolString, int symStrLen, int args, const char* type)
+void optrStackUpdate(Symbol operSymbol, const char* operSymbolString, int args, const char* type)
 {
     optrStack[optrStackPtr].oper=operSymbol;
-
-    strncpy(optrStack[optrStackPtr].operSymStr,operSymbolString,symStrLen+1);
-
+    strcpy( optrStack[optrStackPtr].operSymStr, operSymbolString);
     optrStack[optrStackPtr].args=args;
 
     if (type==NULL)
         optrStack[optrStackPtr].type[0]=0;
     else
         strcpy(optrStack[optrStackPtr].type, type);
-
 
     optrStackPtr++;
     args=0;
@@ -696,7 +693,7 @@ void getln(void)
 void getsym(void)
 {
     printf("=====------ getSym()\n");
-    symStrIdx=0;
+    symStrIdx = 0;
     bool lineBegins = false;
 
     if (linePos==0)
@@ -723,7 +720,7 @@ void getsym(void)
             while (linePos<indentLevel[scopeLevel-1]) {
                 errorMsg(ANSI_COLOR_YELLOW "while before Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
                 sym=endsym;
-                optrStackUpdate(endsym, "}", 1, args, NULL);
+                optrStackUpdate(endsym, "}", args, NULL);
                 evaluateAndReset();
                 errorMsg(ANSI_COLOR_YELLOW "while after Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
             }
@@ -749,14 +746,14 @@ void getsym(void)
         //Todo: Optimize, we know the string length
         printf ("%s %d\n",symStr,expType);
         const char * typeParent=getTypeParent(symStr);
-        //If the Identifier is a type
+
         if (typeParent!=NULL) {
             sym=type;
-            optrStackUpdate(type, symStr, symStrIdx, 0, NULL);
+            optrStackUpdate(type, symStr, 0, NULL);
         } else if (expType==object) {
             //for loops get processed here.
             sym=function;
-            optrStackUpdate(function, symStr, symStrIdx, 0, NULL);
+            optrStackUpdate(function, symStr, 0, NULL);
 
         } else {
             const char * fnObj=getFunctionObject(symStr);
@@ -764,7 +761,7 @@ void getsym(void)
             if (fnObj!=NULL) {
                 const int * numParams;
                 sym=function;
-                optrStackUpdate(function, symStr, symStrIdx, 0, NULL);
+                optrStackUpdate(function, symStr, 0, NULL);
 
                 printf (ANSI_COLOR_MAGENTA "symstr fnObj %s:%s\n" ANSI_COLOR_RESET,fnObj,symStr);
 
@@ -772,15 +769,15 @@ void getsym(void)
                 ExpType old = expType;
                 //If the function has a default parameter
                 if (fnObj[0]!=0) {
-                    oprnStackUpdate(ident, fnObj, strlen(fnObj), 0, getIdentifierType(fnObj));
+                    oprnStackUpdate(ident, fnObj, 0, getIdentifierType(fnObj));
                 //else the function does not have a default parameter
                 } else {
-                    oprnStackUpdate(ident, "UNKNOWNOBJECT", 13, 0, "UNKNOWNTYPE");
+                    oprnStackUpdate(ident, "UNKNOWNOBJECT", 0, "UNKNOWNTYPE");
                 }
 
                 numParams = getFunctionParamCount(symStr);
                 if (numParams && *numParams == 0) {
-                    oprnStackUpdate(emptyParam, "", 0, 0, NULL);
+                    oprnStackUpdate(emptyParam, "", 0, NULL);
                 }
                 //TODO see todo above.
                 expType = old;
@@ -792,7 +789,7 @@ void getsym(void)
             //else identifier is a variable
             } else {
                 sym=ident;
-                oprnStackUpdate(ident, symStr, symStrIdx, 0, NULL);
+                oprnStackUpdate(ident, symStr, 0, NULL);
             }
         }
     }
@@ -807,7 +804,7 @@ void getsym(void)
 
         symStr[symStrIdx]=0;
         sym=stringlit;
-        oprnStackUpdate(stringlit, symStr, symStrIdx, 0, NULL);
+        oprnStackUpdate(stringlit, symStr, 0, NULL);
 
         linePos++;
     }
@@ -826,16 +823,16 @@ void getsym(void)
                 }
                 symStr[symStrIdx]=0;
                 sym=floatnumber;
-                oprnStackUpdate(floatnumber, symStr, symStrIdx, 0, NULL);
+                oprnStackUpdate(floatnumber, symStr, 0, NULL);
             } else {
                 symStr[symStrIdx]=0;
                 sym=intnumber;
-                oprnStackUpdate(intnumber, symStr, symStrIdx, 0, NULL);
+                oprnStackUpdate(intnumber, symStr, 0, NULL);
             }
         } else {
             symStr[symStrIdx]=0;
             sym=intnumber;
-            oprnStackUpdate(intnumber, symStr, symStrIdx, 0, NULL);
+            oprnStackUpdate(intnumber, symStr, 0, NULL);
         }
     }
 
@@ -845,10 +842,10 @@ void getsym(void)
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=equal;
-            optrStackUpdate(equal, "==", 2, 0, NULL);
+            optrStackUpdate(equal, "==", 0, NULL);
         } else {
             sym=assign;
-            optrStackUpdate(assign, "=", 1, 0, NULL);
+            optrStackUpdate(assign, "=", 0, NULL);
 
         }
         linePos++;
@@ -856,49 +853,49 @@ void getsym(void)
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=slashassign;
-            optrStackUpdate(slashassign, "/=", 2, 0, NULL);
+            optrStackUpdate(slashassign, "/=", 0, NULL);
         } else if (buff[linePos+1]=='/') {
             linePos++;
             sym=comment;
         } else {
             sym=slash;
-            optrStackUpdate(slash, "/", 1, 0, NULL);
+            optrStackUpdate(slash, "/", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='*')) {
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=timesassign;
-            optrStackUpdate(timesassign, "*=", 2, 0, NULL);
+            optrStackUpdate(timesassign, "*=", 0, NULL);
 
         } else {
             sym=times;
-            optrStackUpdate(times, "*", 1, 0, NULL);
+            optrStackUpdate(times, "*", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='+')) {
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=plusassign;
-            optrStackUpdate(plusassign, "+=", 2, 0, NULL);
+            optrStackUpdate(plusassign, "+=", 0, NULL);
 
         } else {
             sym=plus;
-            optrStackUpdate(plus, "+", 1, 0, NULL);
+            optrStackUpdate(plus, "+", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='-')) {
         if (buff[linePos+1]=='=') {
             linePos++;
             sym=minusassign;
-            optrStackUpdate(minusassign, "-=", 2, 0, NULL);
+            optrStackUpdate(minusassign, "-=", 0, NULL);
         } else if (buff[linePos+1]=='>') {
             linePos++;
             sym=retsym;
-            optrStackUpdate(retsym, "return ", 7, 0, NULL);
+            optrStackUpdate(retsym, "return ", 0, NULL);
         } else {
             sym=minus;
-            optrStackUpdate(minus, "-", 1, 0, NULL);
+            optrStackUpdate(minus, "-", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='>')) {
@@ -907,10 +904,10 @@ void getsym(void)
         } else if (buff[linePos+1]=='=') {
             linePos++;
             sym=geq;
-            optrStackUpdate(geq, ">=", 2, 0, NULL);
+            optrStackUpdate(geq, ">=", 0, NULL);
         } else {
             sym=gtr;
-            optrStackUpdate(gtr, ">", 1, 0, NULL);
+            optrStackUpdate(gtr, ">", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='<')) {
@@ -919,55 +916,55 @@ void getsym(void)
         }  else if (buff[linePos+1]=='=') {
             linePos++;
             sym=leq;
-            optrStackUpdate(leq, "<=", 2, 0, NULL);
+            optrStackUpdate(leq, "<=", 0, NULL);
         } else if (buff[linePos+1]=='>') {
             linePos++;
             sym=compare;
-            optrStackUpdate(compare, "<>", 2, 0, NULL);
+            optrStackUpdate(compare, "<>", 0, NULL);
         } else {
             sym=lss;
-            optrStackUpdate(lss, "<", 1, 0, NULL);
+            optrStackUpdate(lss, "<", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='&') && (buff[linePos+1]=='&')) {
         sym=booland;
-        optrStackUpdate(booland, "&&", 2, 0, NULL);
+        optrStackUpdate(booland, "&&", 0, NULL);
         linePos += 2;
     } else if ((buff[linePos]=='|') && (buff[linePos+1]=='|')) {
         sym=boolor;
-        optrStackUpdate(boolor, "||", 2, 0, NULL);
+        optrStackUpdate(boolor, "||", 0, NULL);
         linePos += 2;
     }
 
     /* Other operators */
     else if ((buff[linePos]=='.')) {
         sym=endsym;
-        optrStackUpdate(endsym, "}", 1, 0, NULL);
+        optrStackUpdate(endsym, "}", 0, NULL);
         evaluateAndReset();
         linePos++;
     } else if ((buff[linePos]==',')) {
         sym=comma;
-        optrStackUpdate(comma, ",", 1, 0, NULL);
+        optrStackUpdate(comma, ",", 0, NULL);
         linePos++;
     } else if ((buff[linePos]=='^')) {
         if (buff[linePos+1]=='^') {
             linePos++;
             sym=exponent;
-            optrStackUpdate(exponent, "^^", 2, 0, NULL);
+            optrStackUpdate(exponent, "^^", 0, NULL);
         } else {
             sym=bitwisexor;
-            optrStackUpdate(bitwisexor, "^", 1, 0, NULL);
+            optrStackUpdate(bitwisexor, "^", 0, NULL);
         }
         linePos++;
     } else if ((buff[linePos]=='(')) {
         sym=lparen;
-        optrStackUpdate(lparen, "(", 1, 0, NULL);
+        optrStackUpdate(lparen, "(", 0, NULL);
         lParenList[lParenPtr]=oprnStackPtr;
         lParenPtr++;
         linePos++;
     } else if ((buff[linePos]==')')) {
         sym=rparen;
-        optrStackUpdate(rparen, ")", 1, 0, NULL);
+        optrStackUpdate(rparen, ")", 0, NULL);
         expType=object;
         linePos++;
     } else if ((buff[linePos]=='#')) {
@@ -977,8 +974,8 @@ void getsym(void)
         sym=colon;
         //to handle void functions
         if (optrStackPtr == 0)
-            optrStackUpdate(type, "void", 4, 0, NULL);
-        optrStackUpdate(colon, ":", 1, 0, NULL);
+            optrStackUpdate(type, "void", 0, NULL);
+        optrStackUpdate(colon, ":", 0, NULL);
         linePos++;
     } else {
         errorMsg("Unrecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);

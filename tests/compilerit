@@ -1,8 +1,9 @@
 #!/bin/bash
 
-ritc="../../bin/Debug/ritc"
+#compiler path
+compiler="../ritc"
 
 if [ -n "$1" ]; then
-  bash -c "$ritc $1 >stdout.out 2>stderr.out"
+  bash -c "$compiler $1 >stdout.out 2>stderr.out"
 fi
 

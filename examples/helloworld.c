@@ -1,5 +1,5 @@
 #include "rsl.h"
-#include "out.h"
+#include "helloworld.h"
 int main(void) {
 //Type inferencing
 	String hello;
@@ -20,10 +20,10 @@ int main(void) {
 	f = (f1 = (f2 = (Float_exponent_Integer(5.5,2)))); 
 //echo does not print newline
 	Stream_echo_String(stdout,(String_plus_Float(String_stringlit("f2 is and "),f2))); 
-	float f3;
+	int f3;
 	f3 = (Integer_exponent_Integer((((2 * 3) + 1) * 4),3)); 
 //print does
-	Stream_print_String(stdout,(String_plus_Float(String_stringlit(" and f3 is "),f3))); 
+	Stream_print_String(stdout,(String_plus_Integer(String_stringlit(" and f3 is "),f3))); 
 //No curly braces (if is not actually a keyword)
 	UNKNOWNTYPE_if_Boolean(UNKNOWNOBJECT,(1 > (n / f))){
 //End code block with .
