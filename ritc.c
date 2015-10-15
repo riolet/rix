@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "errors.h"
+
 typedef enum {false, true} bool;
 int ritch_i_;
 #define foreach(item,array) for (ritch_i_=0;(item=array[ritch_i_])!=NULL;ritch_i_++)
@@ -13,14 +15,6 @@ int ritch_i_;
 #define STACKDEP 1024
 #define MAXSCOPE 64
 #define EVAL_BUFF_MAX_LEN 4096
-
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
 
 
 typedef struct Function_ {
@@ -57,9 +51,7 @@ typedef enum {
     nss, eol, eof, ident, intnumber, stringlit, floatnumber, character, number, lparen, rparen, times, slash, plus,
     minus, assign, equal, neq, lss, leq, gtr, geq, booland, boolor, callsym, beginsym, semicolon, endsym, comma, varsym, procsym, period, oddsym, plusassign,minusassign,timesassign,slashassign,
     function, evaluation, range, exponent, cinc, comment, notsym, type, retsym, fundec, colon, bitwisexor,compare,emptyParam
-}
-Symbol;
-
+} Symbol;
 
 const char * symnames[]= {
     "nss", "eol", "eof", "ident", "intnumber", "stringlit", "floatnumber", "character", "number",
@@ -214,17 +206,6 @@ bool  getFunctionAssigns(const char * funcname)
 
 
 
-
-int errorMsg(const char * format,...)
-{
-    int ret;
-    fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
-    va_list arg;
-    va_start(arg,format);
-    ret = vfprintf(stderr, format, arg);
-    va_end(arg);
-    return ret;
-}
 
 bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char * rtype)
 {
@@ -798,8 +779,11 @@ void getsym(void)
     else if ((buff[linePos]=='"')) {
         linePos++;
 
-        while(buff[linePos]!='"' || buff[linePos-1]=='\\') {
+        while(buff[linePos]!='\n' && (buff[linePos]!='"' || buff[linePos-1]=='\\')) {
             symStr[symStrIdx++]=buff[linePos++];
+        }
+        if (buff[linePos]=='\n' && buff[linePos-1]!='"') {
+            criticalError(ERROR_EndlessString);
         }
 
         symStr[symStrIdx]=0;
