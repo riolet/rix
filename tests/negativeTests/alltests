@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#compiler path
+compiler="../../ritc"
+#location of rsl.h
+rsl=".."
+
+runtest() {
+  #compile .rit file
+  bash -c "$compiler $1 >/dev/null 2>/dev/null"
+  
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    printf "%-30s: pass.   Error detected (code: %d)\n" "$1" "$status"
+  else
+    printf "%-30s: FAILED. Error undetected\n" "$1"
+  fi
+}
+
+for filename in ./*.rit; do
+  runtest $filename
+done
+
+rm -f out.c out.h
+

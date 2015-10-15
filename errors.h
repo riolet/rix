@@ -14,7 +14,8 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 typedef enum {
-    ERROR_EndlessString = 1
+    ERROR_EndlessString = 1,
+    ERROR_FunctionPlacement
 } ErrorCode;
 
 extern int linePos;
