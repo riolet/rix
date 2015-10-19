@@ -12,14 +12,26 @@ int errorMsg(const char * format,...)
     return ret;
 }
 
-void criticalError(ErrorCode code) {
+void criticalError(ErrorCode code, char* message) {
     switch (code)
     {
     case ERROR_EndlessString:
-        errorMsg("Error parsing string. Did not find the closing quote.");
+        errorMsg("Error parsing string. Did not find the closing quote.\n");
+        break;
+    case ERROR_IncompatibleTypes:
+        errorMsg("Type mismatch.\n");
+        break;
+    case ERROR_UnexpectedIndent:
+        errorMsg("Unexpected scope increase\n");
+        break;
+    case ERROR_AssignToLiteral:
+        errorMsg("Cannot assign to a literal.\n");
         break;
     default:
-        errorMsg("Unknown critical error. Aborting.");
+        errorMsg("Unknown critical error. Aborting.\n");
+    }
+    if (message) {
+        fprintf(stderr, message);
     }
     exit((int)code);
 }

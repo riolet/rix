@@ -15,13 +15,16 @@
 
 typedef enum {
     ERROR_EndlessString = 1,
-    ERROR_FunctionPlacement
+    ERROR_FunctionPlacement,
+    ERROR_IncompatibleTypes,
+    ERROR_UnexpectedIndent,
+    ERROR_AssignToLiteral
 } ErrorCode;
 
 extern int linePos;
 extern int lineNum;
 
 int errorMsg(const char * format,...);
-void criticalError(ErrorCode code);
+void criticalError(ErrorCode code, char* message);
 
 #endif

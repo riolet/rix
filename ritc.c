@@ -95,6 +95,7 @@ int scopeLevel;
 int indentLevel[MAXSCOPE];
 int args;
 bool expectScopeIncrease;
+int funcIndent;
 
 void createType (const char * name, const char * parent)
 {
@@ -209,6 +210,7 @@ bool  getFunctionAssigns(const char * funcname)
 
 bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char * rtype)
 {
+
     printf("=====------ doAssignDeclare()\n");
     const char * idType=getIdentifierType(oprnStack[rnd-1].operSymStr);
     //Symbol torOper=optrStack[tor].oper;
@@ -216,6 +218,8 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
     for (i=0; i<=scopeLevel; i++) {
         fprintf(outfile,"\t");
     }
+    if (strcmp(ltype,"Identifier")&&idType==NULL)
+        criticalError(ERROR_AssignToLiteral, NULL);
     if (idType==NULL) {
 
         bool isInteger=!strcmp(rtype,"Integer");
@@ -244,8 +248,9 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
 
     } else {
         if (strcmp(idType,rtype)!=0) {
-            errorMsg("You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
-            exit(0);
+            char msg[BUFFLEN];
+            sprintf(msg, "You can't redefine %s. This is not PHP\n",oprnStack[rnd-1].operSymStr);
+            criticalError(ERROR_IncompatibleTypes, msg);
         }
     }
     return false;
@@ -686,24 +691,29 @@ void getsym(void)
 
     //make sure code is indented as expected in relation to nesting code
     if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
-        errorMsg(ANSI_COLOR_YELLOW "Top Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+        printf("\nline: %d\nindent: %d. Scopelevel %d. expectIncrease? %s\n", lineNum, linePos, scopeLevel, expectScopeIncrease ? "true" : "false");
         if (linePos>indentLevel[scopeLevel-1]) {
             if (expectScopeIncrease) {
+                printf("\tpart A\n");
                 indentLevel[scopeLevel-1]=linePos;
-                errorMsg(ANSI_COLOR_YELLOW "If Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
-                //errorMsg(ANSI_COLOR_YELLOW "After Linepos %d identLevel %d %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],indentLevel[scopeLevel]);
                 //expectScopeIncrease=false;
             } else {
-                printf(ANSI_COLOR_RED "Unexpected scope increase\n" ANSI_COLOR_RESET);
-                exit(0);
+                printf("\tpart B\n");
+                criticalError(ERROR_UnexpectedIndent, NULL);
             }
         } else if (linePos<indentLevel[scopeLevel-1]) {
+            printf("\tpart C. funcIndent = %d\n", funcIndent);
+            int indentOld = indentLevel[scopeLevel-1];
             while (linePos<indentLevel[scopeLevel-1]) {
-                errorMsg(ANSI_COLOR_YELLOW "while before Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                printf("\t\tPre  Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
                 sym=endsym;
                 optrStackUpdate(endsym, "}", args, NULL);
                 evaluateAndReset();
-                errorMsg(ANSI_COLOR_YELLOW "while after Linepos %d identLevel %d scopeLevel %d\n" ANSI_COLOR_RESET,linePos,indentLevel[scopeLevel-1],scopeLevel);
+                printf("\t\tPost Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
+                if (indentLevel[scopeLevel-1] <= funcIndent) {
+                    outfile = outMainFile;
+                    funcIndent = -1;
+                }
             }
         }
     }
@@ -718,6 +728,7 @@ void getsym(void)
         evaluateAndReset();
         linePos++;
     }
+
     /* Identifier (variable, function, loop, conditional) */
     else if ((buff[linePos]>='a'&&buff[linePos]<='z')||(buff[linePos]>='A'&&buff[linePos]<='Z')) {
         while ((buff[linePos]>='a'&&buff[linePos]<='z')||(buff[linePos]>='A'&&buff[linePos]<='Z')||(buff[linePos]>='0'&&buff[linePos]<='9')) {
@@ -783,7 +794,7 @@ void getsym(void)
             symStr[symStrIdx++]=buff[linePos++];
         }
         if (buff[linePos]=='\n' && buff[linePos-1]!='"') {
-            criticalError(ERROR_EndlessString);
+            criticalError(ERROR_EndlessString, NULL);
         }
 
         symStr[symStrIdx]=0;
@@ -961,6 +972,8 @@ void getsym(void)
             optrStackUpdate(type, "void", 0, NULL);
         optrStackUpdate(colon, ":", 0, NULL);
         linePos++;
+        if (funcIndent == -1)
+            funcIndent = indentLevel[scopeLevel-1];
     } else {
         errorMsg("Unrecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
         exit(0);
@@ -1137,6 +1150,7 @@ int main(int argc,char **argv)
     optrStackPtr=0;
     oprnStackPtr=0;
     lParenPtr=0;
+    funcIndent=-1;
 
 
     funcListIdx=0;
