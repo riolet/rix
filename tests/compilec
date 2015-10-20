@@ -5,9 +5,9 @@ rsl=".."
 rm -f output.out
 
 if [ -z "$1" ]; then
-  bash -c "gcc -I$rsl out.c -lm >stdout.out 2>stderr.out"
+  bash -c "gcc -I$rsl out.c -lm &>output.out"
 else
-  bash -c "gcc -I$rsl $1.c -lm >stdout.out 2>stderr.out"
+  bash -c "gcc -I$rsl $1.c -lm &>output.out"
 fi
 
 if [ $? -ne 0 ]; then

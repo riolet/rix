@@ -18,7 +18,8 @@ typedef enum {
     ERROR_FunctionPlacement,
     ERROR_IncompatibleTypes,
     ERROR_UnexpectedIndent,
-    ERROR_AssignToLiteral
+    ERROR_AssignToLiteral,
+    ERROR_UnrecognizedSymbol
 } ErrorCode;
 
 extern int linePos;

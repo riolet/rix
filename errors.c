@@ -13,10 +13,11 @@ int errorMsg(const char * format,...)
 }
 
 void criticalError(ErrorCode code, char* message) {
+    fprintf(stderr, "\t");
     switch (code)
     {
     case ERROR_EndlessString:
-        errorMsg("Error parsing string. Did not find the closing quote.\n");
+        errorMsg("Error parsing string. No closing quote.\n");
         break;
     case ERROR_IncompatibleTypes:
         errorMsg("Type mismatch.\n");
@@ -27,10 +28,14 @@ void criticalError(ErrorCode code, char* message) {
     case ERROR_AssignToLiteral:
         errorMsg("Cannot assign to a literal.\n");
         break;
+    case ERROR_UnrecognizedSymbol:
+        errorMsg("Unknown symbol detected.\n");
+        break;
     default:
         errorMsg("Unknown critical error. Aborting.\n");
     }
     if (message) {
+        fprintf(stderr, "\t");
         fprintf(stderr, message);
     }
     exit((int)code);

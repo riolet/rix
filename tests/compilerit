@@ -4,6 +4,6 @@
 compiler="../ritc"
 
 if [ -n "$1" ]; then
-  bash -c "$compiler $1 >stdout.out 2>stderr.out"
+  bash -c "$compiler $1 &>output.out"
 fi
 

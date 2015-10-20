@@ -7,11 +7,12 @@ rsl=".."
 
 runtest() {
   #compile .rit file
-  bash -c "$compiler $1 >/dev/null 2>/dev/null"
+  bash -c "$compiler $1 >/dev/null 2>output.out"
   
   status=$?
   if [ "$status" -ne 0 ]; then
     printf "%-30s: pass.   Error detected (code: %d)\n" "$1" "$status"
+    bash -c "tail -2 output.out"
   else
     printf "%-30s: FAILED. Error undetected\n" "$1"
   fi

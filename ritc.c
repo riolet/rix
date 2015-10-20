@@ -218,8 +218,11 @@ bool doAssignDeclare(int tor, int rnd, char * holderSymStack, char * ltype, char
     for (i=0; i<=scopeLevel; i++) {
         fprintf(outfile,"\t");
     }
-    if (strcmp(ltype,"Identifier")&&idType==NULL)
-        criticalError(ERROR_AssignToLiteral, NULL);
+    if (strcmp(ltype,"Identifier")&&idType==NULL) {
+        char error[BUFFLEN];
+        sprintf(error, "%s(%s) = %s(%s)\n", oprnStack[rnd-1].operSymStr,ltype, oprnStack[rnd].operSymStr,rtype);
+        criticalError(ERROR_AssignToLiteral, error);
+    }
     if (idType==NULL) {
 
         bool isInteger=!strcmp(rtype,"Integer");
@@ -691,25 +694,25 @@ void getsym(void)
 
     //make sure code is indented as expected in relation to nesting code
     if ((buff[linePos]!='\n')&&lineBegins&&scopeLevel>0) {
-        printf("\nline: %d\nindent: %d. Scopelevel %d. expectIncrease? %s\n", lineNum, linePos, scopeLevel, expectScopeIncrease ? "true" : "false");
+        //printf("\nline: %d\nindent: %d. Scopelevel %d. expectIncrease? %s\n", lineNum, linePos, scopeLevel, expectScopeIncrease ? "true" : "false");
         if (linePos>indentLevel[scopeLevel-1]) {
             if (expectScopeIncrease) {
-                printf("\tpart A\n");
+                //printf("\tpart A\n");
                 indentLevel[scopeLevel-1]=linePos;
                 //expectScopeIncrease=false;
             } else {
-                printf("\tpart B\n");
+                //printf("\tpart B\n");
                 criticalError(ERROR_UnexpectedIndent, NULL);
             }
         } else if (linePos<indentLevel[scopeLevel-1]) {
-            printf("\tpart C. funcIndent = %d\n", funcIndent);
+            //printf("\tpart C. funcIndent = %d\n", funcIndent);
             int indentOld = indentLevel[scopeLevel-1];
             while (linePos<indentLevel[scopeLevel-1]) {
-                printf("\t\tPre  Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
+                //printf("\t\tPre  Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
                 sym=endsym;
                 optrStackUpdate(endsym, "}", args, NULL);
                 evaluateAndReset();
-                printf("\t\tPost Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
+                //printf("\t\tPost Scope: %d, indent: %d\n", scopeLevel-1, indentLevel[scopeLevel-1]);
                 if (indentLevel[scopeLevel-1] <= funcIndent) {
                     outfile = outMainFile;
                     funcIndent = -1;
@@ -794,7 +797,9 @@ void getsym(void)
             symStr[symStrIdx++]=buff[linePos++];
         }
         if (buff[linePos]=='\n' && buff[linePos-1]!='"') {
-            criticalError(ERROR_EndlessString, NULL);
+            char error[BUFFLEN];
+            sprintf(error, "\"%s ...?\n", symStr);
+            criticalError(ERROR_EndlessString, error);
         }
 
         symStr[symStrIdx]=0;
@@ -975,8 +980,9 @@ void getsym(void)
         if (funcIndent == -1)
             funcIndent = indentLevel[scopeLevel-1];
     } else {
-        errorMsg("Unrecognized symbol |%c|%d\n",buff[linePos],buff[linePos]);
-        exit(0);
+        char error[BUFFLEN];
+        sprintf(error, "Unrecognized symbol: |%c|%d|\n",buff[linePos],buff[linePos]);
+        criticalError(ERROR_UnrecognizedSymbol, error);
         linePos++;
     }
     //printf ("S:%s",symnames[sym]);
@@ -1244,6 +1250,7 @@ int main(int argc,char **argv)
     fclose(outMainFile);
     fclose(file);
 
+    printf("\n%s compiled successfully.\n", ifile);
 
     return 0;
 }
