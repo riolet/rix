@@ -1,0 +1,3 @@
+echo recompiling snazzle.y
+bison -d snazzle.y
+flex snazzle.l

@@ -1,0 +1,8 @@
+bash clr
+bash comp
+echo Clear complete.
+echo -----------------------------------------------------------------
+echo beginning compilation of snazzle
+echo -----------------------------------------------------------------
+g++ snazzle.tab.c lex.yy.c -lfl -o snazzle
+./snazzle

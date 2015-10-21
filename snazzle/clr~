@@ -1,0 +1,8 @@
+echo clearing snazzle
+rm snazzle
+echo clearing lex.yy.c
+rm lex.yy.c
+echo clearing snazzle.tab.c
+rm snazzle.tab.c
+echo clearing snazzle.tab.h
+rm snazzle.tab.h
