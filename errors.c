@@ -31,12 +31,15 @@ void criticalError(ErrorCode code, char* message) {
     case ERROR_UnrecognizedSymbol:
         errorMsg("Unknown symbol detected.\n");
         break;
+    case ERROR_CannotAllocateMemory:
+        errorMsg("Cannot allocate new space.\n");
+        break;
     default:
         errorMsg("Unknown critical error. Aborting.\n");
     }
     if (message) {
         fprintf(stderr, "\t");
-        fprintf(stderr, message);
+        fprintf(stderr, "%s", message);
     }
     exit((int)code);
 }

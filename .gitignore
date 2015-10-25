@@ -24,3 +24,6 @@
 
 *.yy.c
 *~
+
+out.c
+out.h

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "errors.h"
+#include "ritc.h"
 
 typedef enum {false, true} bool;
 int ritch_i_;
@@ -67,6 +68,12 @@ ExpType expType;
 Symbol sym;
 char symStr[BUFFLEN];
 int symStrIdx;
+
+//new vars during bison dev
+char evalBuff[EVAL_BUFF_MAX_LEN];
+char lastType[BUFFLEN];
+bool statementIsComplete;
+
 FILE *file;
 FILE *outfile;
 FILE *outMainFile;
@@ -672,9 +679,9 @@ void getln(void)
 {
     printf("=====------ getln()\n");
     lineNum++;
-    if (!fgets(buff,BUFFLEN,file)) {
-        sym=eof;
-    }
+    //if (!fgets(buff,BUFFLEN,file)) {
+    //    sym=eof;
+    //}
     linePos=0;
     evaluateAndReset();
 }
@@ -1067,6 +1074,124 @@ void readFunDec (void)
     printf("=====------ leaving readFunDec()\n");
 }
 
+
+void handleEOF() {
+    sym=eof;
+}
+
+void handleEOL() {
+    printf("handleEOL(%s)\n", evalBuff);
+    //output to file??
+    if (statementIsComplete) {
+        fprintf(outfile, "%s;\n", evalBuff);
+        statementIsComplete = false;
+        evalBuff[0]=0;
+        lastType[0]=0;
+    }
+}
+
+char* assignDeclare(char* text) {
+    printf("assignDeclare(%s) [lastType=%s]\n", text, lastType);
+    statementIsComplete=false;
+    //is ident a function?
+    const char * ftype = getFunctionType(text);
+    //is ident a Type?
+    const char * parent = getTypeParent(text);
+    //is ident a variable?
+    const char * type = getIdentifierType(text);
+
+    if (type!=0 || parent!=0 || ftype!=0) {
+        return text;
+    }
+
+    //variable name must be new!
+    createObject(text, lastType);
+    if (!strcmp(lastType, "Float")) {
+        fprintf(outfile,"float %s;\n", text);
+    } else if (!strcmp(lastType, "Integer")) {
+        fprintf(outfile,"int %s;\n", text);
+    } else if (!strcmp(lastType, "String")) {
+        fprintf(outfile,"String %s;\n", text);
+    } else {
+        fprintf(outfile,"%s * %s;\n",lastType, text);
+    }
+    return text;
+}
+
+char* handleAssign(char* subject, char* object) {
+    printf("handleAssign(%s, %s)\n", subject, object);
+    //TODO: check if identifier has already been declared (does it have a type?)
+    //      validate that identifier can accept value's type
+    char temp[EVAL_BUFF_MAX_LEN];
+    snprintf(temp, EVAL_BUFF_MAX_LEN, "%s = (%s)", subject, object);
+    sprintf(evalBuff, temp);
+    //does not change the last type
+    //sprintf(lastType, lastType);
+    statementIsComplete=true;
+    return evalBuff;
+}
+
+char* objectIdent(char* text) {
+    sprintf(evalBuff, "%s", text);
+    sprintf(lastType, "%s", getIdentifierType(text));
+    return evalBuff;
+}
+
+char* objectFloat(float f) {
+    sprintf(evalBuff, "%f", f);
+    sprintf(lastType, "Float");
+    return evalBuff;
+}
+
+char* objectInt(int i) {
+    sprintf(evalBuff, "%d", i);
+    sprintf(lastType, "Integer");
+    return evalBuff;
+}
+
+float simplifyFloat(float left, char* op, float right){
+    printf("simplifyFloat(%f %s %f)\n", left, op, right);
+    char error[50];
+
+    statementIsComplete=false;
+    sprintf(lastType, "Float");
+    switch (op[0]) {
+    case '+':
+        return left + right;
+    case '-':
+        return left - right;
+    case '*':
+        return left * right;
+    case '/':
+        return left / right;
+    default:
+        sprintf(error, "simplifyFloat encountered a '%c'", op[0]);
+        criticalError(ERROR_UnrecognizedSymbol, "simplifyFloat encountered an unknown");
+    }
+    return 0;
+}
+
+int simplifyInt(int left, char* op, int right){
+    printf("simplifyInt(%d %s %d)\n", left, op, right);
+    char error[50];
+
+    statementIsComplete=false;
+    sprintf(lastType, "Integer");
+    switch (op[0]) {
+    case '+':
+        return left + right;
+    case '-':
+        return left - right;
+    case '*':
+        return left * right;
+    case '/':
+        return left / right;
+    default:
+        sprintf(error, "simplifyInt encountered a '%c'", op[0]);
+        criticalError(ERROR_UnrecognizedSymbol, "simplifyFloat encountered an unknown");
+    }
+}
+
 void parse(void)
 {
     do {
@@ -1083,7 +1208,7 @@ void parse(void)
             readFunDec();
         }
         if (sym!=eof)
-            getsym();
+            yyparse();
     } while (sym!=eof);
     int i;
     for (i=scopeLevel;i>0;i--) {
@@ -1163,6 +1288,10 @@ int main(int argc,char **argv)
     typeIdx=0;
     expType=method;
 
+    evalBuff[0]=0;
+    lastType[0]=0;
+    statementIsComplete=false;
+
     expectScopeIncrease=false;
     /*TODO: This should be done in RL itself */
     /*Create some Types */
@@ -1229,8 +1358,11 @@ int main(int argc,char **argv)
     fprintf(outfile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outfile,"int main(void) {\n");
 
-    getln();
-    getsym();
+    yyin = file;
+
+    //getln();
+    yyparse();
+
     parse();
     fprintf(outfile,"\treturn 0;\n}\n");
 

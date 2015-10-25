@@ -1,11 +1,12 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "ritc.h"
 
 // stuff from flex that bison needs to know about:
-extern int yylex();
-extern int yyparse();
-extern FILE *yyin;
+//extern int yylex();
+//extern int yyparse();
+//extern FILE *yyin;
 
 //void yyerror(const YYLTYPE l, const char* m);
 void yyerror(const char* m);
@@ -36,7 +37,13 @@ void yyerror(const char* m);
 %token <sval> MATH_OP
 %token <sval> ASSIGNMENT 
 
-
+%type <sval> statement
+%type <sval> expression
+%type <sval> objects
+%type <sval> object
+%type <sval> subject
+%type <ival> int_expression
+%type <fval> float_expression
 %%
 
 // the first rule defined is the highest-level rule, which in our
@@ -44,48 +51,46 @@ void yyerror(const char* m);
 
 %start ritchie;
 ritchie:
-	statements       { printf("ritchie statements: \n"); }
-	| ENDOFFILE      { printf("ritchie EOF: \n"); }
+	statements
+	| ENDOFFILE  { handleEOF(); }
 	;
 statements:
-  simple_statement { printf("simple_statement: \n"); }
+  simple_statement
+  | statements simple_statement
   ;
 simple_statement:
-  ENDOFLINE              {printf("\n");}
-  | statement ENDOFLINE  {printf("\n");}
+  ENDOFLINE              { handleEOL();}
+  | statement ENDOFLINE  { handleEOL();}
   ;
 statement:
-  expression
+  expression            {$$ = $1;}
+  | "(" expression ")"  {$$ = $2;} /* This is probably wrong */
   ;
 expression:
-  IDENT ASSIGNMENT expression { printf ("Ident(%s) Assignment(%s) ", $1, $2); }
-  | value MATH_OP value       { printf ("math_op(%s) ", $2); }
+  subject ASSIGNMENT objects                 { assignDeclare($1); $$ = handleAssign($1, $3); }
   ;
-value:
-  INT      { printf ("int(%d) ", $1); }
-  | FLOAT  { printf ("float(%f) ", $1); }
+subject:
+  IDENT
   ;
+objects:
+  object
+  | objects "," object
+  ;
+object:
+  int_expression { $$ = objectInt($1); }
+  | float_expression { $$ = objectFloat($1); }
+  | IDENT { $$ = objectIdent($1); }
+  ;
+int_expression:
+  INT MATH_OP INT { $$ = simplifyInt($1, $2, $3); }
+  ;
+float_expression:
+    FLOAT MATH_OP INT   { $$ = simplifyFloat($1, $2, $3); }
+  | INT MATH_OP FLOAT   { $$ = simplifyFloat($1, $2, $3); }
+  | FLOAT MATH_OP FLOAT { $$ = simplifyFloat($1, $2, $3); }
 
 %%
 
-
-int main(int argc, char** argv) {
-	// open a file handle to a particular file:
-	FILE *myfile = fopen("test.rit", "r");
-	// make sure it's valid:
-	if (!myfile) {
-	  printf("I can't open test.rit!\n");
-		return -1;
-	}
-	// set flex to read from it instead of defaulting to STDIN:
-	yyin = myfile;
-
-	// parse through the input until there is no more:
-	do {
-		yyparse();
-	} while (!feof(yyin));
-	
-}
 
 void yyerror(const char *s) {
 	fprintf(stderr, "EEK, parse error!  Message: %s\n", s);
