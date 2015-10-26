@@ -34,6 +34,9 @@ void criticalError(ErrorCode code, char* message) {
     case ERROR_CannotAllocateMemory:
         errorMsg("Cannot allocate new space.\n");
         break;
+    case ERROR_UndefinedVerb:
+        errorMsg("Verb encountered without definition.\n");
+        break;
     default:
         errorMsg("Unknown critical error. Aborting.\n");
     }

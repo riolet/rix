@@ -68,12 +68,6 @@ ExpType expType;
 Symbol sym;
 char symStr[BUFFLEN];
 int symStrIdx;
-
-//new vars during bison dev
-char evalBuff[EVAL_BUFF_MAX_LEN];
-char lastType[BUFFLEN];
-bool statementIsComplete;
-
 FILE *file;
 FILE *outfile;
 FILE *outMainFile;
@@ -817,6 +811,7 @@ void getsym(void)
     }
 
     /* Number */
+    /******  This is now handled in objectFloat() and objectInt()
     else if ((buff[linePos]>='0'&&buff[linePos]<='9')) {
         while ((buff[linePos]>='0'&&buff[linePos]<='9')) {
             symStr[symStrIdx++]=buff[linePos++];
@@ -842,7 +837,7 @@ void getsym(void)
             oprnStackUpdate(intnumber, symStr, 0, NULL);
         }
     }
-
+    */
 
     /* Assignment and equality */
     else if ((buff[linePos]=='=')) {
@@ -1080,81 +1075,116 @@ void handleEOF() {
 }
 
 void handleEOL() {
-    printf("handleEOL(%s)\n", evalBuff);
+    printf("handleEOL()\n");
     //output to file??
-    if (statementIsComplete) {
-        fprintf(outfile, "%s;\n", evalBuff);
-        statementIsComplete = false;
-        evalBuff[0]=0;
-        lastType[0]=0;
-    }
+    sym=eol;
+    getln();
 }
 
-char* assignDeclare(char* text) {
-    printf("assignDeclare(%s) [lastType=%s]\n", text, lastType);
-    statementIsComplete=false;
-    //is ident a function?
-    const char * ftype = getFunctionType(text);
-    //is ident a Type?
-    const char * parent = getTypeParent(text);
-    //is ident a variable?
-    const char * type = getIdentifierType(text);
+char* verbAssignment(char* verb) {
+    printf("verbAssignment(%s)\n", verb);
+    sym=assign;
+    optrStackUpdate(assign, verb, 0, NULL);
+    return optrStack[optrStackPtr-1].operSymStr;
+}
 
-    if (type!=0 || parent!=0 || ftype!=0) {
-        return text;
+char* verbMathOp(char* verb) {
+    printf("verbMathOp(%s)\n", verb);
+    char error[50];
+    switch(verb[0]) {
+    case '+':
+        sym=plus;
+        optrStackUpdate(plus, verb, 0, NULL);
+        break;
+    case '-':
+        sym=minus;
+        optrStackUpdate(minus, verb, 0, NULL);
+        break;
+    case '*':
+        sym=times;
+        optrStackUpdate(times, verb, 0, NULL);
+        break;
+    case '/':
+        sym=slash;
+        optrStackUpdate(slash, verb, 0, NULL);
+        break;
+    default:
+        sprintf(error, "verbMathOp encountered a '%c'\n", verb[0]);
+        criticalError(ERROR_UnrecognizedSymbol, error);
     }
+    return optrStack[optrStackPtr-1].operSymStr;
+}
 
-    //variable name must be new!
-    createObject(text, lastType);
-    if (!strcmp(lastType, "Float")) {
-        fprintf(outfile,"float %s;\n", text);
-    } else if (!strcmp(lastType, "Integer")) {
-        fprintf(outfile,"int %s;\n", text);
-    } else if (!strcmp(lastType, "String")) {
-        fprintf(outfile,"String %s;\n", text);
+char* verbIdent(char* verb) {
+    printf("verbIdent(%s)\n", verb);
+    const char * fnObj=getFunctionObject(verb);
+    if (fnObj==0) {
+        char error[BUFFLEN];
+        sprintf(error, "%s used as verb but is undefined.\n", verb);
+        criticalError(ERROR_UndefinedVerb, error);
+    }
+    const int * numParams;
+    sym=function;
+    optrStackUpdate(function, verb, 0, NULL);
+
+    printf (ANSI_COLOR_MAGENTA "symstr fnObj %s:%s\n" ANSI_COLOR_RESET,fnObj,verb);
+
+    //TODO why is expType here?
+    ExpType old = expType;
+    //If the function has a default parameter
+    if (fnObj[0]!=0) {
+        oprnStackUpdate(ident, fnObj, 0, getIdentifierType(fnObj));
+    //else the function does not have a default parameter
     } else {
-        fprintf(outfile,"%s * %s;\n",lastType, text);
+        oprnStackUpdate(ident, "UNKNOWNOBJECT", 0, "UNKNOWNTYPE");
     }
-    return text;
+
+    numParams = getFunctionParamCount(symStr);
+    if (numParams && *numParams == 0) {
+        oprnStackUpdate(emptyParam, "", 0, NULL);
+    }
+    //TODO see todo above.
+    expType = old;
+    return optrStack[optrStackPtr-1].operSymStr;
 }
 
-char* handleAssign(char* subject, char* object) {
-    printf("handleAssign(%s, %s)\n", subject, object);
-    //TODO: check if identifier has already been declared (does it have a type?)
-    //      validate that identifier can accept value's type
-    char temp[EVAL_BUFF_MAX_LEN];
-    snprintf(temp, EVAL_BUFF_MAX_LEN, "%s = (%s)", subject, object);
-    sprintf(evalBuff, temp);
-    //does not change the last type
-    //sprintf(lastType, lastType);
-    statementIsComplete=true;
-    return evalBuff;
+char* subjectIdent(char* subject) {
+    printf("subjectIdent(%s)\n", subject);
+    //TODO: what if `subject` is already defined as a function, type, or class?
+    sym=ident;
+    oprnStackUpdate(ident, subject, 0, NULL);
+    return oprnStack[oprnStackPtr-1].operSymStr;
 }
 
-char* objectIdent(char* text) {
-    sprintf(evalBuff, "%s", text);
-    sprintf(lastType, "%s", getIdentifierType(text));
-    return evalBuff;
+char* objectIdent(char* object) {
+    printf("objectIdent(%s)\n", object);
+    //TODO: what if `object` is undefined?
+    sym=ident;
+    oprnStackUpdate(ident, object, 0, NULL);
+    return oprnStack[oprnStackPtr-1].operSymStr;
 }
 
 char* objectFloat(float f) {
-    sprintf(evalBuff, "%f", f);
-    sprintf(lastType, "Float");
-    return evalBuff;
+    printf("objectFloat(%f)\n", f);
+    char buffer[256];
+    sprintf(buffer, "%f", f);
+    sym=floatnumber;
+    oprnStackUpdate(floatnumber, buffer, 0, NULL);
+    return oprnStack[oprnStackPtr-1].operSymStr;
 }
 
-char* objectInt(int i) {
-    sprintf(evalBuff, "%d", i);
-    sprintf(lastType, "Integer");
-    return evalBuff;
+char* objectInt(int d) {
+    printf("objectInt(%d)\n", d);
+    char buffer[32];
+    sprintf(buffer, "%d", d);
+    sym=intnumber;
+    oprnStackUpdate(intnumber, buffer, 0, NULL);
+    return oprnStack[oprnStackPtr-1].operSymStr;
 }
 
 float simplifyFloat(float left, char* op, float right){
-    printf("simplifyFloat(%f %s %f)\n", left, op, right);
     char error[50];
 
-    statementIsComplete=false;
-    sprintf(lastType, "Float");
     switch (op[0]) {
     case '+':
         return left + right;
@@ -1165,18 +1195,15 @@ float simplifyFloat(float left, char* op, float right){
     case '/':
         return left / right;
     default:
-        sprintf(error, "simplifyFloat encountered a '%c'", op[0]);
-        criticalError(ERROR_UnrecognizedSymbol, "simplifyFloat encountered an unknown");
+        sprintf(error, "simplifyFloat encountered a '%c'\n", op[0]);
+        criticalError(ERROR_UnrecognizedSymbol, error);
     }
     return 0;
 }
 
 int simplifyInt(int left, char* op, int right){
-    printf("simplifyInt(%d %s %d)\n", left, op, right);
     char error[50];
 
-    statementIsComplete=false;
-    sprintf(lastType, "Integer");
     switch (op[0]) {
     case '+':
         return left + right;
@@ -1187,8 +1214,8 @@ int simplifyInt(int left, char* op, int right){
     case '/':
         return left / right;
     default:
-        sprintf(error, "simplifyInt encountered a '%c'", op[0]);
-        criticalError(ERROR_UnrecognizedSymbol, "simplifyFloat encountered an unknown");
+        sprintf(error, "simplifyInt encountered a '%c'\n", op[0]);
+        criticalError(ERROR_UnrecognizedSymbol, error);
     }
 }
 
@@ -1287,10 +1314,6 @@ int main(int argc,char **argv)
     funcListIdx=0;
     typeIdx=0;
     expType=method;
-
-    evalBuff[0]=0;
-    lastType[0]=0;
-    statementIsComplete=false;
 
     expectScopeIncrease=false;
     /*TODO: This should be done in RL itself */

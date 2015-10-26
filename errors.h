@@ -20,6 +20,7 @@ typedef enum {
     ERROR_UnexpectedIndent,
     ERROR_AssignToLiteral,
     ERROR_UnrecognizedSymbol,
+    ERROR_UndefinedVerb,
     ERROR_CannotAllocateMemory
 } ErrorCode;
 

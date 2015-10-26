@@ -1,5 +1,10 @@
-a = 1 + 2
+a = 1 + 2 + 4
 b = 3.0 - 1.47
 c = 3 * 2.5
 d = 3.14159 / 2
-e = a
+e = a + d
+none print a
+none print b
+none print c
+none print d
+none print e

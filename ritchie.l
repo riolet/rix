@@ -28,7 +28,7 @@ assignment    "="
                 return ASSIGNMENT; }
 [\n]          return ENDOFLINE;
 <<EOF>>       return ENDOFFILE;
-[ \t]+      /* eat up whitespace */
+[ \t]+        /* eat up whitespace */
 .             /* do nothing? */
 
 %%

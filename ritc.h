@@ -9,10 +9,11 @@ void handleEOF();
 
 void handleEOL();
 
-char* assignDeclare(char* text);
-char* handleAssign(char* subject, char* object);
-
-char* objectIdent(char* text);
+char* subjectIdent(char* subject);
+char* verbIdent(char* verb);
+char* verbAssignment(char* verb);
+char* verbMathOp(char* verb);
+char* objectIdent(char* object);
 char* objectFloat(float f);
 char* objectInt(int i);
 
