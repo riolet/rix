@@ -5,8 +5,10 @@ extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
-void handleEOF();
+const char * getFunctionType(const char * func);
+const char * getTypeParent(const char * func);
 
+void handleEOF();
 void handleEOL();
 
 char* subjectIdent(char* subject);

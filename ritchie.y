@@ -7,13 +7,11 @@
 #define YYPARSE_PARAM scanner
 #define YYLEX_PARAM   scanner
 
-
-//void yyerror(const char* m);
 %}
 
-//%glr-parser
+%glr-parser
 %locations
-%define api.pure full
+%define api.pure //full
 %define parse.error verbose
 
 // Bison fundamentally works by asking flex to get the next token, which it
@@ -36,8 +34,12 @@
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> IDENT
+%token <sval> VERB
+%token <sval> TYPE
 %token <sval> MATH_OP
 %token <sval> ASSIGNMENT 
+%token <sval> LPAREN
+%token <sval> RPAREN
 
 %type <sval> expression
 %type <sval> objects
@@ -48,7 +50,8 @@
 %type <fval> float_expression
 
 %{
-void yyerror (YYLTYPE *locp, char const *msg);
+void yyerror(YYLTYPE *locp, const char* msg);
+//void yyerror(const char* msg);
 %}
 %%
 %start ritchie;
@@ -65,27 +68,31 @@ simple_statement:
   | statement ENDOFLINE  { handleEOL();}
   ;
 statement:
-  expression            
-  | "(" expression ")"  /* dunno what this is for... */
+  expression
   ;
 expression:
   subject verb objects
+  | subject verb
+  | verb objects
+  | verb
   ;
-objects:
-  object                
-  | objects "," object   /* This hasn't been handled properly yet. */
+objects: 
+  object
+  | objects object
+/*  | objects "," object   /* This hasn't been handled properly yet. */
   ;
 object:
-  expression
-  | int_expression { $$ = objectInt($1); }
+  int_expression { $$ = objectInt($1); }
   | float_expression { $$ = objectFloat($1); }
   | IDENT { $$ = objectIdent($1); }
+  | LPAREN expression RPAREN
+  | verb object
   ;
 subject:
   IDENT { $$ = subjectIdent($1); }
   ;
 verb:
-  IDENT { $$ = verbIdent($1); }
+  VERB { $$ = verbIdent($1); }
   | ASSIGNMENT { $$ = verbAssignment($1); }
   | MATH_OP { $$ = verbMathOp($1); }
   ;
@@ -103,12 +110,10 @@ float_expression:
   ;
 %%
 
-//TODO: location isn't set properly when the error is called.
-void yyerror (YYLTYPE *locp, char const *msg) {
+//void yyerror(char const *msg) {
+void yyerror(YYLTYPE *locp, const char* msg) {
   char errorMsg[256];
   snprintf(errorMsg, 256, "%s\n", msg);
-  lineNum = locp->first_line;
-  linePos = locp->first_column;
   criticalError(ERROR_ParseError, errorMsg);
 	// might as well halt now:
 	exit(-1);

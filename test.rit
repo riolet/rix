@@ -2,10 +2,11 @@ a = 1 + 2 + 4
 b = 3.0 - 1.47
 c = 3 * 2.5
 d = 3.14159 / 2
-e = a + d
-none print a
-none print b
-none print c
-none print d
-none print e
-1 2 3
+e = (a + d)
+print a
+print b
+print c
+print d
+print e
+print 1 + 2
+print (a + b + (c + d) + e)
