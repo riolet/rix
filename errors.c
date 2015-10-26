@@ -37,6 +37,9 @@ void criticalError(ErrorCode code, char* message) {
     case ERROR_UndefinedVerb:
         errorMsg("Verb encountered without definition.\n");
         break;
+    case ERROR_ParseError:
+        errorMsg("Error while parsing file.\n");
+        break;
     default:
         errorMsg("Unknown critical error. Aborting.\n");
     }

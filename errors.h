@@ -21,7 +21,8 @@ typedef enum {
     ERROR_AssignToLiteral,
     ERROR_UnrecognizedSymbol,
     ERROR_UndefinedVerb,
-    ERROR_CannotAllocateMemory
+    ERROR_CannotAllocateMemory,
+    ERROR_ParseError
 } ErrorCode;
 
 extern int linePos;

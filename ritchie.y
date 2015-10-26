@@ -2,15 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ritc.h"
+#include "errors.h"
 
-// stuff from flex that bison needs to know about:
-//extern int yylex();
-//extern int yyparse();
-//extern FILE *yyin;
+#define YYPARSE_PARAM scanner
+#define YYLEX_PARAM   scanner
 
-//void yyerror(const YYLTYPE l, const char* m);
-void yyerror(const char* m);
+
+//void yyerror(const char* m);
 %}
+
+//%glr-parser
+%locations
+%define api.pure full
+%define parse.error verbose
 
 // Bison fundamentally works by asking flex to get the next token, which it
 // returns as an object of type "yystype".  But tokens could be of any
@@ -42,6 +46,10 @@ void yyerror(const char* m);
 %type <sval> verb
 %type <ival> int_expression
 %type <fval> float_expression
+
+%{
+void yyerror (YYLTYPE *locp, char const *msg);
+%}
 %%
 %start ritchie;
 ritchie:
@@ -95,9 +103,13 @@ float_expression:
   ;
 %%
 
-
-void yyerror(const char *s) {
-	fprintf(stderr, "EEK, parse error!  Message: %s\n", s);
+//TODO: location isn't set properly when the error is called.
+void yyerror (YYLTYPE *locp, char const *msg) {
+  char errorMsg[256];
+  snprintf(errorMsg, 256, "%s\n", msg);
+  lineNum = locp->first_line;
+  linePos = locp->first_column;
+  criticalError(ERROR_ParseError, errorMsg);
 	// might as well halt now:
 	exit(-1);
 }
