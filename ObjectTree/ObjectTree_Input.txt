@@ -1,0 +1,28 @@
+Rectangle :: BaseType
+	w = Integer
+	h = Integer
+	Rectangle :: Rectangle Integer width, Integer height
+		$.w = width
+		$.h = height
+		-> $
+	Integer:Area
+		-> w * h
+
+Square :: Rectangle
+	Square :: Square Integer size
+		$.w = size
+		$.h = size
+		-> $
+
+Integer : calcTotalArea Rectangle r1, Rectangle r2
+	a1 = r1.Area
+	a2 = r2.Area
+	-> a1 + a2
+
+myRect = Rectangle 10, 5
+mySquare = Square 4
+
+total = calcTotalArea myRect, mySquare
+
+print "The total area of the two shapes is " + total + " square meters."
+

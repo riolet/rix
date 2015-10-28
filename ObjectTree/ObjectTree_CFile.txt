@@ -1,0 +1,11 @@
+#include "rsl.h"
+#include "out.h"
+
+int main(void) {
+  Rectangle * myRect = Rectangle_Rectangle_Rectangle_Integer_Integer(10, 5);
+  Square * mySquare = Square_Square_Square_Integer(4);
+  int total;
+  total = Integer_calcTotalArea_Rectangle_Rectangle(myRect, &mySquare->parent);
+  Stream_print_String(stdout, (String_plus_String(String_plus_Integer(String_stringlit("The total area of the two shapes is "), total),	String_stringlit(" square meters."))));
+  return 0;
+}
