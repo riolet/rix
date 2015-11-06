@@ -1,5 +1,0 @@
-*.o
-parser.cpp
-parser.hpp
-tokens.cpp
-parser
