@@ -4,7 +4,8 @@ typedef enum {
   Type,
   Constructor,
   Function,
-  CodeBlock
+  CodeBlock,
+  Expression,
 } TYPE;
 
 typedef struct _Object      Object;
@@ -13,12 +14,8 @@ typedef struct _ListString  ListString;
 typedef struct _ListType    ListType;
 
 struct _ListString {
-  char*        value;
+  const char*  value;
   ListString*  next;
-};
-struct _ListType{
-  TYPE         value;
-  ListType*    next;
 };
 struct _ListObject{
   Object*      value;
@@ -26,33 +23,30 @@ struct _ListObject{
 };
 
 struct _Object{
-  char*        name;           //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
-  char*        fullName;       //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
+  const char*        name;           //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
+  const char*        fullname;       //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
   Object*      parentScope;    //parent scope    (global scope, global scope, BaseType)
   TYPE         type;           //What is this?   (Variable, Function, Class)
-  char*        returnType;     //What value type?(Integer,  Integer,  NULL)
-  ListType*    paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
+  const char*        returnType;     //What value type?(Integer,  Integer,  NULL)
+  ListString*  paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
   ListObject*  definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
   ListString*  code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
 };
 
 //mallocs memory and returns a pointer to a new Object
-Object * CreateObject();
-void setName(char* name);
-void setFullName(Object* tree, char* fullname);
-void setParentScope(Object* tree, Object* parent);
-void setReturn(Object* tree, char* return);
+Object * CreateObject(const char* name, const char* fullname, Object* parent, TYPE type, const char* returnType);
 
 //append item to end of linked list
-void addParam(Object* tree, TYPE type);
+void addParam(Object* tree, const char* type);
 void addSymbol(Object* tree, Object* leaf);
-void addCodeLine(Object* tree, char* line);
+void addCode(Object* tree, const char* line);
 
 //writes the code of root first, then children in order
-void writeTree(FILE* output, Object* tree); 
+//void writeTree(FILE* outc, FILE* outh, Object* tree);
 
-//searches for identifier in current, and parent scope. 
+//searches for identifier in current, and parent scope.
 //returns Undefined if identifier isn't found.
 TYPE getIdentType(Object* scope, char* identifier);
+Object* findByName(Object* scope, char* name);
 
 
