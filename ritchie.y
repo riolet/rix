@@ -39,11 +39,14 @@
 %token <sval> VERB
 %token <sval> TYPE
 %token <sval> MATH_OP
-%token <sval> ASSIGNMENT 
+%token <sval> ASSIGNMENT
 %token <sval> LPAREN
 %token <sval> RPAREN
 %token <ival> INDENT
 %token <ival> UNINDENT
+%token <sval> CONDITIONLINK
+%token <sval> MATHASSIGN
+%token <sval> BITWISEOP
 
 %type <oval> ritchie;
 %type <oval> statements;

@@ -54,6 +54,7 @@ void set_yycolumn(int val) {
 
 %option bison-bridge bison-locations
 
+/* | + && + += -= *= /= */
 alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
@@ -63,6 +64,13 @@ identifier    {alphabetic}{alphanumeric}*
 
 mathOp        "+"|"-"|"*"|"/"|"^^"
 assignment    "="
+
+mathAssign    "+=" | "-=" | "*=" | "/="
+bitwiseOp       "||" | "&&"
+
+objectLink    "::"
+conditionLink "?"
+
 
 %%
         int indent_caller = normal;
@@ -169,12 +177,20 @@ assignment    "="
                         else
                           return IDENT;
                       }
-<normal>{assignment}  { printf("lexer: asignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
-<normal><<EOF>>       return ENDOFFILE;
+
+
+<normal>{assignment}   { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
+<normal>{conditionLink} { printf("lexer: CondLink\n" ); yylval->sval = strdup(yytext); return CONDITIONLINK; }
+
+<normal>{bitwiseOp}    { printf("lexer: bitwiseOp\n" ); yylval->sval = strdup(yytext); return BITWISEOP;  }
+<normal>{mathAssign}   { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+
+<normal><<EOF>>       { return ENDOFFILE; }
 <normal>[ \t]+        /* eat up whitespace */
 <normal>"("           { printf("lexer: (\n"); return LPAREN; }
 <normal>")"           { printf("lexer: )\n"); return RPAREN; }
 <normal>.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
+
 %%
 
 
