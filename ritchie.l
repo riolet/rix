@@ -173,16 +173,21 @@ bitwiseOp      "||"|"&&"
 <normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 <normal>{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
 <normal>{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
-<normal>{identifier}  { printf("lexer: ident\n");  yylval->sval = strdup(yytext);
+<normal>{identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
-                        if (!exists || exists->type == Variable)
+                        if (!exists || exists->type == Variable) {
+                          printf("lexer: identifier\n");
                           return IDENT;
-                        else if (exists->type == Function)
+                        } else if (exists->type == Function) {
+                          printf("lexer: verb\n");
                           return VERB;
-                        else if (exists->type == Type)
+                        } else if (exists->type == Type) {
+                          printf("lexer: type\n");
                           return TYPE;
-                        else
+                        } else {
+                          printf("lexer: unidentified identifier\n");
                           return IDENT;
+                        }
                       }
 <normal>{string}      { printf("lexer: string\n");  yylval->sval = strdup(yytext); return STRING; }
 

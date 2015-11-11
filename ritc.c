@@ -40,10 +40,11 @@ Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     //TODO: check if type is actually a defined type
     //TODO: check paramType is a valid Type
     Object* result;
-    if (paramList == 0)
+    if (paramList == 0) {
         Object* result = CreateObject(0, 0, 0, Undefined, 0);
-    else
-        resut = paramList;
+    } else {
+        result = paramList;
+    }
     addParam(result, paramType);
     addCode(result, paramName);
     return result;
@@ -295,6 +296,7 @@ int main(int argc,char **argv)
     char *ofile = NULL;
     extern char *optarg;
     extern int optind, optopt;
+    Object *temp3, *temp1, *temp2;
 
     while ((c = getopt(argc, argv, "o:")) != -1) {
         switch (c) {
@@ -360,6 +362,18 @@ int main(int argc,char **argv)
     rslFunc = CreateObject("print", "print_Float", 0, Function, "Integer");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
+
+    temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
+    addSymbol(root, temp1);
+    temp2 = CreateObject("String", "BaseType_String", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp2 = CreateObject("Number", "BaseType_Number", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp3 = CreateObject("Integer", "Number_Integer", temp2, Type, 0);
+    addSymbol(root, temp3);
+    temp3 = CreateObject("Float", "Number_Float", temp2, Type, 0);
+    addSymbol(root, temp3);
+
 
     printf("root is loaded.\n");
     current = root;
