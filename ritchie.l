@@ -59,17 +59,20 @@ numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
 float         {numeral}+"."{numeral}*
+string        \"(\\.|[^"])*\"
 identifier    {alphabetic}{alphanumeric}*
 
-mathOp        "+"|"-"|"*"|"/"|"^^"
-assignment    "="
-
-mathAssign    "+="|"-="|"*="|"/="
-bitwiseOp      "||"|"&&"
-
+funcDec       ":"
+paramComma    ","
 objectLink    "::"
 conditionLink "?"
 
+mathOp        "+"|"-"|"*"|"/"|"^^"
+assignment    "="
+return        "->"
+
+mathAssign    "+="|"-="|"*="|"/="
+bitwiseOp      "||"|"&&"
 
 %%
         int indent_caller = normal;
@@ -176,10 +179,15 @@ conditionLink "?"
                         else
                           return IDENT;
                       }
+<normal>{string}      { printf("lexer: string\n");  yyval->sval = strdup(yytext); return STRING; }
 
 
 <normal>{assignment}   { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 <normal>{conditionLink} { printf("lexer: CondLink\n" ); yylval->sval = strdup(yytext); return CONDITIONLINK; }
+
+<normal>{paramComma} { printf("lexer: ParamComma\n" ); yylval->sval = strdup(yytext); return PARAMCOMMA; }
+<normal>{funcDec} { printf("lexer: FuncDec\n" ); yylval->sval = strdup(yytext); return FUNCDEC; }
+<normal>{return} { printf("lexer: Return\n" ); yylval->sval = strdup(yytext); return RETURN; }
 
 <normal>{bitwiseOp}    { printf("lexer: bitwiseOp\n" ); yylval->sval = strdup(yytext); return BITWISEOP;  }
 <normal>{mathAssign}   { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }

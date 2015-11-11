@@ -35,6 +35,7 @@
 // by convention), and associate each with a field of the union:
 %token <ival> INT
 %token <fval> FLOAT
+%token <sval> STRING
 %token <sval> IDENT
 %token <sval> VERB
 %token <sval> TYPE
@@ -47,6 +48,9 @@
 %token <sval> CONDITIONLINK
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
+%token <sval> FUNCDEC
+%token <sval> PARAMCOMMA
+%token <sval> RETURN
 
 %type <oval> ritchie;
 %type <oval> statements;
@@ -87,7 +91,7 @@ expression:
   | verb objects          { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
   | verb                  { printf("parser: expr-v\n");   $$ = conjugate( 0, $1,  0); }
   ;
-objects: 
+objects:
   object                  { printf("parser: objects-object\n"); }
   | objects verb object   { printf("parser: objects-object\n"); $$ = conjugate($1, $2, $3); }
 /*  | objects "," objects   /* This hasn't been handled properly yet. */
@@ -113,7 +117,7 @@ int_expression:
   | int_expression MATH_OP INT { printf("parser: ie-ie+i\n"); $$ = simplifyInt($1, $2, $3); }
   | INT MATH_OP INT            { printf("parser: ie-i+i\n");  $$ = simplifyInt($1, $2, $3); }
   */
-  ; 
+  ;
 float_expression:
   FLOAT { printf("parser: fe-f\n");   $$ = $1; }
   /*
