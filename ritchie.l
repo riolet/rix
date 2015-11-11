@@ -54,7 +54,6 @@ void set_yycolumn(int val) {
 
 %option bison-bridge bison-locations
 
-/* | + && + += -= *= /= */
 alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
@@ -76,12 +75,12 @@ conditionLink "?"
         int indent_caller = normal;
 
 <initial>.  { set_yycolumn(yycolumn-1); indent_caller = normal; yyless(0); BEGIN(indent); }
-<initial>\n { indent_caller = normal; yyless(0); BEGIN(indent); return ENDOFLINE; }    
+<initial>\n { indent_caller = normal; yyless(0); BEGIN(indent); return ENDOFLINE; }
 
 <indent>" "     { g_current_line_indent++; }
 <indent>\t      { g_current_line_indent++; }
 <indent>\n      { g_current_line_indent = 0; /* ignoring blank line */ }
-<indent><<EOF>> { 
+<indent><<EOF>> {
                     // When encountering the end of file, we want to emit an
                     // outdent for all indents currently left.
                     if(stack_top() != 0) {
@@ -104,7 +103,7 @@ conditionLink "?"
                     }
                 }
 
-<indent>.       { 
+<indent>.       {
                     if(!g_is_fake_outdent_symbol) {
                         unput(*yytext);
                     }
@@ -116,12 +115,12 @@ conditionLink "?"
                     // increase by one level at a time. Remember how many
                     // spaces this level has and emit an indentation token.
                     if(g_current_line_indent > stack_top()) {
-                        printf("lexer: INDENT\n"); 
+                        printf("lexer: INDENT\n");
                         stack_push(g_current_line_indent);
                         BEGIN(indent_caller);
                         return INDENT;
                     } else if(g_current_line_indent < stack_top()) {
-                        printf("lexer: OUTDENT\n"); 
+                        printf("lexer: OUTDENT\n");
                         // Outdenting is the most difficult, as we might need to
                         // outdent multiple times at once, but flex doesn't allow
                         // emitting multiple tokens at once! So we fake this by
@@ -156,9 +155,9 @@ conditionLink "?"
                     }
                 }
 
-<normal>\n    { printf("EOL\n"); 
-                g_current_line_indent = 0; 
-                indent_caller = YY_START; 
+<normal>\n    { printf("EOL\n");
+                g_current_line_indent = 0;
+                indent_caller = YY_START;
                 BEGIN(indent);
                 return ENDOFLINE; }
 
