@@ -37,9 +37,12 @@
 %token <sval> VERB
 %token <sval> TYPE
 %token <sval> MATH_OP
-%token <sval> ASSIGNMENT 
+%token <sval> ASSIGNMENT
 %token <sval> LPAREN
 %token <sval> RPAREN
+%token <sval> CONDITIONLINK
+%token <sval> MATHASSIGN
+%token <sval> BITWISEOP
 
 %type <sval> expression
 %type <sval> objects
@@ -76,7 +79,7 @@ expression:
   | verb objects
   | verb
   ;
-objects: 
+objects:
   object
   | objects object
 /*  | objects "," object   /* This hasn't been handled properly yet. */

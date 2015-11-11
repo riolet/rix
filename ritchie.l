@@ -9,6 +9,7 @@
 
 %option bison-bridge bison-locations
 
+/* | + && + += -= *= /= */
 alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
@@ -18,6 +19,13 @@ identifier    {alphabetic}{alphanumeric}*
 
 mathOp        "+"|"-"|"*"|"/"|"^^"
 assignment    "="
+
+mathAssign    "+=" | "-=" | "*=" | "/="
+bitwiseOp       "||" | "&&"
+
+objectLink    "::"
+conditionLink "?"
+
 
 %%
 
@@ -35,6 +43,12 @@ assignment    "="
               }
 {assignment}  { yylval->sval = strdup(yytext);
                 return ASSIGNMENT; }
+{mathAssign}  {yyval->sval = strdup(yytext);
+                return MATHASSIGN; }
+{bitwiseOp}   {yyval->sval = strdup(yytext);
+                return BITWISEOP; }
+{conditionLink} { yylval->sval = strdup(yytext);
+                    return CONDITIONLINK; }
 [\n]          return ENDOFLINE;
 <<EOF>>       return ENDOFFILE;
 [ \t]+        /* eat up whitespace */
