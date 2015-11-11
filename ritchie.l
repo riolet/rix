@@ -68,6 +68,7 @@ funcDec       ":"
 paramComma    ","
 objectLink    "::"
 conditionLink "?"
+selfIdent     "$"
 
 mathOp        "+"|"-"|"*"|"/"|"^^"
 assignment    "="
@@ -195,6 +196,7 @@ conditionLink "?"
 <normal>{paramComma} { printf("lexer: ParamComma\n" ); yylval->sval = strdup(yytext); return PARAMCOMMA; }
 <normal>{funcDec} { printf("lexer: FuncDec\n" ); yylval->sval = strdup(yytext); return FUNCDEC; }
 <normal>{return} { printf("lexer: Return\n" ); yylval->sval = strdup(yytext); return RETURN; }
+<normal>{selfIdent} { printf("lexer: selfIdent\n" ); yyval->sval = strdup(yytext); return SELFIDENT; }
 
 <normal>{bitwiseOp}    { printf("lexer: bitwiseOp\n" ); yylval->sval = strdup(yytext); return BITWISEOP;  }
 <normal>{mathAssign}   { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }

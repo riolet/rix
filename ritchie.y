@@ -51,6 +51,7 @@
 %token <sval> FUNCDEC
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
+%token <sval> SELFIDENT
 
 %type <oval> ritchie;
 %type <oval> statements;
