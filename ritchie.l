@@ -24,6 +24,7 @@ void stack_push(int val) { g_indent_levels[++g_indent_levels_index] = val; }
 
 //#define YY_DECL extern int yylex ( YYSTYPE * lvalp, YYLTYPE * llocp, yyscan_t scanner )
 
+
 int yycolumn = 1;
 void set_yycolumn(int val) {
     yycolumn = val;
@@ -42,6 +43,7 @@ void set_yycolumn(int val) {
 #define YY_USER_ACTION { \
     set_yycolumn(yycolumn); \
 }
+
 
 %}
 
@@ -74,6 +76,9 @@ return        "->"
 mathAssign    "+="|"-="|"*="|"/="
 bitwiseOp      "||"|"&&"
 
+objectLink    "::"
+conditionLink "?"
+
 %%
         int indent_caller = normal;
 
@@ -91,8 +96,9 @@ bitwiseOp      "||"|"&&"
 
                         // See the same code below (<indent>.) for a rationale.
                         if(g_current_line_indent != stack_top()) {
+                            size_t i;
                             unput('\n');
-                            for(size_t i = 0 ; i < stack_top() ; ++i) {
+                            for(i = 0 ; i < stack_top() ; ++i) {
                                 unput(' ');
                             }
                         } else {
@@ -132,9 +138,10 @@ bitwiseOp      "||"|"&&"
                         stack_pop();
 
                         if(g_current_line_indent != stack_top()) {
+                            size_t i;
                             // Unput the rest of the current line, including the newline.
                             // We want to keep it untouched.
-                            for(size_t i = 0 ; i < g_current_line_indent ; ++i) {
+                            for(i = 0 ; i < g_current_line_indent ; ++i) {
                                 unput(' ');
                             }
                             unput('\n');
@@ -144,7 +151,7 @@ bitwiseOp      "||"|"&&"
                             // Though we need to remember that it's a fake one
                             // so we can ignore the symbol.
                             g_is_fake_outdent_symbol = 1;
-                            for(size_t i = 0 ; i < stack_top() ; ++i) {
+                            for(i = 0 ; i < stack_top() ; ++i) {
                                 unput(' ');
                             }
                             unput('\n');
