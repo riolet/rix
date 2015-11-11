@@ -42,13 +42,14 @@
 %token <sval> ASSIGNMENT 
 %token <sval> LPAREN
 %token <sval> RPAREN
+%token <ival> INDENT
+%token <ival> UNINDENT
 
 %type <oval> ritchie;
 %type <oval> statements;
 %type <oval> statement;
 %type <oval> simple_statement;
 %type <oval> expression
-//%type <oval> subexpression
 %type <oval> objects
 %type <oval> object
 %type <oval> verb
