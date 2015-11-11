@@ -65,8 +65,8 @@ identifier    {alphabetic}{alphanumeric}*
 mathOp        "+"|"-"|"*"|"/"|"^^"
 assignment    "="
 
-mathAssign    "+=" | "-=" | "*=" | "/="
-bitwiseOp       "||" | "&&"
+mathAssign    "+="|"-="|"*="|"/="
+bitwiseOp      "||"|"&&"
 
 objectLink    "::"
 conditionLink "?"
