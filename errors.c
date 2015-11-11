@@ -4,7 +4,8 @@
 int errorMsg(const char * format,...)
 {
     int ret;
-    fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
+    //fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
+    fprintf(stderr,"Location Unknown - ");
     va_list arg;
     va_start(arg,format);
     ret = vfprintf(stderr, format, arg);
@@ -36,6 +37,12 @@ void criticalError(ErrorCode code, char* message) {
         break;
     case ERROR_UndefinedVerb:
         errorMsg("Verb encountered without definition.\n");
+        break;
+    case ERROR_UndefinedVariable:
+        errorMsg("Variable encountered without definition.\n");
+        break;
+    case ERROR_InvalidArguments:
+        errorMsg("You attempted to run a function with invalid arguments.\n");
         break;
     case ERROR_ParseError:
         errorMsg("Error while parsing file.\n");

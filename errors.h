@@ -21,12 +21,14 @@ typedef enum {
     ERROR_AssignToLiteral,
     ERROR_UnrecognizedSymbol,
     ERROR_UndefinedVerb,
+    ERROR_UndefinedVariable,
     ERROR_CannotAllocateMemory,
+    ERROR_InvalidArguments,
     ERROR_ParseError
 } ErrorCode;
 
-extern int linePos;
-extern int lineNum;
+//extern int linePos;
+//extern int lineNum;
 
 int errorMsg(const char * format,...);
 void criticalError(ErrorCode code, char* message);

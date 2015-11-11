@@ -1,6 +1,10 @@
 #ifndef OBJECTTREE_H
 #define OBJECTTREE_H
 
+#include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
+
 typedef enum {
   Undefined,
   Variable,
@@ -17,7 +21,7 @@ typedef struct _ListString  ListString;
 typedef struct _ListType    ListType;
 
 struct _ListString {
-  const char*  value;
+  char*  value;
   ListString*  next;
 };
 struct _ListObject{
@@ -45,13 +49,15 @@ void addSymbol(Object* tree, Object* leaf);
 void addCode(Object* tree, char* line);
 
 //writes the code of root first, then children in order
-//void writeTree(FILE* outc, FILE* outh, Object* tree);
+void writeTree(FILE* outc, FILE* outh, Object* tree);
 void printTree(Object* tree, int indent);
 
 //searches for identifier in current, and parent scope.
 //returns Undefined if identifier isn't found.
 OBJ_TYPE getIdentType(Object* scope, char* identifier);
 //return null if name not found
-Object* findByName(Object* scope, char* name);
+Object* findByNameInScope(Object* scope, char* name);
+
+Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params);
 
 #endif

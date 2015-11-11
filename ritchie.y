@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include "ObjectTree.h"
 #include "ritc.h"
 #include "errors.h"
 
@@ -20,9 +21,10 @@
 // holding each of the types of tokens that Flex could return, and have Bison
 // use that union instead of "int" for the definition of "yystype":
 %union {
-	int ival;
-	float fval;
-	char *sval;
+	int     ival;
+	float   fval;
+	char*   sval;
+	Object* oval;
 }
 
 // define the constant-string tokens:
@@ -44,11 +46,16 @@
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
 
-%type <sval> expression
-%type <sval> objects
-%type <sval> object
+%type <oval> ritchie;
+%type <oval> statements;
+%type <oval> statement;
+%type <oval> simple_statement;
+%type <oval> expression
+//%type <oval> subexpression
+%type <oval> objects
+%type <oval> object
+%type <oval> verb
 %type <sval> subject
-%type <sval> verb
 %type <ival> int_expression
 %type <fval> float_expression
 
@@ -59,57 +66,70 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %%
 %start ritchie;
 ritchie:
-	statements
-	| ENDOFFILE  { handleEOF(); }
+	statements   { printf("parser: ritchie-stmts\n"); $$ = $1; }
+	| ENDOFFILE  { printf("parser: ritchie-EOF\n"); $$ = CreateObject(0, 0, 0, Expression, 0); handleEOF(); }
 	;
 statements:
-  simple_statement
-  | statements simple_statement
+  simple_statement              { printf("parser: stmts-s_s\n"); $$ = $1; }
+  | statements simple_statement { printf("parser: stmts-stmt,s_s\n"); $$ = $1; }
   ;
 simple_statement:
-  ENDOFLINE              { handleEOL();}
-  | statement ENDOFLINE  { handleEOL();}
+  ENDOFLINE             { printf("parser: s_s-eol\n\tEOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  | statement ENDOFLINE { printf("parser: s_s-stmt\n\tEOL\n"); $$ = $1; }
   ;
 statement:
-  expression
+  expression    { printf("parser: stmt-expr\n"); $$ = completeExpression($1); }
   ;
 expression:
-  subject verb objects
-  | subject verb
-  | verb objects
-  | verb
+  subject verb objects    { printf("parser: expr-svo\n"); $$ = exprSVO(  $1, $2, $3); }
+  | subject verb          { printf("parser: expr-sv\n");  $$ = exprSVO(  $1, $2,  0); }
+  | verb objects          { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
+  | verb                  { printf("parser: expr-v\n");   $$ = conjugate( 0, $1,  0); }
   ;
+<<<<<<< HEAD
 objects:
   object
   | objects object
 /*  | objects "," object   /* This hasn't been handled properly yet. */
+=======
+objects: 
+  object                  { printf("parser: objects-object\n"); }
+  | objects verb object   { printf("parser: objects-object\n"); $$ = conjugate($1, $2, $3); }
+/*  | objects "," objects   /* This hasn't been handled properly yet. */
+>>>>>>> 5ea959179f0a5c81904d56fcff0c570c660d8178
   ;
 object:
-  int_expression { $$ = objectInt($1); }
-  | float_expression { $$ = objectFloat($1); }
-  | IDENT { $$ = objectIdent($1); }
-  | LPAREN expression RPAREN
-  | verb object
+  verb                       { printf("parser: object-ie\n"); $$ = objectVerb($1); }
+  | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
+  | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
+  | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
+  | LPAREN expression RPAREN { printf("parser: object-exp\n"); $$ = parenthesize($2); }
   ;
 subject:
-  IDENT { $$ = subjectIdent($1); }
+  IDENT  { printf("parser: subject-ident(%s)\n", $1); }
   ;
 verb:
-  VERB { $$ = verbIdent($1); }
-  | ASSIGNMENT { $$ = verbAssignment($1); }
-  | MATH_OP { $$ = verbMathOp($1); }
+  VERB         { printf("parser: verb-idnt\n"); $$ = verbIdent($1); }
+  | ASSIGNMENT { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
+  | MATH_OP    { printf("parser: verb-math\n"); $$ = verbMathOp($1); }
   ;
 int_expression:
-  int_expression MATH_OP INT { $$ = simplifyInt($1, $2, $3); }
-  | INT MATH_OP INT          { $$ = simplifyInt($1, $2, $3); }
-  ;
+  INT { printf("parser: ie-i\n");  $$ = $1; }
+  /*
+  | int_expression MATH_OP INT { printf("parser: ie-ie+i\n"); $$ = simplifyInt($1, $2, $3); }
+  | INT MATH_OP INT            { printf("parser: ie-i+i\n");  $$ = simplifyInt($1, $2, $3); }
+  */
+  ; 
 float_expression:
-    float_expression MATH_OP FLOAT { $$ = simplifyFloat($1, $2, $3); }
-  | float_expression MATH_OP INT   { $$ = simplifyFloat($1, $2, $3); }
-  | int_expression MATH_OP FLOAT   { $$ = simplifyFloat($1, $2, $3); }
-  | FLOAT MATH_OP INT   { $$ = simplifyFloat($1, $2, $3); }
-  | INT MATH_OP FLOAT   { $$ = simplifyFloat($1, $2, $3); }
-  | FLOAT MATH_OP FLOAT { $$ = simplifyFloat($1, $2, $3); }
+  FLOAT { printf("parser: fe-f\n");   $$ = $1; }
+  /*
+  | float_expression MATH_OP FLOAT { printf("parser: fe-fe+f\n"); $$ = simplifyFloat($1, $2, $3); }
+  | float_expression MATH_OP INT   { printf("parser: fe-fe+i\n"); $$ = simplifyFloat($1, $2, $3); }
+  | int_expression MATH_OP FLOAT   { printf("parser: fe-ie+f\n"); $$ = simplifyFloat($1, $2, $3); }
+  | FLOAT MATH_OP INT   { printf("parser: fe-f+i\n"); $$ = simplifyFloat($1, $2, $3); }
+  | INT MATH_OP FLOAT   { printf("parser: fe-i+f\n"); $$ = simplifyFloat($1, $2, $3); }
+  | FLOAT MATH_OP FLOAT { printf("parser: fe-f+f\n"); $$ = simplifyFloat($1, $2, $3); }
+  */
   ;
 %%
 

@@ -123,6 +123,14 @@ Stream_print_Float(FILE *stream, float f) {
     return fprintf(stream,"%f\n",f);
 }
 
+int print_Integer(int i) {
+    return fprintf(stdout,"%d\n",i);
+}
+
+int print_Float(float f) {
+    return fprintf(stdout,"%f\n",f);
+}
+
 /* New Line */
 int Stream_echo_stringlit(FILE *stream,char *s) {
     return fprintf(stream,"%s",s);
