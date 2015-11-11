@@ -1,23 +1,31 @@
 #ifndef RITC_H
 #define RITC_H
 
+#include "ObjectTree.h"
+#include "errors.h"
+
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
-const char * getFunctionType(const char * func);
-const char * getTypeParent(const char * func);
+Object* findByName(char* name);
 
 void handleEOF();
-void handleEOL();
+
+Object* completeExpression(Object* expression);
 
 char* subjectIdent(char* subject);
-char* verbIdent(char* verb);
-char* verbAssignment(char* verb);
-char* verbMathOp(char* verb);
-char* objectIdent(char* object);
-char* objectFloat(float f);
-char* objectInt(int i);
+
+Object* exprSVO(char* lhs, Object* verb, Object* rhs);
+Object* conjugate(Object* lhs, Object* verb, Object* rhs);
+Object* verbAssignment(char* verb);
+Object* verbMathOp(char* verb);
+Object* verbIdent(char* verb);
+Object* parenthesize(Object* expr);
+Object* objectVerb(Object* verb);
+Object* objectIdent(char* ident);
+Object* objectFloat(float f);
+Object* objectInt(int i);
 
 float simplifyFloat(float left, char* op, float right);
 int   simplifyInt  (int   left, char* op, int   right);
