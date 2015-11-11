@@ -10,3 +10,6 @@ print d
 print e
 print 1 + 2
 print (a + b + (c + d) + e)
+
+Integer : myPrint Integer number
+  print number

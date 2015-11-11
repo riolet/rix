@@ -52,6 +52,9 @@
 %type <oval> statements;
 %type <oval> statement;
 %type <oval> simple_statement;
+%type <oval> parameters;
+%type <oval> codeblock;
+%type <oval> function_definition;
 %type <oval> expression
 %type <oval> objects
 %type <oval> object
@@ -77,7 +80,17 @@ statements:
 simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\n\tEOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
   | statement ENDOFLINE { printf("parser: s_s-stmt\n\tEOL\n"); $$ = $1; }
+  | function_definition ENDOFLINE codeblock ENDOFLINE { printf("parser: s_s-func\n"); $$ = $1; }
   ;
+function_definition:
+  TYPE FUNC IDENT parameters { printf("parser: func-def\n"); funcHeader($1, $3, $4); }
+  ;
+codeblock:
+  INDENT statements UNINDENT { return $1; }
+  ;
+parameters:
+  TYPE IDENT                     { printf("parser: param\n"); return parameters( 0, $1, $2); }
+  | parameters COMMA TYPE IDENT  { printf("parser: param\n"); return parameters($1, $2, $3); }
 statement:
   expression    { printf("parser: stmt-expr\n"); $$ = completeExpression($1); }
   ;

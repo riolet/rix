@@ -28,6 +28,27 @@ void handleEOF() {
     hitEOF = true;
 }
 
+Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
+  //TODO: check funcName is undefined or function type
+  //TODO: check returnType is a valid Type
+  //TODO: change current to equal result
+  Object* result = CreateObject(funcName, funcName, 0, Function, returnType);
+  return result;
+}
+
+Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
+    //TODO: check if type is actually a defined type
+    //TODO: check paramType is a valid Type
+    Object* result;
+    if (paramList == 0)
+        Object* result = CreateObject(0, 0, 0, Undefined, 0);
+    else
+        resut = paramList;
+    addParam(result, paramType);
+    addCode(result, paramName);
+    return result;
+}
+
 Object* completeExpression(Object* expression) {
     char* buffer = malloc(BUFFLEN);
     snprintf(buffer, BUFFLEN, "%s;", expression->code->value);

@@ -16,6 +16,9 @@ Object* completeExpression(Object* expression);
 
 char* subjectIdent(char* subject);
 
+Object* funcHeader(char* returnType, char* funcName, Object* parameters);
+Object* funcParameters(Object* tree, char* paramType, char* paramName);
+
 Object* exprSVO(char* lhs, Object* verb, Object* rhs);
 Object* conjugate(Object* lhs, Object* verb, Object* rhs);
 Object* verbAssignment(char* verb);
