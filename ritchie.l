@@ -45,7 +45,6 @@ conditionLink "?"
                 else
                   return IDENT;
               }
-<<<<<<< HEAD
 {assignment}  { yylval->sval = strdup(yytext);
                 return ASSIGNMENT; }
 {mathAssign}  {yyval->sval = strdup(yytext);
@@ -56,7 +55,6 @@ conditionLink "?"
                     return CONDITIONLINK; }
 =======
 {assignment}  { printf("lexer: asignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
->>>>>>> 5ea959179f0a5c81904d56fcff0c570c660d8178
 [\n]          return ENDOFLINE;
 <<EOF>>       return ENDOFFILE;
 [ \t]+        /* eat up whitespace */
