@@ -6,16 +6,69 @@
 //mallocs memory and returns a pointer to a new Object
 Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type, char* returnType) {
   Object* result = (Object*)malloc(sizeof(Object));
-  result->name           = name;
-  result->fullname       = fullname;
+  result->name           = strdup(name);
+  result->fullname       = strdup(fullname);
   result->parentScope    = parent;
   result->type           = type;
-  result->returnType     = returnType;
+  result->returnType     = strdup(returnType);
   result->paramTypes     = 0;
   result->definedSymbols = 0;
   result->code           = 0;
   return result;
 }
+
+
+//UNTESTED
+
+/*
+void cleanup(Object* object) {
+
+  ListObject* lop, * loi;
+  ListString* lsp, * lsi;
+
+  if(object->name != 0)
+    free(object->name);
+  if(object->fullname != 0)
+    free(object->fullname);
+  if(object->returnType != 0)
+    free(object->returnType);
+
+  if(object->paramTypes != 0) {
+    lsi = object->paramTypes;
+      while(lsi != 0) {
+        lsp = lsi->next;
+        free(lsi->value);
+        free(lsi->next);
+        free(lsi);
+        lsi = lsp;
+      }
+    }
+  if(object->code != 0) {
+    lsi = object->code;
+      while(lsi != 0) {
+        lsp = lsi->next;
+        free(lsi->value);
+        free(lsi->next);
+        free(lsi);
+        lsi = lsp;
+      }
+    }
+  if(object->definedSymbols != 0) {
+    loi = object->definedSymbols;
+    while(loi != 0) {
+      lop = loi->next;
+      cleanup(loi);
+      free(loi->value);
+      free(loi->next);
+      free(loi);
+      loi = lop;
+    }
+  }
+  if(object != 0)
+    free(object);
+}
+
+*/
 
 //append item to end of linked list
 void addParam(Object* tree, char* type) {
