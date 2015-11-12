@@ -74,12 +74,14 @@ void cleanup(Object* object) {
 void addParam(Object* tree, char* type) {
   ListString* node = malloc(sizeof(ListString));
   node->value = type;
-  if(tree->paramTypes == 0) {
+  if (tree->paramTypes == 0) {
     tree->paramTypes = node;
     return;
   }
   ListString* tail = tree->paramTypes;
-  while(tail->next != 0) { tail = tail->next; }
+  while(tail->next != 0) {
+    tail = tail->next;
+  }
   tail->next = node;
 }
 
@@ -133,6 +135,7 @@ Object* findByNameInScope(Object* scope, char* name) {
 Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params) {
   int i;
   char* s;
+  printf("searching for %s\n", name);
   if (scope->definedSymbols == 0 && scope->parentScope == 0) {
     return 0;
   } else if (scope->definedSymbols == 0) {
@@ -169,7 +172,18 @@ OBJ_TYPE getIdentType(Object* scope, char* identifier) {
 }
 
 void writeTree(FILE* outc, FILE* outh, Object* tree) {
-    FILE* output = outc;
+    FILE* output;
+    if (tree->type == Function)
+        output = outh;
+    else
+        output = outc;
+
+    ListObject* iter = tree->definedSymbols;
+    while (iter != 0) {
+      writeTree(outc, outh, iter->value);
+      iter = iter->next;
+    }
+
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
         ListString* iter = tree->code;
@@ -179,7 +193,6 @@ void writeTree(FILE* outc, FILE* outh, Object* tree) {
             fprintf(output, "%s\n", iter->value);
         }
     }
-
     //TODO: recurse over each definedSymbol.
 }
 

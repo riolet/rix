@@ -18,7 +18,6 @@ typedef enum {
 typedef struct _Object      Object;
 typedef struct _ListObject  ListObject;
 typedef struct _ListString  ListString;
-typedef struct _ListType    ListType;
 
 struct _ListString {
   char*  value;

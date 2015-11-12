@@ -29,19 +29,67 @@ void handleEOF() {
 }
 
 Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
+  ListString* types = parameters->paramTypes;
+  ListString* names = parameters->code;
   //TODO: check funcName is undefined or function type
   //TODO: check returnType is a valid Type
   //TODO: change current to equal result
-  Object* result = CreateObject(funcName, funcName, 0, Function, returnType);
+  char buffer[BUFFLEN];
+  char bufTemp[BUFFLEN];
+  strcpy(buffer, funcName);
+  bufTemp[0]=0;
+  int length;
+  while(types != 0) {
+    strcpy(bufTemp, buffer);
+    snprintf(buffer, BUFFLEN, "%s_%s", bufTemp, types->value);
+    types = types->next;
+  }
+
+  char* fullname = (char*)malloc(strlen(buffer) + 1);
+  strcpy(fullname, buffer);
+
+  Object* result = CreateObject(funcName, fullname, current, Function, returnType);
+
+
+  //add parameters to the function
+  types = parameters->paramTypes;
+  buffer[0]=0;
+  bufTemp[0]=0;
+  //assuming for every type there is a name
+  snprintf(buffer, BUFFLEN, "%s %s(", returnType, fullname);
+  while(types != 0) {
+    addSymbol(result, CreateObject(names->value, names->value, 0, Variable, types->value));
+    addParam(result, types->value);
+    strcpy(bufTemp, buffer);
+    snprintf(buffer, BUFFLEN, "%s%s %s,", bufTemp, types->value, names->value);
+    names = names->next;
+    types = types->next;
+  }
+  length = strlen(buffer);
+  buffer[length-1]=')';
+  buffer[length] = '{';
+  buffer[length+1]='\0';
+  char* code = (char*)malloc(length + 2);
+  strncpy(code,buffer,length+2);
+
+  addCode(result, code);
+  addSymbol(current, result);
+  current = result;
   return result;
+}
+
+void doneFunction(Object* tree) {
+  addCode(tree, "}");
+  current = root;
 }
 
 Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     //TODO: check if type is actually a defined type
     //TODO: check paramType is a valid Type
+
     Object* result;
     if (paramList == 0) {
-        Object* result = CreateObject(0, 0, 0, Undefined, 0);
+        result = CreateObject(0, 0, 0, Undefined, 0);
     } else {
         result = paramList;
     }
@@ -120,8 +168,8 @@ Object* conjugate(Object* lhs, Object* verb, Object* rhs) {
     } else {
         printf("conjugate(%s %s %s)\n", lhs->code->value, verb->name, rhs->code->value);
     }
-
     Object* result;
+    Object* verbFound;
     const char* ltype = 0;
     const char* rtype = 0;
     if (lhs != 0) ltype = lhs->returnType;
@@ -149,14 +197,26 @@ Object* conjugate(Object* lhs, Object* verb, Object* rhs) {
             char *params[2];
             params[0] = lhs->returnType;
             params[1] = rhs->returnType;
-            verb = findFunctionMatch(current, verb->name, 2, params);
+            verbFound = findFunctionMatch(current, verb->name, 2, params);
+            if (verbFound==0) {
+                char error[BUFFLEN];
+                snprintf(error, BUFFLEN, "Cannot find function named %s (with param %s)\n", verb->name, rhs->returnType);
+                criticalError(ERROR_UndefinedVerb, error);
+            }
+            verb = verbFound;
             result = CreateObject(0, 0, 0, Expression, verb->returnType);
             snprintf(expr, BUFFLEN, "%s(%s, %s)", verb->fullname, lhs->code->value, rhs->code->value);
             addCode(result, expr);
         } else if (rhs != 0) {
             char *params[1];
             params[0] = rhs->returnType;
-            verb = findFunctionMatch(current, verb->name, 1, params);
+            verbFound = findFunctionMatch(current, verb->name, 1, params);
+            if (verbFound==0) {
+                char error[BUFFLEN];
+                snprintf(error, BUFFLEN, "Cannot find function named %s (with param %s)\n", verb->name, rhs->returnType);
+                criticalError(ERROR_UndefinedVerb, error);
+            }
+            verb = verbFound;
             result = CreateObject(0, 0, 0, Expression, verb->returnType);
             snprintf(expr, BUFFLEN, "%s(%s)", verb->fullname, rhs->code->value);
             addCode(result, expr);
@@ -241,6 +301,7 @@ Object* objectInt(int d) {
     printf("objectInt(%d)\n", d);
     char* buffer = malloc(32); // 21 = (log10(2^64)+1)
     snprintf(buffer, 32, "%d", d);
+    char* returnBuffer = malloc(9);
     Object* result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
     return result;
@@ -285,7 +346,8 @@ int simplifyInt(int left, char* op, int right){
 }
 
 Object* findByName(char* name) {
-    return findByNameInScope(current, name);
+    Object* result = findByNameInScope(current, name);
+    return result;
 }
 
 int main(int argc,char **argv)
@@ -387,7 +449,7 @@ int main(int argc,char **argv)
     }
 
     writeTree(outMainFile, outHeaderFile, root);
-
+    //printTree(root, 0);
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);

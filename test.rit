@@ -1,3 +1,6 @@
+Integer : myPrint Integer num
+  print num
+
 a = 1 + 2 + 4
 b = 3.0 - 1.47
 c = 3 * 2.5
@@ -11,5 +14,4 @@ print e
 print 1 + 2
 print (a + b + (c + d) + e)
 
-Integer : myPrint Integer number
-  print number
+myPrint 5
