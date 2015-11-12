@@ -103,9 +103,13 @@ Object* completeExpression(Object* expression) {
         warningMsg("expression was null\n");
         return 0;
     }
-    char* buffer = malloc(BUFFLEN);
-    snprintf(buffer, BUFFLEN, "%s;", expression->code->value);
-    addCode(current, buffer);
+    char buffer[BUFFLEN];
+    ListString* code = expression->code;
+    while (code != 0) {
+        snprintf(buffer, BUFFLEN, "%s;", code->value);
+        addCode(current, buffer);
+        code = code->next;
+    }
     return current;
 }
 
@@ -144,13 +148,29 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         addParam(result, objects->paramTypes->value);
         snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objects->code->value);
-        ///Add subject declaration if subject didn't previously exist
         if (!subject->returnType) {
+            ///Add Subject declaration if Subject didn't previously exist
             char declaration[BUFFLEN];
             snprintf(declaration, BUFFLEN, "%s %s", objects->paramTypes->value, subject->fullname);
             addCode(result, declaration);
             Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
             addSymbol(current, variable);
+        } else {
+            ///Check compatible types if Subject exists
+            if (strcmp(subject->returnType, objects->paramTypes->value)) {
+                if (!(
+                    ( strcmp(subject->returnType, "Integer")
+                      || strcmp(subject->returnType, "Float")
+                    ) &&
+                    ( strcmp(objects->paramTypes->value, "Integer")
+                      || strcmp(objects->paramTypes->value, "Float")
+                    )))
+                {
+                    char error[BUFFLEN];
+                    snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n", subject->name, subject->returnType, objects->paramTypes->value);
+                    criticalError(ERROR_IncompatibleTypes, error);
+                }
+            }
         }
 
         addCode(result, verbname);
@@ -220,7 +240,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     } else if (realVerb == 0) {
         //must be + or / or such...
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
-        addParam(result, objects->paramTypes->value);
+        if (!strcmp(subject->returnType, "Float") || !strcmp(objects->code->value, "Float")) {
+            addParam(result, "Float");
+        } else {
+            addParam(result, objects->paramTypes->value);
+        }
         snprintf(verbname, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
         addCode(result, verbname);
         return result;
