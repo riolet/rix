@@ -64,7 +64,7 @@
 %type <oval> objects
 %type <oval> object
 %type <oval> verb
-%type <sval> subject
+%type <oval> subject
 %type <ival> int_expression
 %type <fval> float_expression
 
@@ -83,8 +83,8 @@ statements:
   | statements simple_statement { printf("parser: stmts-stmt,s_s\n"); $$ = $1; }
   ;
 simple_statement:
-  ENDOFLINE             { printf("parser: s_s-eol\n\tEOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | statement ENDOFLINE { printf("parser: s_s-stmt\n\tEOL\n"); $$ = $1; }
+  ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
   ;
 function_definition:
@@ -101,14 +101,14 @@ statement:
   expression    { printf("parser: stmt-expr\n"); $$ = completeExpression($1); }
   ;
 expression:
-  subject verb objects    { printf("parser: expr-svo\n"); $$ = exprSVO(  $1, $2, $3); }
-  | subject verb          { printf("parser: expr-sv\n");  $$ = exprSVO(  $1, $2,  0); }
+  subject verb objects    { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
+  | subject verb          { printf("parser: expr-sv\n");  $$ = conjugate($1, $2,  0); }
   | verb objects          { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
   | verb                  { printf("parser: expr-v\n");   $$ = conjugate( 0, $1,  0); }
   ;
 objects:
-  object                  { printf("parser: objects-object\n"); }
-  | objects verb object   { printf("parser: objects-object\n"); $$ = conjugate($1, $2, $3); }
+  object                  { printf("parser: objects-object\n"); $$ = $1; }
+  | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
 /*  | objects "," objects   /* This hasn't been handled properly yet. */
   ;
 object:
@@ -119,7 +119,7 @@ object:
   | LPAREN expression RPAREN { printf("parser: object-exp\n"); $$ = parenthesize($2); }
   ;
 subject:
-  IDENT  { printf("parser: subject-ident(%s)\n", $1); }
+  IDENT  { printf("parser: subject-ident(%s)\n", $1); $$ = subjectIdent($1); }
   ;
 verb:
   VERB         { printf("parser: verb-idnt\n"); $$ = verbIdent($1); }

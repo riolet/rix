@@ -24,6 +24,9 @@
 
 *.yy.c
 *~
+*.tab.c
+*.tab.h
+ritc
 
 out.c
 out.h

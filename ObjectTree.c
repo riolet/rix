@@ -6,11 +6,15 @@
 //mallocs memory and returns a pointer to a new Object
 Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type, char* returnType) {
   Object* result = (Object*)malloc(sizeof(Object));
-  result->name           = strdup(name);
-  result->fullname       = strdup(fullname);
+  if (result == 0) {
+    warningMsg("%s", "CreateObject couldn't allocate a new object. (ObjectTree.c)\n");
+    return 0; //malloc failed.
+  }
+  result->name           = name ? strdup(name) : 0;
+  result->fullname       = fullname? strdup(fullname) : 0;
   result->parentScope    = parent;
   result->type           = type;
-  result->returnType     = strdup(returnType);
+  result->returnType     = returnType ? strdup(returnType) : 0;
   result->paramTypes     = 0;
   result->definedSymbols = 0;
   result->code           = 0;
@@ -71,60 +75,87 @@ void cleanup(Object* object) {
 */
 
 //append item to end of linked list
-void addParam(Object* tree, char* type) {
+int addParam(Object* tree, char* type) {
   ListString* node = malloc(sizeof(ListString));
-  node->value = type;
+  if (node == 0) {
+    warningMsg("Allocation failed in addParam. (ObjectTree.c)\n");
+    return 1;
+  }
+  node->value = strdup(type);
+  if (node->value == 0) {
+    warningMsg("strdup failed in addParam. (ObjectTree.c)\n");
+    return 2;
+  }
   if (tree->paramTypes == 0) {
     tree->paramTypes = node;
-    return;
+    return 0;
   }
   ListString* tail = tree->paramTypes;
   while(tail->next != 0) {
     tail = tail->next;
   }
   tail->next = node;
+  return 0;
 }
 
-void addSymbol(Object* tree, Object* leaf) {
+int addSymbol(Object* tree, Object* leaf) {
   ListObject* node = malloc(sizeof(ListObject));
+  if (node == 0) {
+    warningMsg("Allocation failed in addSymbol. (ObjectTree.c)\n");
+    return 1;
+  }
   node->value = leaf;
   if(tree->definedSymbols == 0) {
     tree->definedSymbols = node;
-    return;
+    return 0;
   }
   ListObject* tail = tree->definedSymbols;
   while(tail->next != 0) { tail = tail->next; }
   tail->next = node;
+  return 0;
 }
 
-void addCode(Object* tree, char* line) {
+int addCode(Object* tree, char* line) {
   ListString* node = malloc(sizeof(ListString));
-  node->value = line;
+  if (node == 0) {
+    warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
+    return 1;
+  }
+  node->value = strdup(line);
+  if (node->value == 0) {
+    warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
+    return 2;
+  }
   if(tree->code == 0) {
     tree->code = node;
-    return;
+    return 0;
   }
   ListString* tail = tree->code;
   while(tail->next != 0) { tail = tail->next; }
   tail->next = node;
+  return 0;
 }
 
 Object* findByNameInScope(Object* scope, char* name) {
+  if (scope == 0 || name == 0) {
+    warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
+    return 0;
+  }
+
   if (scope->definedSymbols == 0 && scope->parentScope == 0) {
     return 0;
-  } else if (scope->definedSymbols == 0) {
+  } else if (scope->definedSymbols == 0 && scope->parentScope != 0) {
     return findByNameInScope(scope->parentScope, name);
   }
 
-  if (!strcmp(name, scope->definedSymbols->value->name)) {
-    return scope->definedSymbols->value;
-  }
+  //printf("fBNIS - looking in %s\n", scope->name);
   ListObject* iter = scope->definedSymbols;
-  while (iter->next != 0) {
-    iter = iter->next;
+  while (iter != 0) {
     if (!strcmp(name, iter->value->name)) {
+      //printf("fBFNIS -    returning %s\n", iter->value->fullname);
       return iter->value;
     }
+    iter = iter->next;
   }
   if (scope->parentScope != 0) {
     return findByNameInScope(scope->parentScope, name);
@@ -132,10 +163,40 @@ Object* findByNameInScope(Object* scope, char* name) {
   return 0;
 }
 
+Object* findByFullNameInScope(Object* scope, char* fullname) {
+  if (scope == 0 || fullname == 0) {
+    warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
+    return 0;
+  }
+
+  if (scope->definedSymbols == 0 && scope->parentScope == 0) {
+    return 0;
+  } else if (scope->definedSymbols == 0 && scope->parentScope != 0) {
+    return findByNameInScope(scope->parentScope, fullname);
+  }
+
+  //printf("fBFNIS - looking in %s\n", scope->name);
+  ListObject* iter = scope->definedSymbols;
+  while (iter != 0) {
+    if (!strcmp(fullname, iter->value->fullname)) {
+      //printf("fBFNIS -    returning %s\n", iter->value->fullname);
+      return iter->value;
+    }
+    iter = iter->next;
+  }
+  if (scope->parentScope != 0) {
+    return findByNameInScope(scope->parentScope, fullname);
+  }
+  return 0;
+}
+
 Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params) {
+  if (scope == 0 || name == 0) {
+    warningMsg("Object or name was null in findFunctionMatch. (ObjectTree.c)\n");
+    return 0;
+  }
   int i;
   char* s;
-  printf("searching for %s\n", name);
   if (scope->definedSymbols == 0 && scope->parentScope == 0) {
     return 0;
   } else if (scope->definedSymbols == 0) {
@@ -172,28 +233,42 @@ OBJ_TYPE getIdentType(Object* scope, char* identifier) {
 }
 
 void writeTree(FILE* outc, FILE* outh, Object* tree) {
+    writeTreeHelper(outc, outh, tree, 0);
+}
+
+void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
+    ///TODO: indent output code. (low priority)
     FILE* output;
+    ListObject* oIter;
+    ListString* sIter;
+
+    if (tree == 0) {
+      warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
+      return;
+    }
+    if (outc == 0 || outh == 0) {
+      warningMsg("output file was null in writeTree. (ObjectTree.c)\n");
+      return;
+    }
     if (tree->type == Function)
         output = outh;
     else
         output = outc;
 
-    ListObject* iter = tree->definedSymbols;
-    while (iter != 0) {
-      writeTree(outc, outh, iter->value);
-      iter = iter->next;
+    oIter = tree->definedSymbols;
+    while (oIter != 0) {
+      writeTreeHelper(outc, outh, oIter->value, indent);
+      oIter = oIter->next;
     }
 
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
-        ListString* iter = tree->code;
-        fprintf(output, "%s\n", iter->value);
-        while (iter->next != 0) {
-            iter = iter->next;
-            fprintf(output, "%s\n", iter->value);
+        sIter = tree->code;
+        while (sIter != 0) {
+            fprintf(output, "%s\n", sIter->value);
+            sIter = sIter->next;
         }
     }
-    //TODO: recurse over each definedSymbol.
 }
 
 
@@ -283,13 +358,6 @@ void printTree(Object* tree, int indent) {
   for(i = 0; i < indent; i++) { printf("  "); }   printf("code: \n");
   printSequential(tree->code, indent+1, 1);
 }
-
-//writes the code of root first, then children in order
-//void writeTree(FILE* outc, FILE* outh, Object* tree);
-
-//searches for identifier in current, and parent scope.
-//returns Undefined if identifier isn't found.
-
 
 //===============  Test / sample  ====================
 

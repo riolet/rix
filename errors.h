@@ -31,6 +31,7 @@ typedef enum {
 //extern int lineNum;
 
 int errorMsg(const char * format,...);
+int warningMsg(const char * format, ...);
 void criticalError(ErrorCode code, char* message);
 
 #endif

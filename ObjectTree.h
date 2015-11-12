@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include "errors.h"
 
 typedef enum {
   Undefined,
@@ -43,12 +44,13 @@ struct _Object{
 Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type, char* returnType);
 
 //append item to end of linked list
-void addParam(Object* tree, char* type);
-void addSymbol(Object* tree, Object* leaf);
-void addCode(Object* tree, char* line);
+int addParam(Object* tree, char* type);
+int addSymbol(Object* tree, Object* leaf);
+int addCode(Object* tree, char* line);
 
 //writes the code of root first, then children in order
 void writeTree(FILE* outc, FILE* outh, Object* tree);
+void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent);
 void printTree(Object* tree, int indent);
 
 //searches for identifier in current, and parent scope.
@@ -56,6 +58,7 @@ void printTree(Object* tree, int indent);
 OBJ_TYPE getIdentType(Object* scope, char* identifier);
 //return null if name not found
 Object* findByNameInScope(Object* scope, char* name);
+Object* findByFullNameInScope(Object* scope, char* name);
 
 Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params);
 

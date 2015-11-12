@@ -1,6 +1,18 @@
 #include "errors.h"
 
 
+int warningMsg(const char * format, ...) {
+    int ret;
+    //fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
+    fprintf(stderr,ANSI_COLOR_YELLOW);
+    va_list arg;
+    va_start(arg,format);
+    ret = vfprintf(stderr, format, arg);
+    va_end(arg);
+    fprintf(stderr,ANSI_COLOR_RESET);
+    return ret;
+}
+
 int errorMsg(const char * format,...)
 {
     int ret;

@@ -3,31 +3,33 @@
 
 #include "ObjectTree.h"
 #include "errors.h"
+#include "ctype.h"
 
 extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
 Object* findByName(char* name);
+Object* findFunctionByFullName(char* name);
 
 void handleEOF();
 
 Object* completeExpression(Object* expression);
 
-char* subjectIdent(char* subject);
-
 Object* funcHeader(char* returnType, char* funcName, Object* parameters);
 Object* funcParameters(Object* tree, char* paramType, char* paramName);
 void doneFunction(Object* tree);
 
-Object* exprSVO(char* lhs, Object* verb, Object* rhs);
+Object* conjugateAssign(Object* subject, Object* verb, Object* objects);
 Object* conjugate(Object* lhs, Object* verb, Object* rhs);
+
 Object* verbAssignment(char* verb);
 Object* verbMathOp(char* verb);
 Object* verbIdent(char* verb);
 Object* parenthesize(Object* expr);
 Object* objectVerb(Object* verb);
 Object* objectIdent(char* ident);
+Object* subjectIdent(char* ident);
 Object* objectFloat(float f);
 Object* objectInt(int i);
 

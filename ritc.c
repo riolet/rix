@@ -99,133 +99,148 @@ Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
 }
 
 Object* completeExpression(Object* expression) {
+    if (expression == 0) {
+        warningMsg("expression was null\n");
+        return 0;
+    }
     char* buffer = malloc(BUFFLEN);
     snprintf(buffer, BUFFLEN, "%s;", expression->code->value);
     addCode(current, buffer);
+    return current;
 }
 
-char* subjectIdent(char* subject) {
-    printf("subjectIdent(%s)\n", subject);
-    return subject;
-}
-
-Object* exprSVO(char* lhs, Object* verb, Object* rhs) {
-    if (rhs == 0) {
-        printf("exprSVO(%s %s)\n", lhs, verb->name);
-    } else {
-        printf("exprSVO(%s %s %s)\n", lhs, verb->name, rhs->code->value);
+Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
+    if (subject == 0) {
+        criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
     }
-    char* expr = malloc(BUFFLEN);
+    ListString* paramIter;
+    Object* realVerb;
     Object* result;
-    if (verb->name[0] == '=' && verb->name[1] == '\0') {
-        //Assignment
-        Object* left = findByName(lhs);
-        if (!left) {
-            //lhs is new variable.
-            addSymbol(current, CreateObject(lhs, lhs, 0, Variable, rhs->returnType));
-            snprintf(expr, BUFFLEN, "%s %s = %s", rhs->returnType, lhs, rhs->code->value);
-            result = CreateObject(0, 0, 0, Expression, rhs->returnType);
-            addCode(result, expr);
-        } else {
-            //lhs is an existing vavriable
-            if (strcmp(left->returnType, rhs->returnType)) {
-                char error[BUFFLEN];
-                sprintf(error, "%s (%s) doesn't match %s (%s).\n", lhs, left->returnType, rhs->code->value, rhs->returnType);
-                criticalError(ERROR_IncompatibleTypes, error);
-            }
-            snprintf(expr, BUFFLEN, "%s = %s", lhs, rhs->code->value);
-            result = CreateObject(0, 0, 0, Expression, rhs->returnType);
-            addCode(result, expr);
-        }
-    } else if (verb->returnType == 0) {
-        Object* left = findByName(lhs);
-        if (!left) {
-            char error[BUFFLEN];
-            sprintf(error, "Variable \"%s\" used before declaration.\n", lhs);
-            criticalError(ERROR_UndefinedVariable, error);
-        }
+    char verbname[BUFFLEN];
+    int verbname_pos = 0;
 
-        if (!strcmp(left->returnType, "Integer") && !strcmp(rhs->returnType, "Integer")) {
-            result = CreateObject(0, 0, 0, Expression, "Integer");
-            snprintf(expr, BUFFLEN, "(%s %s %s)", left->name, verb->fullname, rhs->code->value);
-            addCode(result, expr);
-        } else if ((!strcmp(left->returnType, "Integer") || !strcmp(left->returnType, "Float")) && (!strcmp(rhs->returnType, "Integer") || !strcmp(rhs->returnType, "Float"))) {
-            result = CreateObject(0, 0, 0, Expression, "Float");
-            snprintf(expr, BUFFLEN, "(%s %s %s)", left->name, verb->fullname, rhs->code->value);
-            addCode(result, expr);
-        } else {
-            criticalError(ERROR_IncompatibleTypes, "exprSVO(l,v,r) failed. Types weren't float or int.");
+    //build base name of verb (e.g. "+" becomes "plus")
+    if (!strcmp(verb->name, "="))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign"); }
+    else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
+
+    //build final name for verb given object
+    if (objects) {
+        paramIter = objects->paramTypes;
+        while (paramIter != 0) {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", paramIter->value);
+            paramIter = paramIter->next;
         }
     }
+
+    //search for the definition of that object
+    printf("asgn: fullVerbName: %s\n", verbname);
+    realVerb = findFunctionByFullName(verbname);
+    if (realVerb == 0 && isalpha(verb->name[0])) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find function named %s.\n", verbname);
+        criticalError(ERROR_UndefinedVerb, error);
+    } else if (realVerb == 0) {
+        //must be literal = or similar.
+        result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
+        addParam(result, objects->paramTypes->value);
+        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objects->code->value);
+        ///Add subject declaration if subject didn't previously exist
+        if (!subject->returnType) {
+            char declaration[BUFFLEN];
+            snprintf(declaration, BUFFLEN, "%s %s", objects->paramTypes->value, subject->fullname);
+            addCode(result, declaration);
+            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
+            addSymbol(current, variable);
+        }
+
+        addCode(result, verbname);
+        printf("code line: %s\n", verbname);
+        return result;
+    }
+
+    //build code line statement invoking that verb.
+    verbname_pos = 0;
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
+    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value); }
+    paramIter = objects->code;
+    while (paramIter != 0) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
+        paramIter = paramIter->next;
+    }
+
+    if (verbname[verbname_pos-1] == ',') { verbname_pos--; } //to overwrite the last comma
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ") {");
+    printf("code line: %s", verbname);
+
+    result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
+    addParam(result, realVerb->returnType);
+    ///TDOO: add subject declaration if subject didn't previously exist!!!
+    addCode(result, verbname);
+
     return result;
+
 }
 
-Object* conjugate(Object* lhs, Object* verb, Object* rhs) {
-    if (lhs == 0 && rhs == 0) {
-        printf("conjugate(%s)\n", verb->name);
-    } else if (lhs == 0) {
-        printf("conjugate(%s %s)\n", verb->name, rhs->code->value);
-    } else {
-        printf("conjugate(%s %s %s)\n", lhs->code->value, verb->name, rhs->code->value);
-    }
+Object* conjugate(Object* subject, Object* verb, Object* objects) {
+    ListString* paramIter;
+    Object* realVerb;
     Object* result;
-    Object* verbFound;
-    const char* ltype = 0;
-    const char* rtype = 0;
-    if (lhs != 0) ltype = lhs->returnType;
-    if (rhs != 0) rtype = rhs->returnType;
-    char* expr = malloc(BUFFLEN);
-    if (verb->returnType == 0 && strcmp(verb->name,"=") ) {
-        //TODO: assuming infix MathOp, but that could be a dangerous assumption
-        if (!strcmp(ltype, "Integer") && !strcmp(rtype, "Integer")) {
-            result = CreateObject(0, 0, 0, Expression, "Integer");
-            snprintf(expr, BUFFLEN, "(%s %s %s)", lhs->code->value, verb->fullname, rhs->code->value);
-            addCode(result, expr);
-        } else if ((!strcmp(ltype, "Integer") || !strcmp(ltype, "Float")) && (!strcmp(rtype, "Integer") || !strcmp(rtype, "Float"))) {
-            result = CreateObject(0, 0, 0, Expression, "Float");
-            snprintf(expr, BUFFLEN, "(%s %s %s)", lhs->code->value, verb->fullname, rhs->code->value);
-            addCode(result, expr);
-        } else {
-            criticalError(ERROR_IncompatibleTypes, "Conjugate(l,v,r) failed. Types weren't float or int.");
-        }
-    } else if (verb->returnType == 0) {
-        //Assignment operator
-    } else {
-        //proper verb?
-        //TODO: check for overloaded variations
-        if (lhs != 0 && rhs != 0) {
-            char *params[2];
-            params[0] = lhs->returnType;
-            params[1] = rhs->returnType;
-            verbFound = findFunctionMatch(current, verb->name, 2, params);
-            if (verbFound==0) {
-                char error[BUFFLEN];
-                snprintf(error, BUFFLEN, "Cannot find function named %s (with param %s)\n", verb->name, rhs->returnType);
-                criticalError(ERROR_UndefinedVerb, error);
-            }
-            verb = verbFound;
-            result = CreateObject(0, 0, 0, Expression, verb->returnType);
-            snprintf(expr, BUFFLEN, "%s(%s, %s)", verb->fullname, lhs->code->value, rhs->code->value);
-            addCode(result, expr);
-        } else if (rhs != 0) {
-            char *params[1];
-            params[0] = rhs->returnType;
-            verbFound = findFunctionMatch(current, verb->name, 1, params);
-            if (verbFound==0) {
-                char error[BUFFLEN];
-                snprintf(error, BUFFLEN, "Cannot find function named %s (with param %s)\n", verb->name, rhs->returnType);
-                criticalError(ERROR_UndefinedVerb, error);
-            }
-            verb = verbFound;
-            result = CreateObject(0, 0, 0, Expression, verb->returnType);
-            snprintf(expr, BUFFLEN, "%s(%s)", verb->fullname, rhs->code->value);
-            addCode(result, expr);
-        } else {
-            result = CreateObject(0, 0, 0, Expression, verb->returnType);
-            snprintf(expr, BUFFLEN, "%s()", verb->fullname);
-            addCode(result, expr);
-        }
+    char verbname[BUFFLEN];
+    int verbname_pos = 0;
+    //if this is an assignment verb, treat it differently.
+    if (!strcmp(verb->name, "=")) {
+        return conjugateAssign(subject, verb, objects);
     }
+
+    //build base name of verb (e.g. "+" becomes "plus")
+    if (!strcmp(verb->name, "+"))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus"); }
+    else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus"); }
+    else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times"); }
+    else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash"); }
+    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "pow"); }
+    else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
+
+
+    //build final name for verb given object
+    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType); }
+
+    paramIter = objects->paramTypes;
+    while (paramIter != 0) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", paramIter->value);
+        paramIter = paramIter->next;
+    }
+
+    //search for the definition of that object
+    printf("fullVerbName: %s\n", verbname);
+    realVerb = findFunctionByFullName(verbname);
+    if (realVerb == 0 && isalpha(verb->name[0])) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find function named %s.\n", verbname);
+        criticalError(ERROR_UndefinedVerb, error);
+    } else if (realVerb == 0) {
+        //must be + or / or such...
+        result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
+        addParam(result, objects->paramTypes->value);
+        snprintf(verbname, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
+        addCode(result, verbname);
+        return result;
+    }
+    //build code line statement invoking that verb.
+    verbname_pos = 0;
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
+    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value); }
+    paramIter = objects->code;
+    while (paramIter != 0) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
+        paramIter = paramIter->next;
+    }
+    verbname_pos--; //to overwrite the last comma
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
+
+    result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
+    addParam(result, realVerb->returnType);
+    addCode(result, verbname);
+
     return result;
 }
 
@@ -254,12 +269,21 @@ Object* verbIdent(char* verb) {
 
 Object* parenthesize(Object* expr) {
     printf("parenthesize(%s)\n", expr->code->value);
-    char* old = expr->code->value;
-    char* buffer = malloc(strlen(old) + 3); // old + ()\0
-    sprintf(buffer, "(%s)", old);
-    //free(old);
-    expr->code->value = buffer;
-    return expr;
+    if (expr==0) {
+        criticalError(ERROR_ParseError, "Object* expr was void in parenthesize. (ritc.c)\n");
+    }
+
+    Object* parenthesized = CreateObject(expr->name, expr->fullname, expr->parentScope, Expression, expr->returnType);
+
+    char code[BUFFLEN];
+    if (expr->code == 0) {
+        criticalError(ERROR_ParseError, "Cannot put parentheses around nothing. (ritc.c)\n");
+    }
+
+    snprintf(code, BUFFLEN, "(%s)", expr->code->value);
+    addCode(parenthesized, code);
+    addParam(parenthesized, expr->returnType);
+    return parenthesized;
 }
 
 Object* objectVerb(Object* verb) {
@@ -270,6 +294,7 @@ Object* objectVerb(Object* verb) {
     Object* result = CreateObject(0, 0, 0, Expression, verb->returnType);
     char* buffer = malloc(BUFFLEN);
     snprintf(buffer, BUFFLEN, "%s()", verb->fullname);
+    addParam(result, verb->returnType);
     addCode(result, buffer);
     return result;
 }
@@ -285,6 +310,23 @@ Object* objectIdent(char* ident) {
     }
     Object* result = CreateObject(0, 0, 0, Expression, identifier->returnType);
     addCode(result, ident);
+    addParam(result, identifier->returnType);
+    return result;
+}
+
+Object* subjectIdent(char* ident) {
+    printf("subjectIdent(%s)\n", ident);
+    //TODO: what if `object` is undefined?
+    Object* result;
+    Object* identifier = findByName(ident);
+
+    if (!identifier) {
+        result = CreateObject(ident, ident, 0, Variable, Undefined);
+    } else {
+        result = CreateObject(ident, ident, 0, identifier->type, identifier->returnType);
+        addParam(result, identifier->returnType);
+    }
+    addCode(result, ident);
     return result;
 }
 
@@ -294,6 +336,7 @@ Object* objectFloat(float f) {
     sprintf(buffer, "%f", f);
     Object* result = CreateObject(0, 0, 0, Expression, "Float");
     addCode(result, buffer);
+    addParam(result, "Float");
     return result;
 }
 
@@ -304,6 +347,7 @@ Object* objectInt(int d) {
     char* returnBuffer = malloc(9);
     Object* result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
+    addParam(result, "Integer");
     return result;
 }
 
@@ -347,6 +391,14 @@ int simplifyInt(int left, char* op, int right){
 
 Object* findByName(char* name) {
     Object* result = findByNameInScope(current, name);
+    return result;
+}
+
+Object* findFunctionByFullName(char* name) {
+    Object* result = findByFullNameInScope(current, name);
+    if (result == 0) {
+        result = findByFullNameInScope(root, name);
+    }
     return result;
 }
 
@@ -408,7 +460,8 @@ int main(int argc,char **argv)
 
 
 
-    errorMsg(ANSI_COLOR_MAGENTA "**********************************\n"
+    errorMsg(ANSI_COLOR_MAGENTA "\n"
+    "**********************************\n"
     "**********************************\n"
     "**********************************\n"
     "**********************************\n" ANSI_COLOR_RESET);
