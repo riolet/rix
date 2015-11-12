@@ -85,17 +85,17 @@ statements:
 simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\n\tEOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
   | statement ENDOFLINE { printf("parser: s_s-stmt\n\tEOL\n"); $$ = $1; }
-  | function_definition ENDOFLINE codeblock ENDOFLINE { printf("parser: s_s-func\n"); $$ = $1; }
+  | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
   ;
 function_definition:
-  TYPE FUNCDEC IDENT parameters { printf("parser: func-def\n"); funcHeader($1, $3, $4); }
+  TYPE FUNCDEC IDENT parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
   ;
 codeblock:
-  INDENT statements UNINDENT { return $1; }
+  INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }
   ;
 parameters:
-  TYPE IDENT                          { printf("parser: param\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: param\n"); $$ = funcParameters($1, $2, $3); }
+  TYPE IDENT                          { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: param2\n"); $$ = funcParameters($1, $3, $4); }
   ;
 statement:
   expression    { printf("parser: stmt-expr\n"); $$ = completeExpression($1); }
