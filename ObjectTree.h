@@ -12,6 +12,7 @@ typedef enum {
   Type,
   Constructor,
   Function,
+  AssignFunction,
   CodeBlock,
   Expression,
 } OBJ_TYPE;

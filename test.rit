@@ -1,5 +1,6 @@
 Integer : myPrint Integer num
   print num
+  -> 100
 
 a = 1 + 2 + 4
 b = 3.0 - 1.47
@@ -16,4 +17,4 @@ print (a + b + (c + d) + e)
 
 a = 3.5
 
-myPrint 5
+print (myPrint 5)

@@ -15,6 +15,7 @@ Object* findFunctionByFullName(char* name);
 void handleEOF();
 
 Object* completeExpression(Object* expression);
+Object* makeReturn(Object* expression);
 
 Object* funcHeader(char* returnType, char* funcName, Object* parameters);
 Object* funcParameters(Object* tree, char* paramType, char* paramName);

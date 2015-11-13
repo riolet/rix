@@ -13,6 +13,7 @@ typedef enum {false, true} bool;
 #define STACKDEP 1024
 #define MAXSCOPE 64
 #define EVAL_BUFF_MAX_LEN 4096
+#define COMPILER_SEP "_$_"
 
 FILE *file;
 FILE *outMainFile;
@@ -111,6 +112,28 @@ Object* completeExpression(Object* expression) {
         code = code->next;
     }
     return current;
+}
+
+Object* makeReturn(Object* expression) {
+    if (expression == 0) {
+        warningMsg("makeReturn: Cannot return null expression\n");
+        return 0;
+    }
+    //add "return" to the last expression
+    ListString* line = expression->code;
+    if (line == 0) {
+        warningMsg("makeReturn: Nothing to add a return to\n");
+    }
+    while (line->next != 0) {
+        line = line->next;
+    }
+    char* oldCode = line->value;
+    char newCode[BUFFLEN];
+    snprintf(newCode, BUFFLEN, "return %s", oldCode);
+    //TODO: this violates encapsulation
+    free(line->value);
+    line->value = strdup(newCode);
+    return expression;
 }
 
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
@@ -213,6 +236,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
 
     //build base name of verb (e.g. "+" becomes "plus")
+
     if (!strcmp(verb->name, "+"))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus"); }
     else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus"); }
     else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times"); }
@@ -526,7 +550,7 @@ int main(int argc,char **argv)
     }
 
     writeTree(outMainFile, outHeaderFile, root);
-    //printTree(root, 0);
+    printTree(root, 0);
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);

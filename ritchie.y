@@ -98,7 +98,9 @@ parameters:
   | parameters PARAMCOMMA TYPE IDENT  { printf("parser: param2\n"); $$ = funcParameters($1, $3, $4); }
   ;
 statement:
-  expression    { printf("parser: stmt-expr\n"); $$ = completeExpression($1); }
+  expression          { printf("parser: stmt-expr\n");   $$ = completeExpression($1); }
+  | RETURN expression { printf("parser: stmt-retEx\n"); $$ = completeExpression(makeReturn($2)); }
+  | RETURN object     { printf("parser: stmt-retOb\n"); $$ = completeExpression(makeReturn($2)); }
   ;
 expression:
   subject verb objects    { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
