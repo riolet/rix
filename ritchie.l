@@ -63,6 +63,7 @@ integer       {numeral}+
 float         {numeral}+"."{numeral}*
 string        \"(\\.|[^"])*\"
 identifier    {alphabetic}{alphanumeric}*
+comment       \/\/.*
 
 funcDec       ":"
 paramComma    ","
@@ -169,7 +170,8 @@ bitwiseOp      "||"|"&&"
                 BEGIN(indent);
                 return ENDOFLINE; }
 
-
+<normal>{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
+<normal>{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 <normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 <normal>{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
 <normal>{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
@@ -189,7 +191,6 @@ bitwiseOp      "||"|"&&"
                           return IDENT;
                         }
                       }
-<normal>{string}      { printf("lexer: string\n");  yylval->sval = strdup(yytext); return STRING; }
 
 
 <normal>{assignment}   { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }

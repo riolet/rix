@@ -9,6 +9,8 @@ extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
+void defineRSLSymbols(Object*);
+
 Object* findByName(char* name);
 Object* findFunctionByFullName(char* name);
 
@@ -19,6 +21,7 @@ Object* makeReturn(Object* expression);
 
 Object* funcHeader(char* returnType, char* funcName, Object* parameters);
 Object* funcParameters(Object* tree, char* paramType, char* paramName);
+Object* concatParams(Object* existing, Object* newParam);
 void doneFunction(Object* tree);
 
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects);

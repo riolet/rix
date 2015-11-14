@@ -30,50 +30,49 @@ void handleEOF() {
 }
 
 Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
+  if (returnType == 0) {
+    returnType = "void";
+  }
   ListString* types = parameters->paramTypes;
   ListString* names = parameters->code;
   //TODO: check funcName is undefined or function type
   //TODO: check returnType is a valid Type
   //TODO: change current to equal result
-  char buffer[BUFFLEN];
-  char bufTemp[BUFFLEN];
-  strcpy(buffer, funcName);
-  bufTemp[0]=0;
-  int length;
+  char funcdef[BUFFLEN];
+  int funcdef_pos = 0;
+  int fullname_pos = 0;
+  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s ", returnType);
+  fullname_pos = funcdef_pos;
+  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s", funcName);
+
   while(types != 0) {
-    strcpy(bufTemp, buffer);
-    snprintf(buffer, BUFFLEN, "%s_%s", bufTemp, types->value);
+    funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "_%s", types->value);
     types = types->next;
   }
 
-  char* fullname = (char*)malloc(strlen(buffer) + 1);
-  strcpy(fullname, buffer);
 
-  Object* result = CreateObject(funcName, fullname, current, Function, returnType);
-
+  printf("\tfunction full name: '%s'\n", &funcdef[fullname_pos]);
+  Object* result = CreateObject(funcName, &funcdef[fullname_pos], current, Function, returnType);
+  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "(");
 
   //add parameters to the function
   types = parameters->paramTypes;
-  buffer[0]=0;
-  bufTemp[0]=0;
   //assuming for every type there is a name
-  snprintf(buffer, BUFFLEN, "%s %s(", returnType, fullname);
   while(types != 0) {
     addSymbol(result, CreateObject(names->value, names->value, 0, Variable, types->value));
     addParam(result, types->value);
-    strcpy(bufTemp, buffer);
-    snprintf(buffer, BUFFLEN, "%s%s %s,", bufTemp, types->value, names->value);
+    if (types->next == 0) {
+        funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s %s", types->value, names->value);
+    } else {
+        funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s %s,", types->value, names->value);
+    }
     names = names->next;
     types = types->next;
   }
-  length = strlen(buffer);
-  buffer[length-1]=')';
-  buffer[length] = '{';
-  buffer[length+1]='\0';
-  char* code = (char*)malloc(length + 2);
-  strncpy(code,buffer,length+2);
+  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, ") {");
 
-  addCode(result, code);
+  printf("\tfunction code: '%s'\n", funcdef);
+  addCode(result, funcdef);
   addSymbol(current, result);
   current = result;
   return result;
@@ -96,6 +95,78 @@ Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     }
     addParam(result, paramType);
     addCode(result, paramName);
+    return result;
+}
+
+Object* concatParams(Object* existing, Object* newParam) {
+    Object* result = CreateObject(0, 0, 0, Expression, 0);
+    ListString* paramIter;
+    ListString* codeIter;
+    int paramLen;
+    int codeLen;
+    char* lastCode;
+    char* lastParam;
+    char newCode[BUFFLEN];
+
+
+    //insert any declarations from the old objects
+    paramIter = existing->paramTypes;
+    codeIter = existing->code;
+    paramLen = listlen(paramIter);
+    codeLen = listlen(codeIter);
+    while(codeLen > 0 && codeLen > paramLen) {
+        addCode(result, codeIter->value);
+        codeLen--;
+        codeIter = codeIter->next;
+    }
+
+    //insert any declarations from the new object
+    paramIter = newParam->paramTypes;
+    codeIter = newParam->code;
+    paramLen = listlen(paramIter);
+    codeLen = listlen(codeIter);
+    while(codeLen > 0 && codeLen > paramLen) {
+        addCode(result, codeIter->value);
+        codeLen--;
+        codeIter = codeIter->next;
+    }
+
+    //insert parameters of old objects
+    paramIter = existing->paramTypes;
+    codeIter = existing->code;
+    paramLen = listlen(paramIter);
+    codeLen = listlen(codeIter);
+    while(codeLen > 0) {
+        if (codeLen > paramLen) {
+            codeLen--;
+            codeIter = codeIter->next;
+            continue;
+        }
+        addCode(result, codeIter->value);
+        addParam(result, paramIter->value);
+        codeLen--;
+        codeIter = codeIter->next;
+        paramIter = paramIter->next;
+    }
+
+    //insert parameters of new objects
+    paramIter = newParam->paramTypes;
+    codeIter = newParam->code;
+    paramLen = listlen(paramIter);
+    codeLen = listlen(codeIter);
+    while(codeLen > 0) {
+        if (codeLen > paramLen) {
+            codeLen--;
+            codeIter = codeIter->next;
+            continue;
+        }
+        addCode(result, codeIter->value);
+        addParam(result, paramIter->value);
+        codeLen--;
+        codeIter = codeIter->next;
+        paramIter = paramIter->next;
+    }
+
     return result;
 }
 
@@ -170,7 +241,19 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         //must be literal = or similar.
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         addParam(result, objects->paramTypes->value);
-        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objects->code->value);
+        ListString* objectCode = objects->code;
+        while (objectCode != 0) {
+            if (objectCode->next == 0) {
+              //last line
+              snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objectCode->value);
+            } else {
+              //every line except last
+              addCode(result, objectCode->value);
+            }
+            objectCode = objectCode->next;
+        }
+
+
         if (!subject->returnType) {
             ///Add Subject declaration if Subject didn't previously exist
             char declaration[BUFFLEN];
@@ -226,6 +309,7 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
 Object* conjugate(Object* subject, Object* verb, Object* objects) {
     ListString* paramIter;
+    ListString* codeIter;
     Object* realVerb;
     Object* result;
     char verbname[BUFFLEN];
@@ -241,7 +325,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus"); }
     else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times"); }
     else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash"); }
-    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "pow"); }
+    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
 
@@ -270,6 +354,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             addParam(result, objects->paramTypes->value);
         }
         snprintf(verbname, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
+
         addCode(result, verbname);
         return result;
     }
@@ -277,15 +362,28 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     verbname_pos = 0;
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
     if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value); }
-    paramIter = objects->code;
-    while (paramIter != 0) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
-        paramIter = paramIter->next;
-    }
-    verbname_pos--; //to overwrite the last comma
-    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
 
     result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
+    codeIter = objects->code;
+    int numParams = listlen(objects->paramTypes);
+    int numCodes = listlen(objects->code);
+    while (numCodes > numParams) {
+            //pull out all declarations separately.
+            addCode(result, codeIter->value);
+            codeIter = codeIter->next;
+            numCodes--;
+    }
+    while (codeIter != 0) {
+        if (codeIter->next == 0) {
+            //this is the last entry
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", codeIter->value);
+        } else {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", codeIter->value);
+        }
+        codeIter = codeIter->next;
+    }
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
+
     addParam(result, realVerb->returnType);
     addCode(result, verbname);
 
@@ -323,13 +421,24 @@ Object* parenthesize(Object* expr) {
 
     Object* parenthesized = CreateObject(expr->name, expr->fullname, expr->parentScope, Expression, expr->returnType);
 
-    char code[BUFFLEN];
     if (expr->code == 0) {
         criticalError(ERROR_ParseError, "Cannot put parentheses around nothing. (ritc.c)\n");
     }
 
-    snprintf(code, BUFFLEN, "(%s)", expr->code->value);
-    addCode(parenthesized, code);
+    //copy lines to new object until last line. Put last line in parentheses.
+    ListString* code = expr->code;
+    char line[BUFFLEN];
+    while (code != 0) {
+        if (code->next == 0) {
+          //last line
+          snprintf(line, BUFFLEN, "(%s)", code->value);
+          addCode(parenthesized, line);
+        } else {
+          //all lines except last
+          addCode(parenthesized, code->value);
+        }
+        code = code->next;
+    }
     addParam(parenthesized, expr->returnType);
     return parenthesized;
 }
@@ -337,7 +446,7 @@ Object* parenthesize(Object* expr) {
 Object* objectVerb(Object* verb) {
     printf("objectVerb(%s)\n", verb->name);
     if (verb->paramTypes != 0) {
-        criticalError(ERROR_InvalidArguments, "Only zero-argument verbs can be used as objects.");
+        criticalError(ERROR_InvalidArguments, "Only zero-argument verbs can be used as objects.\n");
     }
     Object* result = CreateObject(0, 0, 0, Expression, verb->returnType);
     char* buffer = malloc(BUFFLEN);
@@ -450,6 +559,117 @@ Object* findFunctionByFullName(char* name) {
     return result;
 }
 
+void defineRSLSymbols(Object* root) {
+    Object *temp1, *temp2, *temp3, *rslFunc;
+
+    // ==============  Built-in Types ===============
+
+    temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
+    addSymbol(root, temp1);
+    temp2 = CreateObject("Boolean", "BaseType_Boolean", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp2 = CreateObject("Ternary", "BaseType_Ternary", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp2 = CreateObject("Stream", "BaseType_Stream", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp2 = CreateObject("String", "BaseType_String", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp2 = CreateObject("Number", "BaseType_Number", temp1, Type, 0);
+    addSymbol(root, temp2);
+    temp3 = CreateObject("Integer", "Number_Integer", temp2, Type, 0);
+    addSymbol(root, temp3);
+    temp3 = CreateObject("Float", "Number_Float", temp2, Type, 0);
+    addSymbol(root, temp3);
+
+    // ==============  Exponent functions ===============
+
+    rslFunc = CreateObject("exponent", "exponent_Float_Integer", 0, Function, "Float");
+    addParam(rslFunc, "Float");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("exponent", "exponent_Integer_Float", 0, Function, "Float");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("exponent", "exponent_Float_Float", 0, Function, "Float");
+    addParam(rslFunc, "Float");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("exponent", "exponent_Integer_Integer", 0, Function, "Integer");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+
+    // ==============  String Functions ===============
+
+    rslFunc = CreateObject("assign", "assign_String_String", 0, Function, "String");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("plus", "plus_Integer_String", 0, Function, "String");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("plus", "plus_String_Integer", 0, Function, "String");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("plus", "plus_Float_String", 0, Function, "String");
+    addParam(rslFunc, "Float");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("plus", "plus_String_Float", 0, Function, "String");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+
+    // ==============  Print Functions ===============
+
+    rslFunc = CreateObject("print", "print_Integer", 0, Function, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("print", "print_Float", 0, Function, "Integer");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("print", "print_String", 0, Function, "Integer");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("print", "print_Stream_Integer", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("print", "print_Stream_Float", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("print", "print_Stream_String", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+
+    rslFunc = CreateObject("echo", "echo_Integer", 0, Function, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("echo", "echo_Float", 0, Function, "Integer");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("echo", "echo_String", 0, Function, "Integer");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("echo", "echo_Stream_Integer", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("echo", "echo_Stream_Float", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("echo", "echo_Stream_String", 0, Function, "Integer");
+    addParam(rslFunc, "Stream");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+}
+
 int main(int argc,char **argv)
 {
     int c,i;
@@ -458,7 +678,6 @@ int main(int argc,char **argv)
     char *ofile = NULL;
     extern char *optarg;
     extern int optind, optopt;
-    Object *temp3, *temp1, *temp2;
 
     while ((c = getopt(argc, argv, "o:")) != -1) {
         switch (c) {
@@ -517,29 +736,10 @@ int main(int argc,char **argv)
     fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outMainFile,"int main(void) {\n");
 
+
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
-    Object* rslFunc;
-    rslFunc = CreateObject("print", "print_Integer", 0, Function, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print_Float", 0, Function, "Integer");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-
-    temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
-    addSymbol(root, temp1);
-    temp2 = CreateObject("String", "BaseType_String", temp1, Type, 0);
-    addSymbol(root, temp2);
-    temp2 = CreateObject("Number", "BaseType_Number", temp1, Type, 0);
-    addSymbol(root, temp2);
-    temp3 = CreateObject("Integer", "Number_Integer", temp2, Type, 0);
-    addSymbol(root, temp3);
-    temp3 = CreateObject("Float", "Number_Float", temp2, Type, 0);
-    addSymbol(root, temp3);
-
-
-    printf("root is loaded.\n");
     current = root;
+    defineRSLSymbols(root);
 
     yyin = file;
 
@@ -550,7 +750,7 @@ int main(int argc,char **argv)
     }
 
     writeTree(outMainFile, outHeaderFile, root);
-    printTree(root, 0);
+    //printTree(root, 0);
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);

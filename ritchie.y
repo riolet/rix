@@ -52,6 +52,7 @@
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
 %token <sval> SELFIDENT
+%token <sval> SLCOMMENT
 
 %type <oval> ritchie;
 %type <oval> statements;
@@ -60,18 +61,21 @@
 %type <oval> parameters;
 %type <oval> codeblock;
 %type <oval> function_definition;
-%type <oval> expression
-%type <oval> objects
-%type <oval> object
-%type <oval> verb
-%type <oval> subject
-%type <ival> int_expression
-%type <fval> float_expression
+%type <oval> expression;
+%type <oval> objectlist;
+%type <oval> objects;
+%type <oval> object;
+%type <oval> verb;
+%type <oval> subject;
+%type <ival> int_expression;
+%type <fval> float_expression;
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
 %}
+
+
 %%
 %start ritchie;
 ritchie:
@@ -89,36 +93,41 @@ simple_statement:
   ;
 function_definition:
   TYPE FUNCDEC IDENT parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
+  | FUNCDEC IDENT parameters { printf("parser: func-void\n"); $$ = funcHeader(0, $2, $3); }
   ;
 codeblock:
   INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }
   ;
 parameters:
-  TYPE IDENT                          { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: param2\n"); $$ = funcParameters($1, $3, $4); }
+  %empty                              { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  | TYPE IDENT                        { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
 statement:
-  expression          { printf("parser: stmt-expr\n");   $$ = completeExpression($1); }
+  expression          { printf("parser: stmt-expr\n");  $$ = completeExpression($1); }
   | RETURN expression { printf("parser: stmt-retEx\n"); $$ = completeExpression(makeReturn($2)); }
-  | RETURN object     { printf("parser: stmt-retOb\n"); $$ = completeExpression(makeReturn($2)); }
   ;
 expression:
-  subject verb objects    { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
+  subject verb objectlist { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
   | subject verb          { printf("parser: expr-sv\n");  $$ = conjugate($1, $2,  0); }
-  | verb objects          { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
-  | verb                  { printf("parser: expr-v\n");   $$ = conjugate( 0, $1,  0); }
+  | verb objectlist       { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
+  | object                { printf("parser: expr-v\n");   $$ = $1; }
+  ;
+objectlist:
+  objects                         { printf("parser: obli-obj\n"); $$ = $1; }
+  | objectlist PARAMCOMMA objects { printf("parser: obli-o,o\n"); $$ = concatParams($1, $3); }
   ;
 objects:
   object                  { printf("parser: objects-object\n"); $$ = $1; }
   | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
-/*  | objects "," objects   /* This hasn't been handled properly yet. */
+  /* not 100% sure about the above o-v-o rule, and the need for an "objects" rule... */
   ;
 object:
-  verb                       { printf("parser: object-ie\n"); $$ = objectVerb($1); }
+  verb                     { printf("parser: object-vb\n"); $$ = objectVerb($1); }
   | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
   | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
   | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
-  | LPAREN expression RPAREN { printf("parser: object-exp\n"); $$ = parenthesize($2); }
+  | LPAREN expression RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
   ;
 subject:
   IDENT  { printf("parser: subject-ident(%s)\n", $1); $$ = subjectIdent($1); }

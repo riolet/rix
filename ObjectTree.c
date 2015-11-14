@@ -136,6 +136,15 @@ int addCode(Object* tree, char* line) {
   return 0;
 }
 
+int listlen(ListString* head) {
+    int count = 0;
+    while (head != 0) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
 Object* findByNameInScope(Object* scope, char* name) {
   if (scope == 0 || name == 0) {
     warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
@@ -345,12 +354,12 @@ void printTree(Object* tree, int indent) {
   indent += 1;
   for(i = 0; i < indent; i++) { printf("  "); }   printf("fullname: \"%s\"\n", tree->fullname);
   if(tree->parentScope == 0) {
-    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: NULL\n");
+    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: (null)\n");
   } else {
     for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: %s\n", tree->parentScope->fullname);
   }
   for(i = 0; i < indent; i++) { printf("  "); }   printf("type: "); printType(tree->type); printf("\n");
-  for(i = 0; i < indent; i++) { printf("  "); }   printf("returnType: \"%s\"\n", tree->returnType != 0 ? tree->returnType : "NULL");
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("returnType: \"%s\"\n", tree->returnType);
   for(i = 0; i < indent; i++) { printf("  "); }   printf("paramTypes: ");
   printSequential(tree->paramTypes, indent+1, 0);
   for(i = 0; i < indent; i++) { printf("  "); }   printf("definedSymbols: \n");

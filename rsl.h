@@ -10,6 +10,8 @@ typedef struct {
     size_t cap;
 } String;
 
+typedef void BaseType;
+typedef FILE * Stream;
 typedef void * UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
 typedef int Integer;
@@ -23,19 +25,19 @@ typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 #define UNKNOWNTYPE_while_Boolean(A,B) while (B)
 #define Identifier_for_Integer_Integer(i,a,b) for (i=a;i<b;i++)
 
-float Float_exponent_Integer (float f, int i) {
+float exponent_Float_Integer (float f, int i) {
     return pow(f,i);
 }
 
-int Integer_exponent_Integer (int f, int i) {
+int exponent_Integer_Integer (int f, int i) {
     return (int)pow(f,i);
 }
 
-float Integer_exponent_Float (int f, float i) {
+float exponent_Integer_Float (int f, float i) {
     return pow(f,i);
 }
 
-float Float_exponent_Float (float f, float i) {
+float exponent_Float_Float (float f, float i) {
     return pow(f,i);
 }
 
@@ -45,13 +47,13 @@ String String_stringlit (const char * strlit) {
     s.cap = s.length = strlen(strlit);
     return s;
 }
-String String_assign_String (String left, String right) {
+String assign_String_String (String left, String right) {
     left.buffer=malloc(right.length+1);
     memcpy(left.buffer,right.buffer,right.length);
     return left;
 }
 
-String String_plus_String (String left, String right) {
+String plus_String_String (String left, String right) {
     String newString;
     newString.buffer=malloc(left.length+right.length+1);
     memcpy(newString.buffer,left.buffer,left.length);
@@ -61,7 +63,7 @@ String String_plus_String (String left, String right) {
     return newString;
 }
 
-String String_plus_Integer (String left, int right) {
+String plus_String_Integer (String left, int right) {
     String newString;
     char rightStr[BUFFLEN];
     int right_length=snprintf(rightStr,BUFFLEN,"%i",right);
@@ -73,7 +75,7 @@ String String_plus_Integer (String left, int right) {
     return newString;
 }
 
-String Integer_plus_String (int left, String right) {
+String plus_Integer_String (int left, String right) {
     String newString;
     char leftStr[BUFFLEN];
     int left_length=snprintf(leftStr,BUFFLEN,"%i",left);
@@ -85,7 +87,7 @@ String Integer_plus_String (int left, String right) {
     return newString;
 }
 
-String String_plus_Float (String left, float right) {
+String plus_String_Float (String left, float right) {
     String newString;
     char rightStr[BUFFLEN];
     int right_length=snprintf(rightStr,BUFFLEN,"%f",right);
@@ -97,7 +99,7 @@ String String_plus_Float (String left, float right) {
     return newString;
 }
 
-String Float_plus_String (float left, String right) {
+String plus_Float_String (float left, String right) {
     String newString;
     char leftStr[BUFFLEN];
     int left_length=snprintf(leftStr,BUFFLEN,"%f",left);
@@ -111,16 +113,20 @@ String Float_plus_String (float left, String right) {
 }
 
 
-Stream_print_String(FILE *stream,String s) {
+int print_Stream_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream)+fputc('\n',stream);
 }
 
-Stream_print_Integer(FILE *stream, int i) {
+int print_Stream_Integer(Stream stream, int i) {
     return fprintf(stream,"%d\n",i);
 }
 
-Stream_print_Float(FILE *stream, float f) {
+int print_Stream_Float(Stream stream, float f) {
     return fprintf(stream,"%f\n",f);
+}
+
+int print_String(String s) {
+    return fwrite(s.buffer,sizeof(char),s.length,stdout)+fputc('\n',stdout);
 }
 
 int print_Integer(int i) {
@@ -132,22 +138,31 @@ int print_Float(float f) {
 }
 
 /* New Line */
-int Stream_echo_stringlit(FILE *stream,char *s) {
-    return fprintf(stream,"%s",s);
-}
-int Stream_echo_String(FILE *stream,String s) {
+int echo_Stream_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream);
 }
 
-int Stream_echo_Integer(FILE *stream, int i) {
+int echo_Stream_Integer(Stream stream, int i) {
     return fprintf(stream,"%d",i);
 }
 
-int Stream_echo_Float(FILE *stream, float f) {
+int echo_Stream_Float(Stream stream, float f) {
     return fprintf(stream,"%f",f);
 }
 
-Ternary Integer_compare_Integer (Integer a, Integer b) {
+int echo_String(String s) {
+    return fwrite(s.buffer,sizeof(char),s.length,stdout);
+}
+
+int echo_Integer(int i) {
+    return fprintf(stdout,"%d",i);
+}
+
+int echo_Float(float f) {
+    return fprintf(stdout,"%f",f);
+}
+
+Ternary compare_Integer_Integer (Integer a, Integer b) {
     if (a>b) {
         return lt;
     } else if (a==b) {
@@ -156,7 +171,7 @@ Ternary Integer_compare_Integer (Integer a, Integer b) {
         return gt;
     }
 }
-String Ternary_pick_String_String_String (Ternary ternary, String a, String b, String c) {
+String pick_Ternary_String_String_String (Ternary ternary, String a, String b, String c) {
     if (ternary==lt) {
         return a;
     } else if (ternary==eq) {

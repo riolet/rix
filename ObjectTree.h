@@ -48,6 +48,7 @@ Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type,
 int addParam(Object* tree, char* type);
 int addSymbol(Object* tree, Object* leaf);
 int addCode(Object* tree, char* line);
+int listlen(ListString* head);
 
 //writes the code of root first, then children in order
 void writeTree(FILE* outc, FILE* outh, Object* tree);
