@@ -219,6 +219,15 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
     //build base name of verb (e.g. "+" becomes "plus")
     if (!strcmp(verb->name, "="))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign"); }
+    else if (!isalpha(verb->name[0]))   {
+        char op[4];
+        Object* augment;
+        strcpy(op, verb->name);
+        if (op[3] == '=') { op[3] = '\0'; }
+        if (op[2] == '=') { op[2] = '\0'; }
+        augment = conjugate(subject, verbMathOp(op), objects);
+        return conjugateAssign(subject, verb, augment);
+    }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
     //build final name for verb given object
@@ -330,9 +339,21 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
 
 
     //build final name for verb given object
-    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType); }
+    if (subject != 0) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType);
+        if (subject->returnType == 0) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", subject->code->value);
+            criticalError(ERROR_UndefinedVariable, error);
+        }
+    }
 
     if (objects != 0) {
+        if (objects->paramTypes == 0) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", objects->code->value);
+            criticalError(ERROR_UndefinedVariable, error);
+        }
         paramIter = objects->paramTypes;
         while (paramIter != 0) {
             verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", paramIter->value);
@@ -348,6 +369,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         snprintf(error, BUFFLEN, "Cannot find function named %s.\n", verbname);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
+        warningMsg("Cannot find verb %s. Assuming %s is infix operator in C.", verbname, verb->name);
         //must be + or / or such...
         if (objects == 0) {
             char error[BUFFLEN];
@@ -414,7 +436,7 @@ Object* verbMathOp(char* verb) {
 
 Object* verbAssignment(char* verb) {
     printf("verbAssignment(%s)\n", verb);
-    Object* result = CreateObject(verb, verb, 0, Function, 0);
+    Object* result = CreateObject(verb, verb, 0, AssignmentFunction, 0);
     return result;
 }
 
@@ -474,22 +496,21 @@ Object* objectVerb(Object* verb) {
 
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
-    //TODO: what if `object` is undefined?
+    Object* result;
     Object* identifier = findByName(ident);
+
     if (!identifier) {
-        char error[BUFFLEN];
-        sprintf(error, "Variable \"%s\" used before declaration.\n", ident);
-        criticalError(ERROR_UndefinedVariable, error);
+        result = CreateObject(ident, ident, 0, Variable, Undefined);
+    } else {
+        result = CreateObject(ident, ident, 0, identifier->type, identifier->returnType);
+        addParam(result, identifier->returnType);
     }
-    Object* result = CreateObject(0, 0, 0, Expression, identifier->returnType);
     addCode(result, ident);
-    addParam(result, identifier->returnType);
     return result;
 }
 
 Object* subjectIdent(char* ident) {
     printf("subjectIdent(%s)\n", ident);
-    //TODO: what if `object` is undefined?
     Object* result;
     Object* identifier = findByName(ident);
 
@@ -515,9 +536,8 @@ Object* objectFloat(float f) {
 
 Object* objectInt(int d) {
     printf("objectInt(%d)\n", d);
-    char* buffer = malloc(32); // 21 = (log10(2^64)+1)
+    char buffer[32]; // 21 = (log10(2^64)+1)
     snprintf(buffer, 32, "%d", d);
-    char* returnBuffer = malloc(9);
     Object* result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
     addParam(result, "Integer");

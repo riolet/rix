@@ -119,6 +119,7 @@ objectlist:
   ;
 objects:
   object                  { printf("parser: objects-object\n"); $$ = $1; }
+//  | LPAREN objects RPAREN { printf("parser: objects-paren\n"); $$ = parenthesize($2); }
   | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
   ;
 object:
@@ -126,7 +127,7 @@ object:
   | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
   | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
   | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
-  | LPAREN expression RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
+  | LPAREN objects RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
   ;
 subject:
   IDENT  { printf("parser: subject-ident(%s)\n", $1); $$ = subjectIdent($1); }
@@ -134,6 +135,7 @@ subject:
 verb:
   VERB         { printf("parser: verb-idnt\n"); $$ = verbIdent($1); }
   | ASSIGNMENT { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
+  | MATHASSIGN { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
   | MATH_OP    { printf("parser: verb-math\n"); $$ = verbMathOp($1); }
   ;
 int_expression:
