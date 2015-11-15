@@ -109,12 +109,12 @@ statement:
   ;
 expression:
   subject verb objectlist { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
-  | subject verb          { printf("parser: expr-sv\n");  $$ = conjugate($1, $2,  0); }
   | verb objectlist       { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
   | object                { printf("parser: expr-v\n");   $$ = $1; }
   ;
 objectlist:
-  objects                         { printf("parser: obli-obj\n"); $$ = $1; }
+  %empty                          { printf("parser: obli-nul\n"); $$ = 0;  }
+  | objects                       { printf("parser: obli-obj\n"); $$ = $1; }
   | objectlist PARAMCOMMA objects { printf("parser: obli-o,o\n"); $$ = concatParams($1, $3); }
   ;
 objects:
@@ -123,8 +123,7 @@ objects:
   /* not 100% sure about the above o-v-o rule, and the need for an "objects" rule... */
   ;
 object:
-  verb                     { printf("parser: object-vb\n"); $$ = objectVerb($1); }
-  | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
+  int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
   | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
   | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
   | LPAREN expression RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
