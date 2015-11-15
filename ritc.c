@@ -332,10 +332,12 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     //build final name for verb given object
     if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType); }
 
-    paramIter = objects->paramTypes;
-    while (paramIter != 0) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", paramIter->value);
-        paramIter = paramIter->next;
+    if (objects != 0) {
+        paramIter = objects->paramTypes;
+        while (paramIter != 0) {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", paramIter->value);
+            paramIter = paramIter->next;
+        }
     }
 
     //search for the definition of that object
@@ -347,6 +349,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
         //must be + or / or such...
+        if (objects == 0) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n", subject->code->value, verb->name);
+            criticalError(ERROR_InvalidArguments, error);
+        }
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         if (!strcmp(subject->returnType, "Float") || !strcmp(objects->code->value, "Float")) {
             addParam(result, "Float");
@@ -361,26 +368,35 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     //build code line statement invoking that verb.
     verbname_pos = 0;
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
-    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value); }
-
     result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
-    codeIter = objects->code;
-    int numParams = listlen(objects->paramTypes);
-    int numCodes = listlen(objects->code);
-    while (numCodes > numParams) {
-            //pull out all declarations separately.
-            addCode(result, codeIter->value);
-            codeIter = codeIter->next;
-            numCodes--;
-    }
-    while (codeIter != 0) {
-        if (codeIter->next == 0) {
-            //this is the last entry
-            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", codeIter->value);
-        } else {
-            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", codeIter->value);
+
+    if (subject != 0) {
+        //TODO: can there ever be a declaration in the subject? (i.e. multiple code lines?);
+        if (subject->code->next != 0) {
+            criticalError(ERROR_ParseError, "Multiple code lines found in subject.\n");
         }
-        codeIter = codeIter->next;
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value);
+    }
+
+    if (objects != 0) {
+        codeIter = objects->code;
+        int numParams = listlen(objects->paramTypes);
+        int numCodes = listlen(objects->code);
+        while (numCodes > numParams) {
+                //pull out all declarations separately.
+                addCode(result, codeIter->value);
+                codeIter = codeIter->next;
+                numCodes--;
+        }
+        while (codeIter != 0) {
+            if (codeIter->next == 0) {
+                //this is the last entry
+                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", codeIter->value);
+            } else {
+                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", codeIter->value);
+            }
+            codeIter = codeIter->next;
+        }
     }
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
 

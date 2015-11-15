@@ -109,7 +109,7 @@ statement:
   ;
 expression:
   subject verb objectlist { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
-  | verb objectlist       { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
+//  | verb objectlist       { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
   | object                { printf("parser: expr-v\n");   $$ = $1; }
   ;
 objectlist:
@@ -120,10 +120,10 @@ objectlist:
 objects:
   object                  { printf("parser: objects-object\n"); $$ = $1; }
   | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
-  /* not 100% sure about the above o-v-o rule, and the need for an "objects" rule... */
   ;
 object:
-  int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
+  verb objectlist          { printf("parser: object-xp\n"); $$ = conjugate(0, $1, $2); }
+  | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
   | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
   | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
   | LPAREN expression RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
