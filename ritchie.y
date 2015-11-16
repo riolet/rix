@@ -120,8 +120,9 @@ expr:
   | expr BOOLEANOP  expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr MATH_OP    expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | expr VERB expr        { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), $3); }
-  | VERB expr             { printf("parser: expr-vb\n");    $$ = conjugate( 0, verbIdent($1), $2); }
-  | VERB                  { printf("parser: expr-v\n");     $$ = conjugate( 0, verbIdent($1), 0); }
+  | VERB expr             { printf("parser: expr-vbe\n");   $$ = conjugate( 0, verbIdent($1), $2); }
+  | expr VERB             { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), 0); }
+  | VERB                  { printf("parser: expr- v \n");   $$ = conjugate( 0, verbIdent($1), 0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:
