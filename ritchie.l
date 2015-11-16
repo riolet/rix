@@ -76,9 +76,10 @@ assignment    "="
 return        "->"
 
 mathAssign    "+="|"-="|"*="|"/="
-comparator    "<"|">"|"<="|">="|"=="|"!="
+comparison    "<"|">"|"<="|">="|"=="|"!="
 ternary       "<>"
-bitwiseOp     "||"|"&&"
+bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
+booleanOp     "||"|"&&"
 
 %%
         int indent_caller = normal;
@@ -203,8 +204,8 @@ bitwiseOp     "||"|"&&"
 <normal>{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
 <normal>{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 
-<normal>{bitwiseOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BITWISEOP;  }
-<normal>{comparator}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARATOR; }
+<normal>{booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+<normal>{comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 <normal>{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
 <normal>{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 

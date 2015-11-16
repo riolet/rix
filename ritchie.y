@@ -48,12 +48,13 @@
 %token <sval> CONDITIONLINK
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
+%token <sval> BOOLEANOP
 %token <sval> FUNCDEC
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
 %token <sval> SELFIDENT
 %token <sval> SLCOMMENT
-%token <sval> COMPARATOR
+%token <sval> COMPARISON
 %token <ival> TERNARY
 
 %type <oval> ritchie;
@@ -63,19 +64,20 @@
 %type <oval> parameters;
 %type <oval> codeblock;
 %type <oval> function_definition;
-%type <oval> expression;
-%type <oval> objectlist;
-%type <oval> objects;
+%type <oval> expr;
+//%type <oval> exprlist;
 %type <oval> object;
-%type <oval> verb;
-%type <oval> subject;
-%type <ival> int_expression;
-%type <fval> float_expression;
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
 %}
+
+%right ASSIGNMENT MATHASSIGN VERB
+%right PARAMCOMMA
+%right BOOLEANOP
+%right COMPARISON
+%right MATH_OP
 
 
 %%
@@ -106,56 +108,26 @@ parameters:
   | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
 statement:
-  expression          { printf("parser: stmt-expr\n");  $$ = completeExpression($1); }
-  | RETURN expression { printf("parser: stmt-retEx\n"); $$ = completeExpression(makeReturn($2)); }
+  expr          { printf("parser: stmt-expr\n");  $$ = completeExpression($1); }
+  | RETURN expr { printf("parser: stmt-retEx\n"); $$ = completeExpression(makeReturn($2)); }
   ;
-expression:
-  subject verb objectlist { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
-  | object                { printf("parser: expr-v\n");   $$ = $1; }
-  ;
-objectlist:
-  %empty                          { printf("parser: obli-nul\n"); $$ = 0;  }
-  | objects                       { printf("parser: obli-obj\n"); $$ = $1; }
-  | objectlist PARAMCOMMA objects { printf("parser: obli-o,o\n"); $$ = concatParams($1, $3); }
-  ;
-objects:
-  object                  { printf("parser: objects-object\n"); $$ = $1; }
-  | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
+expr:
+  object                  { printf("parser: expr-obj\n");   $$ = $1; }
+  | expr PARAMCOMMA expr  { printf("parser: expr-cma\n");   $$ = concatParams($1, $3); }
+  | expr ASSIGNMENT expr  { printf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
+  | expr MATHASSIGN expr  { printf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
+  | expr COMPARISON expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
+  | expr BOOLEANOP  expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
+  | expr MATH_OP    expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
+  | expr VERB expr        { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), $3); }
+  | VERB expr             { printf("parser: expr-vb\n");    $$ = conjugate( 0, verbIdent($1), $2); }
+  | VERB                  { printf("parser: expr-v\n");     $$ = conjugate( 0, verbIdent($1), 0); }
+  | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:
-  verb objectlist          { printf("parser: object-xp\n"); $$ = conjugate(0, $1, $2); }
-  | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
-  | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
-  | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
-  | LPAREN objects RPAREN    { printf("parser: object-ex\n"); $$ = parenthesize($2); }
-  ;
-subject:
-  IDENT  { printf("parser: subject-ident(%s)\n", $1); $$ = subjectIdent($1); }
-  ;
-verb:
-  VERB         { printf("parser: verb-idnt\n"); $$ = verbIdent($1); }
-  | ASSIGNMENT { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
-  | MATHASSIGN { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
-  | MATH_OP    { printf("parser: verb-math\n"); $$ = verbMathOp($1); }
-  | COMPARATOR { printf("parser: verb-cmpr\n"); $$ = verbComparison($1); }
-  ;
-int_expression:
-  INT { printf("parser: ie-i\n");  $$ = $1; }
-  /*
-  | int_expression MATH_OP INT { printf("parser: ie-ie+i\n"); $$ = simplifyInt($1, $2, $3); }
-  | INT MATH_OP INT            { printf("parser: ie-i+i\n");  $$ = simplifyInt($1, $2, $3); }
-  */
-  ;
-float_expression:
-  FLOAT { printf("parser: fe-f\n");   $$ = $1; }
-  /*
-  | float_expression MATH_OP FLOAT { printf("parser: fe-fe+f\n"); $$ = simplifyFloat($1, $2, $3); }
-  | float_expression MATH_OP INT   { printf("parser: fe-fe+i\n"); $$ = simplifyFloat($1, $2, $3); }
-  | int_expression MATH_OP FLOAT   { printf("parser: fe-ie+f\n"); $$ = simplifyFloat($1, $2, $3); }
-  | FLOAT MATH_OP INT   { printf("parser: fe-f+i\n"); $$ = simplifyFloat($1, $2, $3); }
-  | INT MATH_OP FLOAT   { printf("parser: fe-i+f\n"); $$ = simplifyFloat($1, $2, $3); }
-  | FLOAT MATH_OP FLOAT { printf("parser: fe-f+f\n"); $$ = simplifyFloat($1, $2, $3); }
-  */
+  INT     { printf("parser: object-int\n");       $$ = objectInt($1); }
+  | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1); }
+  | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   ;
 %%
 

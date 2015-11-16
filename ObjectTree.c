@@ -136,6 +136,14 @@ int addCode(Object* tree, char* line) {
   return 0;
 }
 
+int setFlags(Object* tree, int flags) {
+    tree->flags = flags;
+}
+
+int getFlag(Object* tree, int flag) {
+    return ((tree->flags & flag) == flag);
+}
+
 int listlen(ListString* head) {
     int count = 0;
     while (head != 0) {

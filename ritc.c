@@ -381,23 +381,49 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         //must be + or / or such...
         if (objects == 0) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n", subject->code->value, verb->name);
+            ListString* code = subject->code;
+            while (code!=0 && code->next!=0) { code = code->next; }
+            snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n", code->value, verb->name);
             criticalError(ERROR_InvalidArguments, error);
         }
+        printf(ANSI_COLOR_GREEN "\t note: %s|%s\n" ANSI_COLOR_RESET, subject->returnType, objects->paramTypes->value);
         if (verb->returnType != 0) {
+            printf("taking verb shortcut\n");
             result = CreateObject(0, 0, 0, Expression, verb->returnType);
             addParam(result, verb->returnType);
         } else if (!strcmp(subject->returnType, "Float") || !strcmp(objects->paramTypes->value, "Float")) {
+            printf("taking else if shortcut\n");
             result = CreateObject(0, 0, 0, Expression, "Float");
             addParam(result, "Float");
         } else {
+            printf("taking final shortcut\n");
             result = CreateObject(0, 0, 0, Expression, subject->returnType);
             addParam(result, subject->returnType);
         }
-        snprintf(invocation, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
+
+        ListString* code = subject->code;
+        ListString* params = subject->paramTypes;
+        int clen = listlen(code);
+        int plen = listlen(params);
+        while (clen > plen) {
+          addCode(result, code->value);
+          code = code->next;
+          clen--;
+        }
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s %s ", code->value, verb->name);
+        code = objects->code;
+        params = objects->paramTypes;
+        clen = listlen(code);
+        plen = listlen(params);
+        while (clen > plen) {
+          addCode(result, code->value);
+          code = code->next;
+          clen--;
+        }
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s", code->value);
 
         addCode(result, invocation);
-        printTree(result, 0);
+
         return result;
     }
     //build code line statement invoking that verb.
@@ -455,7 +481,8 @@ Object* verbComparison(char* verb) {
 
 Object* verbAssignment(char* verb) {
     printf("verbAssignment(%s)\n", verb);
-    Object* result = CreateObject(verb, verb, 0, AssignmentFunction, 0);
+    Object* result = CreateObject(verb, verb, 0, Function, 0);
+    setFlags(result, FLAG_ASSIGNMENT);
     return result;
 }
 
@@ -688,7 +715,8 @@ void defineRSLSymbols(Object* root) {
 
     // ==============  Looping Functions ===============
 
-    rslFunc = CreateObject("for", "for_Integer_Integer", 0, AssignmentFunction, "Integer");
+    rslFunc = CreateObject("for", "for_Integer_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_ASSIGNMENT);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);

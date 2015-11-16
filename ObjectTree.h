@@ -6,13 +6,15 @@
 #include <stdarg.h>
 #include "errors.h"
 
+#define FLAG_ASSIGNMENT 1
+#define FLAG_SUBJECT    2
+
 typedef enum {
   Undefined,
   Variable,
   Type,
   Constructor,
   Function,
-  AssignmentFunction,
   CodeBlock,
   Expression,
 } OBJ_TYPE;
@@ -39,6 +41,7 @@ struct _Object{
   ListString*  paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
   ListObject*  definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
   ListString*  code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
+  int          flags;
 };
 
 //mallocs memory and returns a pointer to a new Object
@@ -48,6 +51,8 @@ Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type,
 int addParam(Object* tree, char* type);
 int addSymbol(Object* tree, Object* leaf);
 int addCode(Object* tree, char* line);
+int setFlags(Object* tree, int flags);
+int getFlag(Object* tree, int flag);
 int listlen(ListString* head);
 
 //writes the code of root first, then children in order
