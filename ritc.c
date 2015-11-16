@@ -590,6 +590,16 @@ Object* objectInt(int d) {
     return result;
 }
 
+Object* objectString(char* string) {
+    printf("objectString(%s)\n", string);
+	char buffer[BUFFLEN];
+	snprintf(buffer, BUFFLEN, "String_stringlit(%s)", string);
+    Object* result = CreateObject(0,0,0, Expression, "String");
+	addCode(result, buffer);
+	addParam(result, "String");
+	return result;   
+}
+
 float simplifyFloat(float left, char* op, float right){
     char error[50];
 
@@ -608,6 +618,7 @@ float simplifyFloat(float left, char* op, float right){
     }
     return 0.0f;
 }
+
 
 int simplifyInt(int left, char* op, int right){
     char error[50];

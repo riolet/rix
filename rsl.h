@@ -41,7 +41,7 @@ float exponent_Float_Float (float f, float i) {
     return pow(f,i);
 }
 
-String String_stringlit (const char * strlit) {
+String String_stringlit ( char * strlit) {
     String s;
     s.buffer = strlit;
     s.cap = s.length = strlen(strlit);

@@ -37,6 +37,7 @@ Object* objectIdent(char* ident);
 Object* subjectIdent(char* ident);
 Object* objectFloat(float f);
 Object* objectInt(int i);
+Object* objectString(char* string);
 
 float simplifyFloat(float left, char* op, float right);
 int   simplifyInt  (int   left, char* op, int   right);

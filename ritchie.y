@@ -128,6 +128,7 @@ object:
   INT     { printf("parser: object-int\n");       $$ = objectInt($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1); }
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
+  | STRING { printf("parser: object-string\n"); $$ = objectString($1); }
   ;
 %%
 
