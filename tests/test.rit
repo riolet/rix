@@ -1,0 +1,9 @@
+if 1 < 3
+  Integer: myfunc
+    -> 3
+  print 10
+
+print myfunc
+
+
+
