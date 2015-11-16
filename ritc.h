@@ -29,6 +29,7 @@ Object* conjugate(Object* lhs, Object* verb, Object* rhs);
 
 Object* verbAssignment(char* verb);
 Object* verbMathOp(char* verb);
+Object* verbComparison(char* verb);
 Object* verbIdent(char* verb);
 Object* parenthesize(Object* expr);
 Object* objectVerb(Object* verb);

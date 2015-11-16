@@ -53,6 +53,8 @@
 %token <sval> RETURN
 %token <sval> SELFIDENT
 %token <sval> SLCOMMENT
+%token <sval> COMPARATOR
+%token <ival> TERNARY
 
 %type <oval> ritchie;
 %type <oval> statements;
@@ -109,7 +111,6 @@ statement:
   ;
 expression:
   subject verb objectlist { printf("parser: expr-svo\n"); $$ = conjugate($1, $2, $3); }
-//  | verb objectlist       { printf("parser: expr-vo\n");  $$ = conjugate( 0, $1, $2); }
   | object                { printf("parser: expr-v\n");   $$ = $1; }
   ;
 objectlist:
@@ -119,7 +120,6 @@ objectlist:
   ;
 objects:
   object                  { printf("parser: objects-object\n"); $$ = $1; }
-//  | LPAREN objects RPAREN { printf("parser: objects-paren\n"); $$ = parenthesize($2); }
   | objects verb object   { printf("parser: objects-ovo\n"); $$ = conjugate($1, $2, $3); }
   ;
 object:
@@ -127,7 +127,7 @@ object:
   | int_expression           { printf("parser: object-ie\n"); $$ = objectInt($1); }
   | float_expression         { printf("parser: object-fe\n"); $$ = objectFloat($1); }
   | IDENT                    { printf("parser: object-ID\n"); $$ = objectIdent($1); }
-  | LPAREN objects RPAREN { printf("parser: object-ex\n"); $$ = parenthesize($2); }
+  | LPAREN objects RPAREN    { printf("parser: object-ex\n"); $$ = parenthesize($2); }
   ;
 subject:
   IDENT  { printf("parser: subject-ident(%s)\n", $1); $$ = subjectIdent($1); }
@@ -137,6 +137,7 @@ verb:
   | ASSIGNMENT { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
   | MATHASSIGN { printf("parser: verb-asgn\n"); $$ = verbAssignment($1); }
   | MATH_OP    { printf("parser: verb-math\n"); $$ = verbMathOp($1); }
+  | COMPARATOR { printf("parser: verb-cmpr\n"); $$ = verbComparison($1); }
   ;
 int_expression:
   INT { printf("parser: ie-i\n");  $$ = $1; }

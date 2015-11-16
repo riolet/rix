@@ -322,7 +322,9 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     Object* realVerb;
     Object* result;
     char verbname[BUFFLEN];
+    char invocation[BUFFLEN];
     int verbname_pos = 0;
+    char invoke_pos = 0;
     //if this is an assignment verb, treat it differently.
     if (!strcmp(verb->name, "=")) {
         return conjugateAssign(subject, verb, objects);
@@ -335,6 +337,12 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times"); }
     else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash"); }
     else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent"); }
+    else if (!strcmp(verb->name, "<"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt"); }
+    else if (!strcmp(verb->name, ">"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt"); }
+    else if (!strcmp(verb->name, "<=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq"); }
+    else if (!strcmp(verb->name, ">=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq"); }
+    else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq"); }
+    else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
 
@@ -369,22 +377,27 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         snprintf(error, BUFFLEN, "Cannot find function named %s.\n", verbname);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
-        warningMsg("Cannot find verb %s. Assuming %s is infix operator in C.", verbname, verb->name);
+        warningMsg("Cannot find verb %s. Assuming %s is infix operator in C.\n", verbname, verb->name);
         //must be + or / or such...
         if (objects == 0) {
             char error[BUFFLEN];
             snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n", subject->code->value, verb->name);
             criticalError(ERROR_InvalidArguments, error);
         }
-        result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
-        if (!strcmp(subject->returnType, "Float") || !strcmp(objects->code->value, "Float")) {
+        if (verb->returnType != 0) {
+            result = CreateObject(0, 0, 0, Expression, verb->returnType);
+            addParam(result, verb->returnType);
+        } else if (!strcmp(subject->returnType, "Float") || !strcmp(objects->paramTypes->value, "Float")) {
+            result = CreateObject(0, 0, 0, Expression, "Float");
             addParam(result, "Float");
         } else {
-            addParam(result, objects->paramTypes->value);
+            result = CreateObject(0, 0, 0, Expression, subject->returnType);
+            addParam(result, subject->returnType);
         }
-        snprintf(verbname, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
+        snprintf(invocation, BUFFLEN, "%s %s %s", subject->code->value, verb->name, objects->code->value);
 
-        addCode(result, verbname);
+        addCode(result, invocation);
+        printTree(result, 0);
         return result;
     }
     //build code line statement invoking that verb.
@@ -431,6 +444,12 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
 Object* verbMathOp(char* verb) {
     printf("verbMathOp(%s)\n", verb);
     Object* result = CreateObject(verb, verb, 0, Function, 0);
+    return result;
+}
+
+Object* verbComparison(char* verb) {
+    printf("verbMathOp(%s)\n", verb);
+    Object* result = CreateObject(verb, verb, 0, Function, "Boolean");
     return result;
 }
 
@@ -642,6 +661,10 @@ void defineRSLSymbols(Object* root) {
     addParam(rslFunc, "String");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
+    rslFunc = CreateObject("plus", "plus_String_String", 0, Function, "String");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_Integer_String", 0, Function, "String");
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "String");
@@ -657,6 +680,17 @@ void defineRSLSymbols(Object* root) {
     rslFunc = CreateObject("plus", "plus_String_Float", 0, Function, "String");
     addParam(rslFunc, "String");
     addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+
+    // ==============  Conditional Functions ===============
+
+    rslFunc = CreateObject("if", "if_Boolean_CodeBlock", 0, Function, "Boolean");
+
+    // ==============  Looping Functions ===============
+
+    rslFunc = CreateObject("for", "for_Integer_Integer", 0, AssignmentFunction, "Integer");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
 
     // ==============  Print Functions ===============

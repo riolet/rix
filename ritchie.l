@@ -76,7 +76,9 @@ assignment    "="
 return        "->"
 
 mathAssign    "+="|"-="|"*="|"/="
-bitwiseOp      "||"|"&&"
+comparator    "<"|">"|"<="|">="|"=="|"!="
+ternary       "<>"
+bitwiseOp     "||"|"&&"
 
 %%
         int indent_caller = normal;
@@ -193,16 +195,18 @@ bitwiseOp      "||"|"&&"
                       }
 
 
-<normal>{assignment}   { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
-<normal>{conditionLink} { printf("lexer: CondLink\n" ); yylval->sval = strdup(yytext); return CONDITIONLINK; }
+<normal>{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
+<normal>{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-<normal>{paramComma} { printf("lexer: ParamComma\n" ); yylval->sval = strdup(yytext); return PARAMCOMMA; }
-<normal>{funcDec} { printf("lexer: FuncDec\n" ); yylval->sval = strdup(yytext); return FUNCDEC; }
-<normal>{return} { printf("lexer: Return\n" ); yylval->sval = strdup(yytext); return RETURN; }
-<normal>{selfIdent} { printf("lexer: selfIdent\n" ); yylval->sval = strdup(yytext); return SELFIDENT; }
+<normal>{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
+<normal>{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
+<normal>{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
+<normal>{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 
-<normal>{bitwiseOp}    { printf("lexer: bitwiseOp\n" ); yylval->sval = strdup(yytext); return BITWISEOP;  }
-<normal>{mathAssign}   { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+<normal>{bitwiseOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BITWISEOP;  }
+<normal>{comparator}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARATOR; }
+<normal>{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
+<normal>{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 
 <normal><<EOF>>       { return ENDOFFILE; }
 <normal>[ \t]+        /* eat up whitespace */
