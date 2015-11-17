@@ -781,8 +781,9 @@ void defineRSLSymbols(Object* root) {
 
 int main(int argc,char **argv)
 {
-    int c,i;
+    int c,i,fd,old_stdout;
     int errflg=0;
+	int  printTreeBool = 0;
     char *ifile = NULL;
     char *ofile = NULL;
     extern char *optarg;
@@ -812,7 +813,12 @@ int main(int argc,char **argv)
             ifile=argv[optind];
         }
     }
-
+	
+	if ( argc == 3 )
+		if ( strcmp( argv[2], "-t" ) == 0 ) {
+			printTreeBool = 1;
+			printf("%s", argv[2]);
+		}
 
     if (ifile==NULL) {
         errorMsg("No file to compile\n");
@@ -857,15 +863,20 @@ int main(int argc,char **argv)
     while (!hitEOF) {
         yyparse();
     }
-
+    
+        
+	
     writeTree(outMainFile, outHeaderFile, root);
-    //printTree(root, 0);
+	if ( printTreeBool == 1 ) {
+		
+		printTreeToFile(root, 0, "./treeOutput.txt");
+	}
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(file);
 
-    printf("\n%s compiled successfully.\n", ifile);
+    //printf("\n%s compiled successfully.\n", ifile);
 
     return 0;
 }

@@ -376,6 +376,27 @@ void printTree(Object* tree, int indent) {
   printSequential(tree->code, indent+1, 1);
 }
 
+//used to debug to file ( prints tree to file with fname ) 
+void printTreeToFile(Object* tree, int indent, char* fname) {
+  int i;
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: name: \"%s\"\n", tree->name);
+  indent += 1;
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("fullname: \"%s\"\n", tree->fullname);
+  if(tree->parentScope == 0) {
+    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: (null)\n");
+  } else {
+    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: %s\n", tree->parentScope->fullname);
+  }
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("type: "); printType(tree->type); printf("\n");
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("returnType: \"%s\"\n", tree->returnType);
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("paramTypes: ");
+  printSequential(tree->paramTypes, indent+1, 0);
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("definedSymbols: \n");
+  printTreeList(tree->definedSymbols, indent+1);
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("code: \n");
+  printSequential(tree->code, indent+1, 1);
+}
+
 //===============  Test / sample  ====================
 
 int testmain() {

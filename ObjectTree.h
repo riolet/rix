@@ -59,6 +59,7 @@ int listlen(ListString* head);
 void writeTree(FILE* outc, FILE* outh, Object* tree);
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent);
 void printTree(Object* tree, int indent);
+void printTreeToFile(Object* tree, int indent, char* fname);
 
 //searches for identifier in current, and parent scope.
 //returns Undefined if identifier isn't found.
