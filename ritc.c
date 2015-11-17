@@ -40,22 +40,17 @@ Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
   //TODO: check funcName is undefined or function type
   //TODO: check returnType is a valid Type
   //TODO: change current to equal result
-  char funcdef[BUFFLEN];
-  int funcdef_pos = 0;
-  int fullname_pos = 0;
-  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s ", returnType);
-  fullname_pos = funcdef_pos;
-  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s", funcName);
+
+  char funcFullName[BUFFLEN];
+  int funcFullName_pos = 0;
+  funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
   while(types != 0) {
-    funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "_%s", types->value);
+    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "_%s", types->value);
     types = types->next;
   }
 
-
-  printf("\tfunction full name: '%s'\n", &funcdef[fullname_pos]);
-  Object* result = CreateObject(funcName, &funcdef[fullname_pos], current, Function, returnType);
-  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "(");
+  Object* result = CreateObject(funcName, funcFullName, current, Function, returnType);
 
   //add parameters to the function
   types = parameters->paramTypes;
@@ -63,25 +58,16 @@ Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
   while(types != 0) {
     addSymbol(result, CreateObject(names->value, names->value, 0, Variable, types->value));
     addParam(result, types->value);
-    if (types->next == 0) {
-        funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s %s", types->value, names->value);
-    } else {
-        funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, "%s %s,", types->value, names->value);
-    }
     names = names->next;
     types = types->next;
   }
-  funcdef_pos += snprintf(&funcdef[funcdef_pos], BUFFLEN - funcdef_pos, ") {");
 
-  printf("\tfunction code: '%s'\n", funcdef);
-  addCode(result, funcdef);
   addSymbol(current, result);
   current = result;
   return result;
 }
 
 void doneFunction(Object* tree) {
-  addCode(tree, "}");
   current = root;
 }
 
@@ -679,18 +665,22 @@ void defineRSLSymbols(Object* root) {
     // ==============  Exponent functions ===============
 
     rslFunc = CreateObject("exponent", "exponent_Float_Integer", 0, Function, "Float");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Float");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("exponent", "exponent_Integer_Float", 0, Function, "Float");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("exponent", "exponent_Float_Float", 0, Function, "Float");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Float");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("exponent", "exponent_Integer_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
@@ -698,26 +688,32 @@ void defineRSLSymbols(Object* root) {
     // ==============  String Functions ===============
 
     rslFunc = CreateObject("assign", "assign_String_String", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_String_String", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_Integer_String", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_String_Integer", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_Float_String", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Float");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("plus", "plus_String_Float", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
@@ -725,21 +721,26 @@ void defineRSLSymbols(Object* root) {
     // ==============  Conditional Functions ===============
 
     rslFunc = CreateObject("if", "if_Boolean", 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("elif", "elif_Boolean_Boolean", 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("else", "else_Boolean", 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
 
     rslFunc = CreateObject("compare", "compare_Integer_Integer", 0, Function, "Ternary");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("pick", "pick_Ternary_String_String_String", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Ternary");
     addParam(rslFunc, "String");
     addParam(rslFunc, "String");
@@ -749,9 +750,11 @@ void defineRSLSymbols(Object* root) {
     // ==============  Looping Functions ===============
 
     rslFunc = CreateObject("while", "while_Boolean", 0, Function, "void");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("for", "for_Integer_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
@@ -760,45 +763,57 @@ void defineRSLSymbols(Object* root) {
     // ==============  Print Functions ===============
 
     rslFunc = CreateObject("print", "print_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("print", "print_Float", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("print", "print_String", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("print", "print_Stream_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("print", "print_Stream_Float", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("print", "print_Stream_String", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
 
     rslFunc = CreateObject("echo", "echo_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo_Float", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo_String", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo_Stream_Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo_Stream_Float", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "Float");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo_Stream_String", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
@@ -882,9 +897,9 @@ int main(int argc,char **argv)
     while (!hitEOF) {
         yyparse();
     }
-
     writeTree(outMainFile, outHeaderFile, root);
     //printTree(root, 0);
+
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);

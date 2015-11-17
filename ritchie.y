@@ -84,7 +84,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %start ritchie;
 ritchie:
 	statements   { printf("parser: ritchie-stmts\n"); $$ = $1; }
-	| ENDOFFILE  { printf("parser: ritchie-EOF\n"); $$ = CreateObject(0, 0, 0, Expression, 0); handleEOF(); }
+	| ENDOFFILE  { printf("parser: ritchie-EOF\n"); $$ = 0; handleEOF(); }
 	;
 statements:
   simple_statement              { printf("parser: stmts-s_s\n"); $$ = $1; }
@@ -97,8 +97,10 @@ simple_statement:
   | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
   ;
 function_definition:
-  TYPE FUNCDEC IDENT parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
+  TYPE FUNCDEC IDENT  parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
+  | TYPE FUNCDEC VERB parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
   | FUNCDEC IDENT parameters { printf("parser: func-void\n"); $$ = funcHeader(0, $2, $3); }
+  | FUNCDEC VERB  parameters { printf("parser: func-void\n"); $$ = funcHeader(0, $2, $3); }
   ;
 codeblock:
   INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }

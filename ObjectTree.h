@@ -8,6 +8,7 @@
 
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2
+#define FLAG_EXTERNAL   4
 
 typedef enum {
   Undefined,

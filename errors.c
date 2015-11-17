@@ -16,8 +16,7 @@ int warningMsg(const char * format, ...) {
 int errorMsg(const char * format,...)
 {
     int ret;
-    //fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
-    fprintf(stderr,"Location Unknown - ");
+    fprintf(stderr,"Line %d: Column:%d - ",g_lineNum, g_lineCol);
     va_list arg;
     va_start(arg,format);
     ret = vfprintf(stderr, format, arg);
