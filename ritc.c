@@ -277,7 +277,7 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     }
 
     //search for the definition of that object
-    printf("asgn: fullVerbName: %s\n", verbname);
+    printf("ConjugateAssign: fullVerbName: %s\n", verbname);
     realVerb = findFunctionByFullName(verbname);
     if (realVerb == 0 && isalpha(verb->name[0])) {
         char error[BUFFLEN];
@@ -285,30 +285,19 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
         //must be literal = or similar.
+        if (!objects) {
+            criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
+        }
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         addParam(result, objects->paramTypes->value);
-        ListString* objectCode = objects->code;
-        while (objectCode != 0) {
-            if (objectCode->next == 0) {
-              //last line
-              snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objectCode->value);
-            } else {
-              //every line except last
-              addCode(result, objectCode->value);
-            }
-            objectCode = objectCode->next;
-        }
+        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objects->code->value);
 
 
         if (!subject->returnType) {
-            ///Add Subject declaration if Subject didn't previously exist
-            char declaration[BUFFLEN];
-            snprintf(declaration, BUFFLEN, "%s %s", objects->paramTypes->value, subject->fullname);
-            addCode(result, declaration);
             Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
             addSymbol(current, variable);
         } else {
-            ///Check compatible types if Subject exists
+            //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
                 if (!(
                     ( strcmp(subject->returnType, "Integer")
@@ -326,7 +315,7 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         }
 
         addCode(result, verbname);
-        printf("code line: %s\n", verbname);
+        printf("\tConjugated: %s\n", verbname);
         return result;
     }
 
@@ -338,29 +327,30 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     } else if (subject) {
         verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", subject->code->value);
     }
-    paramIter = objects->code;
-    while (paramIter != 0) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
-        paramIter = paramIter->next;
+    if (objects) {
+        paramIter = objects->code;
+        while (paramIter != 0) {
+            if (paramIter->next == 0) {
+                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", paramIter->value);
+            } else {
+                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
+            }
+            paramIter = paramIter->next;
+        }
     }
 
-    if (verbname[verbname_pos-1] == ',') { verbname_pos--; } //to overwrite the last comma
-    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
-    printf("code line: %s", verbname);
-
-    result = CreateObject(0, 0, 0, Expression, "void");
-    ///TODO: add subject declaration if subject didn't previously exist!!!
     if (subject && subject->returnType == 0) {
-        char decl[BUFFLEN];
-        snprintf(decl, BUFFLEN, "%s %s", realVerb->returnType, subject->fullname);
-        addCode(result, decl);
-        Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
+        Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
         addSymbol(current, variable);
     }
 
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
+    printf("\tConjugated: %s\n", verbname);
+
+    result = CreateObject(0, 0, 0, Expression, "void");
+
     addParam(result, realVerb->returnType);
     addCode(result, verbname);
-    printTree(result, 0);
     return result;
 
 }
@@ -396,16 +386,19 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
 
-    //build final name for verb given object
+    //== Build the fullname for the verb ==
+
+    //verify subject exists and is a known variable, then append its type to the name
     if (subject != 0) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType);
         if (subject->returnType == 0) {
             char error[BUFFLEN];
             snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", subject->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "_%s", subject->returnType);
     }
 
+    //verify objects exists and is a known variable or is an expression composed of known variables
     if (objects != 0) {
         if (objects->paramTypes == 0) {
             char error[BUFFLEN];
@@ -420,7 +413,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
 
     //search for the definition of that object
-    printf("fullVerbName: %s\n", verbname);
+    printf("Conjugate: fullVerbName: %s\n", verbname);
     realVerb = findFunctionByFullName(verbname);
     if (realVerb == 0 && isalpha(verb->name[0])) {
         char error[BUFFLEN];
@@ -447,29 +440,10 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             addParam(result, subject->returnType);
         }
 
-        ListString* code = subject->code;
-        ListString* params = subject->paramTypes;
-        int clen = listlen(code);
-        int plen = listlen(params);
-        while (clen > plen) {
-          addCode(result, code->value);
-          code = code->next;
-          clen--;
-        }
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s %s ", code->value, verb->name);
-        code = objects->code;
-        params = objects->paramTypes;
-        clen = listlen(code);
-        plen = listlen(params);
-        while (clen > plen) {
-          addCode(result, code->value);
-          code = code->next;
-          clen--;
-        }
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s", code->value);
-
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s %s %s", subject->code->value, verb->fullname, objects->code->value);
         addCode(result, invocation);
 
+        printf("\tConjugated: %s\n", invocation);
         return result;
     }
     //build code line statement invoking that verb.
@@ -491,14 +465,6 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
 
     if (objects != 0) {
         codeIter = objects->code;
-        int numParams = listlen(objects->paramTypes);
-        int numCodes = listlen(objects->code);
-        while (numCodes > numParams) {
-                //pull out all declarations separately.
-                addCode(result, codeIter->value);
-                codeIter = codeIter->next;
-                numCodes--;
-        }
         while (codeIter != 0) {
             if (codeIter->next == 0) {
                 //this is the last entry
@@ -511,8 +477,10 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
 
+
     addParam(result, realVerb->returnType);
     addCode(result, verbname);
+    printf("\tConjugated: %s\n", verbname);
 
     return result;
 }
@@ -600,21 +568,6 @@ Object* objectVerb(Object* verb) {
 
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
-    Object* result;
-    Object* identifier = findByName(ident);
-
-    if (!identifier) {
-        result = CreateObject(ident, ident, 0, Variable, Undefined);
-    } else {
-        result = CreateObject(ident, ident, 0, identifier->type, identifier->returnType);
-        addParam(result, identifier->returnType);
-    }
-    addCode(result, ident);
-    return result;
-}
-
-Object* subjectIdent(char* ident) {
-    printf("subjectIdent(%s)\n", ident);
     Object* result;
     Object* identifier = findByName(ident);
 

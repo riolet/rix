@@ -1,9 +1,3 @@
-//Necessary to solve issue with undeclared prev return values.
-//Will be fixed with implementation of codeblocks as a scope.
-//Will also be fixed by moving variable declaration to writeTree.
-hack = 1
-
-
 1 > 2 if 
   print "1 > 2 = True"
 ? else

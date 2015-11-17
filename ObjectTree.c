@@ -274,9 +274,17 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
 
     oIter = tree->definedSymbols;
     while (oIter != 0) {
-      writeTreeHelper(outc, outh, oIter->value, indent);
-      oIter = oIter->next;
+        if (oIter->value->type == Variable) {
+            fprintf(output, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+        } else {
+            writeTreeHelper(outc, outh, oIter->value, indent);
+        }
+        oIter = oIter->next;
     }
+
+    //declare all local variables
+
+
 
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
