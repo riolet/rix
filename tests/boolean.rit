@@ -1,35 +1,35 @@
 echo "(1<2) && (2<3) == "
-if    (1<2) && (2<3)
+(1<2) && (2<3) if    
   print "True"
-else
+? else
   print "False"
   
 echo "(1<2) || (2>3) == "
-if    (1<2) || (2>3)
+(1<2) || (2>3) if
   print "True"
-else
+? else
   print "False"
   
 echo "(1>2) || (2<3) == "
-if    (1>2) || (2<3)
+(1>2||2<3) if    
   print "True"
-else
+? else
   print "False"
   
 echo "(1>2) || (2>3) == "
-if    (1>2) || (2>3)
+1>2||2>3 if
   print "True"
-else
+? else
   print "False"
   
 echo "(1<2) && (2>3) == "
-if    (1<2) && (2>3)
+(1<2) && (2>3) if
   print "True"
-else
+? else
   print "False"
   
 echo "(1>2) && (2<3) || (3>4) == "
-if    (1>2) && (2<3) || (3>4)
+(1>2) && (2<3) || (3>4) if
   print "True"
-else
+? else
   print "False"

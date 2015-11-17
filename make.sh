@@ -1,3 +1,4 @@
+reset
 echo -e "\e[5m\e[33m>Is this a debug [ y / n ]?\e[0m"
 read d
 echo -e "\e[1m\e[32m[OK]\e[0m"
@@ -23,7 +24,7 @@ if [ -f ritc ]
 		echo " "
 		echo -e "\e[5m\e[33m>Ritchie File to Compile\e[0m"
 		find . -type f -name "*.rit"
-		echo -e "'\e[32m"
+		echo -e "\e[32m"
 		read file
 		echo -e "\e[0m"
 		./ritc $file
@@ -48,7 +49,7 @@ if [ -f ritc ]
 										echo ""
 										./a.out -t
 										echo ""
-										echo -e "\e[1m\e[32m[OK]\e[0m"
+										echo -e "\e[1m\e[32m[Done]\e[0m"
 									else
 										echo " "
 										echo -e "\e[1mRunning Normal \e[0m"

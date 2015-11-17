@@ -9,17 +9,18 @@ i for (0-10), (2^^0)
 print ""
 
 //draw addition table. 11..15 + 11..15
+//the odd if writing is because of a bug in if statements
+//    that I'm not intending to test here.
 print "Nested for loop:"
 y for 10, 16
   x for 10, 16
-    if x == 10
-      if y == 10
+    x == 10 && y == 10 if
         echo "+   "
-      else
+    x == 10 && y != 10 if
         echo y + "| "
-    elif y == 10
+    y == 10 && x != 10 if
       echo x + " "
-    else
+    x != 10 && y != 10 if
       echo (x + y) + " "
   print ""
 

@@ -19,11 +19,11 @@ typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 
-#define UNKNOWNTYPE_if_Boolean(A,B) if (B)
-#define UNKNOWNTYPE_elif_Boolean(A,B) else if (B)
-#define UNKNOWNTYPE_else(A) else
-#define UNKNOWNTYPE_while_Boolean(A,B) while (B)
-#define Identifier_for_Integer_Integer(i,a,b) for (i=a;i<b;i++)
+#define if_Boolean(A) A; if (_$_prev_$_Boolean) {
+#define elif_Boolean_Boolean(A, B) (!A && B); if (_$_prev_$_Boolean) {
+#define else_Boolean(A) !A; if (_$_prev_$_Boolean) {
+#define while_Boolean(A) while (A) {
+#define for_Integer_Integer(i,a,b) for (i=a;i<b;i++) {
 
 float exponent_Float_Integer (float f, int i) {
     return pow(f,i);
@@ -113,6 +113,8 @@ String plus_Float_String (float left, String right) {
 }
 
 
+
+/* Print prints the param and a newline char */
 int print_Stream_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream)+fputc('\n',stream);
 }
@@ -137,7 +139,7 @@ int print_Float(float f) {
     return fprintf(stdout,"%f\n",f);
 }
 
-/* New Line */
+/* Echo omits the newline char */
 int echo_Stream_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream);
 }

@@ -134,10 +134,11 @@ int addCode(Object* tree, char* line) {
   while(tail->next != 0) { tail = tail->next; }
   tail->next = node;
   return 0;
+
 }
 
 int setFlags(Object* tree, int flags) {
-    tree->flags = flags;
+    tree->flags |= flags;
 }
 
 int getFlag(Object* tree, int flag) {
@@ -151,7 +152,9 @@ int listlen(ListString* head) {
         head = head->next;
     }
     return count;
+
 }
+
 
 Object* findByNameInScope(Object* scope, char* name) {
   if (scope == 0 || name == 0) {
@@ -253,8 +256,8 @@ void writeTree(FILE* outc, FILE* outh, Object* tree) {
     writeTreeHelper(outc, outh, tree, 0);
 }
 
+
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
-    ///TODO: indent output code. (low priority)
     FILE* output;
     ListObject* oIter;
     ListString* sIter;
@@ -266,25 +269,59 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     if (outc == 0 || outh == 0) {
       warningMsg("output file was null in writeTree. (ObjectTree.c)\n");
       return;
+
     }
-    if (tree->type == Function)
+    if (tree->type == Function) {
         output = outh;
-    else
+    } else {
         output = outc;
+    }
 
     oIter = tree->definedSymbols;
-    while (oIter != 0) {
-      writeTreeHelper(outc, outh, oIter->value, indent);
-      oIter = oIter->next;
+    sIter = tree->paramTypes;
+    //construct and print function header
+    if (tree->type == Function && !getFlag(tree, FLAG_EXTERNAL)) {
+        fprintf(output, "%s %s(", tree->returnType, tree->fullname);
+
+        //add each param
+        while (sIter != 0) {
+            if (sIter->next == 0) {
+                fprintf(output, "%s %s", sIter->value, oIter->value->fullname);
+            } else {
+                fprintf(output, "%s %s, ", sIter->value, oIter->value->fullname);
+            }
+            sIter = sIter->next;
+            oIter = oIter->next;
+        }
+        //finish
+        fprintf(output, ") {\n");
     }
+
+    //oIter may not be the head of the list of symbols, on purpose
+    //   Due to the function header above declaring parameters.
+    while (oIter != 0) {
+        if (oIter->value->type == Variable) {
+            //declare all local variables
+            fprintf(output, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+        } else {
+            writeTreeHelper(outc, outh, oIter->value, indent+1);
+        }
+        oIter = oIter->next;
+    }
+
 
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
+
         sIter = tree->code;
         while (sIter != 0) {
-            fprintf(output, "%s\n", sIter->value);
+            fprintf(output, "  %s\n", sIter->value);
             sIter = sIter->next;
         }
+    }
+
+    if (tree->type == Function && !getFlag(tree, FLAG_EXTERNAL)) {
+        fprintf(output, "}\n");
     }
 }
 
@@ -358,6 +395,10 @@ void printTreeList(ListObject* trees, int indent) {
 
 void printTree(Object* tree, int indent) {
   int i;
+  if (tree == 0) {
+    for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: (null)\n");
+    return;
+  }
   for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: name: \"%s\"\n", tree->name);
   indent += 1;
   for(i = 0; i < indent; i++) { printf("  "); }   printf("fullname: \"%s\"\n", tree->fullname);

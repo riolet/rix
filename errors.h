@@ -27,8 +27,8 @@ typedef enum {
     ERROR_ParseError
 } ErrorCode;
 
-//extern int linePos;
-//extern int lineNum;
+int g_lineNum;
+int g_lineCol;
 
 int errorMsg(const char * format,...);
 int warningMsg(const char * format, ...);
