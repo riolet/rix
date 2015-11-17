@@ -76,7 +76,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %right ASSIGNMENT MATHASSIGN VERB
 %right PARAMCOMMA
 %right BOOLEANOP
-%right COMPARISON
+%right COMPARISON TERNARY
 %right MATH_OP
 
 
@@ -93,6 +93,7 @@ statements:
 simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
+  | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
   | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
   ;
 function_definition:
@@ -108,8 +109,8 @@ parameters:
   | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
 statement:
-  expr          { printf("parser: stmt-expr\n");  $$ = completeExpression($1); }
-  | RETURN expr { printf("parser: stmt-retEx\n"); $$ = completeExpression(makeReturn($2)); }
+  expr              { printf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
+  | RETURN expr     { printf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
   ;
 expr:
   object                  { printf("parser: expr-obj\n");   $$ = $1; }
@@ -118,18 +119,20 @@ expr:
   | expr MATHASSIGN expr  { printf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr COMPARISON expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr BOOLEANOP  expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
-  | expr MATH_OP    expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
-  | expr VERB expr        { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), $3); }
-  | VERB expr             { printf("parser: expr-vbe\n");   $$ = conjugate( 0, verbIdent($1), $2); }
-  | expr VERB             { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), 0); }
-  | VERB                  { printf("parser: expr- v \n");   $$ = conjugate( 0, verbIdent($1), 0); }
+  | expr  TERNARY   expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbTernary(), $3); }
+  | expr  MATH_OP   expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
+  | expr   VERB     expr  { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), $3); }
+  |        VERB     expr  { printf("parser: expr-vbe\n");   $$ = conjugate( 0, verbIdent($1), $2); }
+  | expr   VERB           { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), 0); }
+  |        VERB           { printf("parser: expr- v \n");   $$ = conjugate( 0, verbIdent($1), 0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:
-  INT     { printf("parser: object-int\n");       $$ = objectInt($1); }
+  INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1); }
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
-  | STRING { printf("parser: object-string\n"); $$ = objectString($1); }
+  | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
+  | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
   ;
 %%
 

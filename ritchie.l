@@ -108,6 +108,7 @@ booleanOp     "||"|"&&"
                         }
 
                         printf("lexer: EOF OUTDENT\n");
+                        decPrev(); //for tracking last-statement.
                         return UNINDENT;
                     } else {
                         yyterminate();
@@ -129,6 +130,7 @@ booleanOp     "||"|"&&"
                         printf("lexer: INDENT\n");
                         stack_push(g_current_line_indent);
                         BEGIN(indent_caller);
+                        incPrev(); //for tracking last-statement.
                         return INDENT;
                     } else if(g_current_line_indent < stack_top()) {
                         printf("lexer: OUTDENT\n");
@@ -160,6 +162,7 @@ booleanOp     "||"|"&&"
                         } else {
                             BEGIN(indent_caller);
                         }
+                        decPrev(); //for tracking last-statement.
                         return UNINDENT;
                     } else {
                         // No change in indentation, not much to do here...

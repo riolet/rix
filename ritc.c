@@ -23,6 +23,8 @@ bool hitEOF;
 
 Object* root;
 Object* current;
+char* previous[STACKDEP] = {0};
+int prev_idx = 0;
 
 
 void handleEOF() {
@@ -175,6 +177,7 @@ Object* completeExpression(Object* expression) {
         warningMsg("expression was null\n");
         return 0;
     }
+
     char buffer[BUFFLEN];
     ListString* code = expression->code;
     while (code != 0) {
@@ -183,6 +186,22 @@ Object* completeExpression(Object* expression) {
         code = code->next;
     }
     return current;
+}
+
+Object* finalize(Object* expression) {
+    Object* exprPrev;
+    if (strcmp(expression->returnType, "void")) {
+        char prevName[BUFFLEN];
+        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev" COMPILER_SEP "%s", expression->returnType);
+        previous[prev_idx] = strdup(prevName);
+        exprPrev = conjugateAssign(objectIdent(prevName), verbAssignment("="), expression);
+        return exprPrev;
+    }
+    return expression;
+}
+
+void closeBrace() {
+    addCode(current, "}");
 }
 
 Object* makeReturn(Object* expression) {
@@ -207,6 +226,17 @@ Object* makeReturn(Object* expression) {
     return expression;
 }
 
+void incPrev() {
+    prev_idx++;
+}
+
+void decPrev() {
+    prev_idx--;
+    if (prev_idx < 0) {
+        criticalError(ERROR_ParseError, "Scope tracker went below 0. (decPrev, ritc.c)\n");
+    }
+}
+
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     if (subject == 0) {
         criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
@@ -218,17 +248,24 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     int verbname_pos = 0;
 
     //build base name of verb (e.g. "+" becomes "plus")
-    if (!strcmp(verb->name, "="))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign"); }
-    else if (!isalpha(verb->name[0]))   {
+    if (!strcmp(verb->name, "=")) {
+        //handling straight up assignment.
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign");
+    } else if (!isalpha(verb->name[0])) {
+        //handle augmented assigment operators recursively.
         char op[4];
         Object* augment;
         strcpy(op, verb->name);
-        if (op[3] == '=') { op[3] = '\0'; }
         if (op[2] == '=') { op[2] = '\0'; }
+        if (op[1] == '=') { op[1] = '\0'; }
+
+
         augment = conjugate(subject, verbMathOp(op), objects);
-        return conjugateAssign(subject, verb, augment);
+        return conjugateAssign(subject, verbAssignment("="), augment);
+    } else {
+        //handle assignment verbs
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
     }
-    else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
     //build final name for verb given object
     if (objects) {
@@ -296,7 +333,11 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     //build code line statement invoking that verb.
     verbname_pos = 0;
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
-    if (subject != 0) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value); }
+    if (subject && objects) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value);
+    } else if (subject) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", subject->code->value);
+    }
     paramIter = objects->code;
     while (paramIter != 0) {
         verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
@@ -304,14 +345,22 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     }
 
     if (verbname[verbname_pos-1] == ',') { verbname_pos--; } //to overwrite the last comma
-    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ") {");
+    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
     printf("code line: %s", verbname);
 
-    result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
-    addParam(result, realVerb->returnType);
-    ///TDOO: add subject declaration if subject didn't previously exist!!!
-    addCode(result, verbname);
+    result = CreateObject(0, 0, 0, Expression, "void");
+    ///TODO: add subject declaration if subject didn't previously exist!!!
+    if (subject && subject->returnType == 0) {
+        char decl[BUFFLEN];
+        snprintf(decl, BUFFLEN, "%s %s", realVerb->returnType, subject->fullname);
+        addCode(result, decl);
+        Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
+        addSymbol(current, variable);
+    }
 
+    addParam(result, realVerb->returnType);
+    addCode(result, verbname);
+    printTree(result, 0);
     return result;
 
 }
@@ -326,7 +375,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     int verbname_pos = 0;
     char invoke_pos = 0;
     //if this is an assignment verb, treat it differently.
-    if (!strcmp(verb->name, "=")) {
+    if (getFlag(verb, FLAG_ASSIGNMENT)) {
         return conjugateAssign(subject, verb, objects);
     }
 
@@ -343,6 +392,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else if (!strcmp(verb->name, ">=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq"); }
     else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq"); }
     else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq"); }
+    else if (!strcmp(verb->name, "<>")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
 
@@ -432,7 +482,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         if (subject->code->next != 0) {
             criticalError(ERROR_ParseError, "Multiple code lines found in subject.\n");
         }
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value);
+        if (objects == 0) {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", subject->code->value);
+        } else {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value);
+        }
     }
 
     if (objects != 0) {
@@ -463,6 +517,8 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     return result;
 }
 
+
+
 Object* verbMathOp(char* verb) {
     printf("verbMathOp(%s)\n", verb);
     Object* result = CreateObject(verb, verb, 0, Function, 0);
@@ -470,8 +526,14 @@ Object* verbMathOp(char* verb) {
 }
 
 Object* verbComparison(char* verb) {
-    printf("verbMathOp(%s)\n", verb);
+    printf("verbComparison(%s)\n", verb);
     Object* result = CreateObject(verb, verb, 0, Function, "Boolean");
+    return result;
+}
+
+Object* verbTernary() {
+    printf("verbTernary(<>)\n");
+    Object* result = CreateObject("<>", "<>", 0, Function, "Boolean");
     return result;
 }
 
@@ -593,47 +655,38 @@ Object* objectString(char* string) {
     Object* result = CreateObject(0,0,0, Expression, "String");
 	addCode(result, buffer);
 	addParam(result, "String");
-	return result;   
+	return result;
 }
 
-float simplifyFloat(float left, char* op, float right){
-    char error[50];
-
-    switch (op[0]) {
-    case '+':
-        return left + right;
-    case '-':
-        return left - right;
-    case '*':
-        return left * right;
-    case '/':
-        return left / right;
-    default:
-        sprintf(error, "simplifyFloat encountered a '%c'\n", op[0]);
-        criticalError(ERROR_UnrecognizedSymbol, error);
+Object* objectPrev() {
+    printf("objectPrev(%s)\n", previous[prev_idx]);
+    return objectIdent(previous[prev_idx]);
+    /*
+    char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
+    char buffer[BUFFLEN];
+    strncpy(buffer, pattern, BUFFLEN);
+    int lenPattern = strlen(pattern);
+    ListString* codeIter = current->code;
+    char* line;
+    while (codeIter != 0) {
+        if (!strncmp(codeIter->value, pattern, lenPattern)) {
+          line = codeIter->value;
+        }
+        codeIter = codeIter->next;
     }
-    return 0.0f;
-}
-
-
-int simplifyInt(int left, char* op, int right){
-    char error[50];
-
-    switch (op[0]) {
-    case '+':
-        return left + right;
-    case '-':
-        return left - right;
-    case '*':
-        return left * right;
-    case '/':
-        return left / right;
-    default:
-        sprintf(error, "simplifyInt encountered a '%c'\n", op[0]);
-        criticalError(ERROR_UnrecognizedSymbol, error);
+    int lenToken = 0;
+    while( !isspace(line[lenPattern]) ) {
+        buffer[lenPattern] = line[lenPattern];
+        lenPattern++;
     }
-    return 0;
+    buffer[lenPattern] = 0; //null-terminate the string
+    printf("objectPrev found object '%s'\n", buffer);
+    exit(0);
+    return objectIdent(buffer);
+    */
 }
+
+
 
 Object* findByName(char* name) {
     Object* result = findByNameInScope(current, name);
@@ -718,13 +771,33 @@ void defineRSLSymbols(Object* root) {
 
     // ==============  Conditional Functions ===============
 
-    rslFunc = CreateObject("if", "if_Boolean_CodeBlock", 0, Function, "Boolean");
+    rslFunc = CreateObject("if", "if_Boolean", 0, Function, "Boolean");
     addParam(rslFunc, "Boolean");
-    addParam(rslFunc, "CodeBlock");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("elif", "elif_Boolean_Boolean", 0, Function, "Boolean");
+    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("else", "else_Boolean", 0, Function, "Boolean");
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+
+    rslFunc = CreateObject("compare", "compare_Integer_Integer", 0, Function, "Ternary");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("pick", "pick_Ternary_String_String_String", 0, Function, "String");
+    addParam(rslFunc, "Ternary");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
 
     // ==============  Looping Functions ===============
 
+    rslFunc = CreateObject("while", "while_Boolean", 0, Function, "void");
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
     rslFunc = CreateObject("for", "for_Integer_Integer", 0, Function, "Integer");
     setFlags(rslFunc, FLAG_ASSIGNMENT);
     addParam(rslFunc, "Integer");
