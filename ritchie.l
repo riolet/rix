@@ -72,7 +72,7 @@ comment       \/\/.*
 
 funcDec       ":"
 paramComma    ","
-objectLink    "::"
+classDec      "::"
 conditionLink "?"
 selfIdent     "$"
 
@@ -189,6 +189,7 @@ booleanOp     "||"|"&&"
 <normal>{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 <normal>{identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
+                        printf("returned from findByName\n");
                         if (!exists || exists->type == Variable) {
                           printf("lexer: identifier\n");
                           return IDENT;
@@ -210,6 +211,7 @@ booleanOp     "||"|"&&"
 
 <normal>{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
 <normal>{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
+<normal>{classDec}      { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return CLASSDEC; }
 <normal>{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
 <normal>{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 

@@ -22,27 +22,72 @@ FILE *outHeaderFile;
 bool hitEOF;
 
 Object* root;
+Object* scopeStack[STACKDEP];
+int scope_idx = 0;
 Object* current;
-char* previous[STACKDEP] = {0};
+char* previous[STACKDEP];
 int prev_idx = 0;
+Object* currentClass;
+bool insideClass;
 
+Object*  scope_pop() { current = scopeStack[--scope_idx];  return scopeStack[scope_idx+1]; }
+void scope_push(Object* val) { current = scopeStack[++scope_idx] = val; }
 
 void handleEOF() {
     hitEOF = true;
 }
 
-Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
+Object* beginClass(char* className, char* parentName) {
+    if (!className || !parentName) {
+        criticalError(ERROR_ParseError, "Class name mustn't be null.\n");
+    }
+
+    //build full name of class:  <ClassName><sep><ParentClassName>
+    char fullname[BUFFLEN];
+    snprintf(fullname, BUFFLEN, "%s" COMPILER_SEP "%s", className, parentName);
+
+    //get link to parent class definition
+    Object* parent = findByName(parentName);
+    if (parent == 0) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find definition for '%s'\n", parentName);
+        criticalError(ERROR_ParseError, error);
+    }
+
+    //TODO: should the type be BaseType or BaseType* ?
+    Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->fullname);
+    Object* selfReference = CreateObject("self", "self", 0, Variable, fullname);
+    Object* result = CreateObject(className, fullname, current, Type, 0);
+    addSymbol(result, selfReference);
+    addSymbol(result, parentReference);
+    addSymbol(current, result);
+    //scope_push(result);
+    insideClass = true;
+    currentClass = result;
+}
+
+void doneClass(Object* tree) {
+    //scope_pop();
+    insideClass = false;
+    currentClass = 0;
+}
+
+Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   if (returnType == 0) {
-    returnType = "void";
+    criticalError(ERROR_ParseError, "Return type mustn't be null.\n");
   }
   ListString* types = parameters->paramTypes;
   ListString* names = parameters->code;
   //TODO: check funcName is undefined or function type
   //TODO: check returnType is a valid Type
-  //TODO: change current to equal result
 
   char funcFullName[BUFFLEN];
   int funcFullName_pos = 0;
+
+  if (insideClass && currentClass != 0) {
+    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, currentClass->name);
+  }
+
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
   while(types != 0) {
@@ -51,6 +96,10 @@ Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
   }
 
   Object* result = CreateObject(funcName, funcFullName, current, Function, returnType);
+
+  if (insideClass && currentClass != 0) {
+    result->parentClass = currentClass;
+  }
 
   //add parameters to the function
   types = parameters->paramTypes;
@@ -63,12 +112,12 @@ Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
   }
 
   addSymbol(current, result);
-  current = result;
+  scope_push(result);
   return result;
 }
 
 void doneFunction(Object* tree) {
-  current = root;
+  scope_pop();
 }
 
 Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
@@ -157,6 +206,14 @@ Object* concatParams(Object* existing, Object* newParam) {
 
     return result;
 }
+
+Object* declareVariable(char* name, char* type) {
+    Object* var = CreateObject(name, name, 0, Variable, type);
+    addSymbol(insideClass ? currentClass : current, var);
+    return var;
+}
+
+
 
 Object* completeExpression(Object* expression) {
     if (expression == 0) {
@@ -281,7 +338,7 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
         if (!subject->returnType) {
             Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
-            addSymbol(current, variable);
+            addSymbol(insideClass ? currentClass : current, variable);
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
@@ -600,6 +657,8 @@ Object* objectString(char* string) {
 Object* objectPrev() {
     printf("objectPrev(%s)\n", previous[prev_idx]);
     return objectIdent(previous[prev_idx]);
+
+    //brute force search of recent text lines
     /*
     char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
     char buffer[BUFFLEN];
@@ -853,7 +912,7 @@ int main(int argc,char **argv)
             ifile=argv[optind];
         }
     }
-	
+
 	if ( argc == 3 )
 		if ( strcmp( argv[2], "-t" ) == 0 ) {
 			printTreeBool = 1;
@@ -893,7 +952,8 @@ int main(int argc,char **argv)
 
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
-    current = root;
+    scopeStack[scope_idx] = root;
+    current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
     yyin = file;
@@ -902,12 +962,13 @@ int main(int argc,char **argv)
     hitEOF = false;
     while (!hitEOF) {
         yyparse();
-    }  
-        
-	
+    }
+    printf("=============  Compiling Complete!  ==============\n");
+
+    printTree(root, 0);
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
-		
+
 		printTreeToFile(root, 0, "./treeOutput.txt");
 	}
 

@@ -50,6 +50,7 @@
 %token <sval> BITWISEOP
 %token <sval> BOOLEANOP
 %token <sval> FUNCDEC
+%token <sval> CLASSDEC
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
 %token <sval> SELFIDENT
@@ -61,11 +62,14 @@
 %type <oval> statements;
 %type <oval> statement;
 %type <oval> simple_statement;
+%type <oval> class_statements;
+%type <oval> class_statement;
 %type <oval> parameters;
 %type <oval> codeblock;
+%type <oval> classblock;
 %type <oval> function_definition;
+%type <oval> class_definition;
 %type <oval> expr;
-//%type <oval> exprlist;
 %type <oval> object;
 
 %{
@@ -91,24 +95,11 @@ statements:
   | statements simple_statement { printf("parser: stmts-stmt,s_s\n"); $$ = $1; }
   ;
 simple_statement:
-  ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
-  | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
-  ;
-function_definition:
-  TYPE FUNCDEC IDENT  parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
-  | TYPE FUNCDEC VERB parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }
-  | FUNCDEC IDENT parameters { printf("parser: func-void\n"); $$ = funcHeader(0, $2, $3); }
-  | FUNCDEC VERB  parameters { printf("parser: func-void\n"); $$ = funcHeader(0, $2, $3); }
-  ;
-codeblock:
-  INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }
-  ;
-parameters:
-  %empty                              { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | TYPE IDENT                        { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
+  | function_definition ENDOFLINE codeblock { printf("parser: s_s-func - Function Defined!\n"); doneFunction($1); }
+  | class_definition ENDOFLINE classblock { printf("parser: s_s-class - Class Defined!\n"); doneClass($1); }
   ;
 statement:
   expr              { printf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
@@ -136,6 +127,42 @@ object:
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
   | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
   ;
+
+
+
+function_definition:
+  TYPE FUNCDEC IDENT  parameters { printf("parser: func-def\n"); $$ = beginFunction($1, $3, $4); }
+  | TYPE FUNCDEC VERB parameters { printf("parser: func-def\n"); $$ = beginFunction($1, $3, $4); }
+  | FUNCDEC IDENT parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $2, $3); }
+  | FUNCDEC VERB  parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $2, $3); }
+  ;
+parameters:
+  %empty                              { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  | TYPE IDENT                        { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
+  ;
+codeblock:
+  INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }
+  ;
+
+
+
+class_definition:
+  IDENT CLASSDEC TYPE { printf("parser: class-def\n"); $$ = beginClass($1, $3); }
+  ;
+classblock:
+  INDENT class_statements UNINDENT { $$ = $2; }
+  ;
+class_statements:
+  class_statement
+  | class_statements class_statement
+  ;
+class_statement:
+  ENDOFLINE { printf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
+  | IDENT ASSIGNMENT TYPE ENDOFLINE { printf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
+  | function_definition ENDOFLINE codeblock { printf("parser: c_s-func - Function Defined!\n"); doneFunction($1); }
+  ;
+
 %%
 
 //void yyerror(char const *msg) {
