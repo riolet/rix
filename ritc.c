@@ -54,9 +54,9 @@ Object* beginClass(char* className, char* parentName) {
 
     //TODO: should the type be BaseType or BaseType* ?
     Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->fullname);
-    Object* selfReference = CreateObject("self", "self", 0, Variable, fullname);
+    //Object* selfReference = CreateObject("self", "self", 0, Variable, fullname);
     Object* result = CreateObject(className, fullname, current, Type, 0);
-    addSymbol(result, selfReference);
+    //addSymbol(result, selfReference);
     addSymbol(result, parentReference);
     addSymbol(current, result);
     scope_push(result);
@@ -700,20 +700,28 @@ void defineRSLSymbols(Object* root) {
     // ==============  Built-in Types ===============
 
     temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
+    setFlags(temp1, FLAG_EXTERNAL);
     addSymbol(root, temp1);
     temp2 = CreateObject("Boolean", "BaseType_Boolean", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Ternary", "BaseType_Ternary", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Stream", "BaseType_Stream", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("String", "BaseType_String", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Number", "BaseType_Number", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp3 = CreateObject("Integer", "Number_Integer", temp2, Type, 0);
+    setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
     temp3 = CreateObject("Float", "Number_Float", temp2, Type, 0);
+    setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
 
     // ==============  Exponent functions ===============
@@ -931,8 +939,7 @@ int main(int argc,char **argv)
         snprintf(oMainFileName,BUFFLEN,"%s.c",ofile);
         snprintf(oHeaderFileName,BUFFLEN,"%s.h",ofile);
     }
-    outMainFile=fopen(oMainFileName,"w");
-    outHeaderFile=fopen(oHeaderFileName,"w");
+
 
 
 
@@ -941,10 +948,6 @@ int main(int argc,char **argv)
     "**********************************\n"
     "**********************************\n"
     "**********************************\n" ANSI_COLOR_RESET);
-    fprintf(outMainFile,"#include \"rsl.h\"\n");
-    fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
-    fprintf(outMainFile,"int main(void) {\n");
-
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
     scopeStack[scope_idx] = root;
@@ -960,7 +963,13 @@ int main(int argc,char **argv)
     }
     printf("=============  Compiling Complete!  ==============\n");
 
-    printTree(root, 0);
+    outMainFile=fopen(oMainFileName,"w");
+    outHeaderFile=fopen(oHeaderFileName,"w");
+
+    fprintf(outMainFile,"#include \"rsl.h\"\n");
+    fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
+    fprintf(outMainFile,"int main(void) {\n");
+
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
 

@@ -1,3 +1,10 @@
-a = 5
-b = "potato"
-print b
+p = "potato"
+
+/*
+i for 0, 10
+	print p
+
+
+z = "not potato"
+i for 0, 10
+	print z

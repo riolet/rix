@@ -35,20 +35,11 @@ void set_yycolumn(int val) {
     //yylloc.last_column = yycolumn + yyleng - 1;
 }
 
-/*
-#define YY_USER_ACTION { \
-    yylloc.first_line = yylloc.last_line = yylineno; \
-    set_yycolumn(yycolumn); \
-    yycolumn += yyleng; \
-}
-*/
-
 #define YY_USER_ACTION { \
     g_lineNum = yylineno; \
     set_yycolumn(yycolumn);\
     yycolumn += yyleng; \
 }
-
 
 %}
 
@@ -182,6 +173,8 @@ booleanOp     "||"|"&&"
                 BEGIN(indent);
                 return ENDOFLINE; }
 
+     [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
+     [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
 <normal>{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
 <normal>{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 <normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
@@ -227,5 +220,7 @@ booleanOp     "||"|"&&"
 <normal>.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
+
+
 
 
