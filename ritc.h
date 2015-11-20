@@ -23,10 +23,13 @@ Object* makeReturn(Object* expression);
 void incPrev();
 void decPrev();
 
-Object* funcHeader(char* returnType, char* funcName, Object* parameters);
+Object* beginClass(char* className, char* parentName);
+void doneClass(Object* tree);
+Object* beginFunction(char* returnType, char* funcName, Object* parameters);
+void doneFunction(Object* tree);
 Object* funcParameters(Object* tree, char* paramType, char* paramName);
 Object* concatParams(Object* existing, Object* newParam);
-void doneFunction(Object* tree);
+Object* declareVariable(char* name, char* type);
 
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects);
 Object* conjugate(Object* lhs, Object* verb, Object* rhs);

@@ -22,35 +22,92 @@ FILE *outHeaderFile;
 bool hitEOF;
 
 Object* root;
+Object* scopeStack[STACKDEP];
+int scope_idx = 0;
 Object* current;
-char* previous[STACKDEP] = {0};
+char* previous[STACKDEP];
 int prev_idx = 0;
 
+Object*  scope_pop() { current = scopeStack[--scope_idx];  return scopeStack[scope_idx+1]; }
+void scope_push(Object* val) { current = scopeStack[++scope_idx] = val; }
 
 void handleEOF() {
     hitEOF = true;
 }
 
-Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
+Object* beginClass(char* className, char* parentName) {
+    if (!className || !parentName) {
+        criticalError(ERROR_ParseError, "Class name mustn't be null.\n");
+    }
+
+    //build full name of class:  <ClassName><sep><ParentClassName>
+    char fullname[BUFFLEN];
+    snprintf(fullname, BUFFLEN, "%s" COMPILER_SEP "%s", className, parentName);
+
+    //get link to parent class definition
+    Object* parent = findByName(parentName);
+    if (parent == 0) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find definition for '%s'\n", parentName);
+        criticalError(ERROR_ParseError, error);
+    }
+
+    //TODO: should the type be BaseType or BaseType* ?
+    Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->fullname);
+    //Object* selfReference = CreateObject("self", "self", 0, Variable, fullname);
+    Object* result = CreateObject(className, fullname, current, Type, 0);
+    //addSymbol(result, selfReference);
+    addSymbol(result, parentReference);
+    addSymbol(current, result);
+    scope_push(result);
+}
+
+void doneClass(Object* tree) {
+    scope_pop();
+}
+
+Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   if (returnType == 0) {
-    returnType = "void";
+    criticalError(ERROR_ParseError, "Return type mustn't be null.\n");
   }
   ListString* types = parameters->paramTypes;
   ListString* names = parameters->code;
   //TODO: check funcName is undefined or function type
   //TODO: check returnType is a valid Type
-  //TODO: change current to equal result
 
   char funcFullName[BUFFLEN];
   int funcFullName_pos = 0;
+
+  if (current->type == Type) {
+    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, current->name);
+  }
+
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
   while(types != 0) {
     funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "_%s", types->value);
     types = types->next;
   }
+  Object* parentScope;
+  int i = scope_idx;
+  while (i >= 0) {
+    if (scopeStack[i]->type != Type) {
+        break;
+    }
+    i--;
+  }
+  parentScope = scopeStack[i];
 
-  Object* result = CreateObject(funcName, funcFullName, current, Function, returnType);
+  Object* result = CreateObject(funcName, funcFullName, parentScope, Function, returnType);
+
+  if (current->type == Type) {
+    result->parentClass = current;
+    char pointer[BUFFLEN];
+    snprintf(pointer, BUFFLEN, "%s *", current->fullname);
+    addParam(result, pointer);
+    addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+    printf(ANSI_COLOR_CYAN "adding self (%s)\n" ANSI_COLOR_RESET, pointer);
+  }
 
   //add parameters to the function
   types = parameters->paramTypes;
@@ -63,12 +120,12 @@ Object* funcHeader(char* returnType, char* funcName, Object* parameters) {
   }
 
   addSymbol(current, result);
-  current = result;
+  scope_push(result);
   return result;
 }
 
 void doneFunction(Object* tree) {
-  current = root;
+  scope_pop();
 }
 
 Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
@@ -158,6 +215,14 @@ Object* concatParams(Object* existing, Object* newParam) {
     return result;
 }
 
+Object* declareVariable(char* name, char* type) {
+    Object* var = CreateObject(name, name, 0, Variable, type);
+    addSymbol(current, var);
+    return var;
+}
+
+
+
 Object* completeExpression(Object* expression) {
     if (expression == 0) {
         warningMsg("expression was null\n");
@@ -219,7 +284,7 @@ void incPrev() {
 void decPrev() {
     prev_idx--;
     if (prev_idx < 0) {
-        criticalError(ERROR_ParseError, "Scope tracker went below 0. (decPrev, ritc.c)\n");
+        criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
     }
 }
 
@@ -539,19 +604,6 @@ Object* parenthesize(Object* expr) {
     return parenthesized;
 }
 
-Object* objectVerb(Object* verb) {
-    printf("objectVerb(%s)\n", verb->name);
-    if (verb->paramTypes != 0) {
-        criticalError(ERROR_InvalidArguments, "Only zero-argument verbs can be used as objects.\n");
-    }
-    Object* result = CreateObject(0, 0, 0, Expression, verb->returnType);
-    char* buffer = malloc(BUFFLEN);
-    snprintf(buffer, BUFFLEN, "%s()", verb->fullname);
-    addParam(result, verb->returnType);
-    addCode(result, buffer);
-    return result;
-}
-
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
     Object* result;
@@ -560,17 +612,17 @@ Object* objectIdent(char* ident) {
     if (!identifier) {
         result = CreateObject(ident, ident, 0, Variable, Undefined);
     } else {
-        result = CreateObject(ident, ident, 0, identifier->type, identifier->returnType);
+        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
         addParam(result, identifier->returnType);
     }
-    addCode(result, ident);
+    addCode(result, identifier? identifier->fullname : ident);
     return result;
 }
 
 Object* objectFloat(float f) {
     printf("objectFloat(%f)\n", f);
-    char* buffer = malloc(256);
-    sprintf(buffer, "%f", f);
+    char buffer[128];
+    snprintf(buffer, BUFFLEN, "%f", f);
     Object* result = CreateObject(0, 0, 0, Expression, "Float");
     addCode(result, buffer);
     addParam(result, "Float");
@@ -579,7 +631,7 @@ Object* objectFloat(float f) {
 
 Object* objectInt(int d) {
     printf("objectInt(%d)\n", d);
-    char buffer[32]; // 21 = (log10(2^64)+1)
+    char buffer[32]; // 20 = (log10(2^64))
     snprintf(buffer, 32, "%d", d);
     Object* result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
@@ -600,6 +652,8 @@ Object* objectString(char* string) {
 Object* objectPrev() {
     printf("objectPrev(%s)\n", previous[prev_idx]);
     return objectIdent(previous[prev_idx]);
+
+    //brute force search of text lines in current scope
     /*
     char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
     char buffer[BUFFLEN];
@@ -646,20 +700,28 @@ void defineRSLSymbols(Object* root) {
     // ==============  Built-in Types ===============
 
     temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
+    setFlags(temp1, FLAG_EXTERNAL);
     addSymbol(root, temp1);
     temp2 = CreateObject("Boolean", "BaseType_Boolean", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Ternary", "BaseType_Ternary", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Stream", "BaseType_Stream", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("String", "BaseType_String", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp2 = CreateObject("Number", "BaseType_Number", temp1, Type, 0);
+    setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp3 = CreateObject("Integer", "Number_Integer", temp2, Type, 0);
+    setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
     temp3 = CreateObject("Float", "Number_Float", temp2, Type, 0);
+    setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
 
     // ==============  Exponent functions ===============
@@ -859,6 +921,7 @@ int main(int argc,char **argv)
         }
     }
 
+
     if (ifile==NULL) {
         errorMsg("No file to compile\n");
         file=fopen("helloworld.rit","r");
@@ -876,7 +939,7 @@ int main(int argc,char **argv)
         snprintf(oMainFileName,BUFFLEN,"%s.c",ofile);
         snprintf(oHeaderFileName,BUFFLEN,"%s.h",ofile);
     }
-    
+
 
 
 
@@ -887,7 +950,8 @@ int main(int argc,char **argv)
     "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
-    current = root;
+    scopeStack[scope_idx] = root;
+    current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
     yyin = file;
@@ -896,20 +960,19 @@ int main(int argc,char **argv)
     hitEOF = false;
     while (!hitEOF) {
         yyparse();
-    }  
+    }
+    printf("=============  Compiling Complete!  ==============\n");
+
     outMainFile=fopen(oMainFileName,"w");
     outHeaderFile=fopen(oHeaderFileName,"w");
-    
-    
+
     fprintf(outMainFile,"#include \"rsl.h\"\n");
     fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outMainFile,"int main(void) {\n");
 
-   
-	
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
-		
+
 		printTreeToFile(root, 0, "./treeOutput.txt");
 	}
 

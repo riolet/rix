@@ -9,6 +9,7 @@
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2
 #define FLAG_EXTERNAL   4
+#define BUFFLEN 1024
 
 typedef enum {
   Undefined,
@@ -36,6 +37,7 @@ struct _ListObject{
 struct _Object{
   char*        name;           //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
   char*        fullname;       //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
+  Object*      parentClass;
   Object*      parentScope;    //parent scope    (global scope, global scope, BaseType)
   OBJ_TYPE     type;           //What is this?   (Variable, Function, Class)
   char*        returnType;     //What value type?(Integer,  Integer,  NULL)
@@ -46,7 +48,7 @@ struct _Object{
 };
 
 //mallocs memory and returns a pointer to a new Object
-Object * CreateObject(char* name, char* fullname, Object* parent, OBJ_TYPE type, char* returnType);
+Object * CreateObject(char* name, char* fullname, Object* parentScope, OBJ_TYPE type, char* returnType);
 
 //append item to end of linked list
 int addParam(Object* tree, char* type);
@@ -54,6 +56,7 @@ int addSymbol(Object* tree, Object* leaf);
 int addCode(Object* tree, char* line);
 int setFlags(Object* tree, int flags);
 int getFlag(Object* tree, int flag);
+int setParentClass(Object* tree, Object* parentClass);
 int listlen(ListString* head);
 
 //writes the code of root first, then children in order
@@ -66,6 +69,10 @@ void printTreeToFile(Object* tree, int indent, char* fname);
 //returns Undefined if identifier isn't found.
 OBJ_TYPE getIdentType(Object* scope, char* identifier);
 //return null if name not found
+Object* searchFunction(Object* scope, char* name);
+Object* searchConstructor(Object* scope, char* name);
+Object* searchType(Object* scope, char* name);
+Object* searchCodeBlock(Object* scope, char* name);
 Object* findByNameInScope(Object* scope, char* name);
 Object* findByFullNameInScope(Object* scope, char* name);
 

@@ -10,7 +10,9 @@ typedef struct {
     size_t cap;
 } String;
 
-typedef void BaseType;
+typedef struct {
+  int object_$_id;
+} BaseType;
 typedef FILE * Stream;
 typedef void * UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
