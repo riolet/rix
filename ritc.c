@@ -27,8 +27,6 @@ int scope_idx = 0;
 Object* current;
 char* previous[STACKDEP];
 int prev_idx = 0;
-Object* currentClass;
-bool insideClass;
 
 Object*  scope_pop() { current = scopeStack[--scope_idx];  return scopeStack[scope_idx+1]; }
 void scope_push(Object* val) { current = scopeStack[++scope_idx] = val; }
@@ -61,15 +59,11 @@ Object* beginClass(char* className, char* parentName) {
     addSymbol(result, selfReference);
     addSymbol(result, parentReference);
     addSymbol(current, result);
-    //scope_push(result);
-    insideClass = true;
-    currentClass = result;
+    scope_push(result);
 }
 
 void doneClass(Object* tree) {
-    //scope_pop();
-    insideClass = false;
-    currentClass = 0;
+    scope_pop();
 }
 
 Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
@@ -84,8 +78,8 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   char funcFullName[BUFFLEN];
   int funcFullName_pos = 0;
 
-  if (insideClass && currentClass != 0) {
-    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, currentClass->name);
+  if (current->type == Type) {
+    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, current->name);
   }
 
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
@@ -94,11 +88,25 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
     funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "_%s", types->value);
     types = types->next;
   }
+  Object* parentScope;
+  int i = scope_idx;
+  while (i >= 0) {
+    if (scopeStack[i]->type != Type) {
+        break;
+    }
+    i--;
+  }
+  parentScope = scopeStack[i];
 
-  Object* result = CreateObject(funcName, funcFullName, current, Function, returnType);
+  Object* result = CreateObject(funcName, funcFullName, parentScope, Function, returnType);
 
-  if (insideClass && currentClass != 0) {
-    result->parentClass = currentClass;
+  if (current->type == Type) {
+    result->parentClass = current;
+    char pointer[BUFFLEN];
+    snprintf(pointer, BUFFLEN, "%s *", current->fullname);
+    addParam(result, pointer);
+    addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+    printf(ANSI_COLOR_CYAN "adding self (%s)\n" ANSI_COLOR_RESET, pointer);
   }
 
   //add parameters to the function
@@ -209,7 +217,7 @@ Object* concatParams(Object* existing, Object* newParam) {
 
 Object* declareVariable(char* name, char* type) {
     Object* var = CreateObject(name, name, 0, Variable, type);
-    addSymbol(insideClass ? currentClass : current, var);
+    addSymbol(current, var);
     return var;
 }
 
@@ -276,7 +284,7 @@ void incPrev() {
 void decPrev() {
     prev_idx--;
     if (prev_idx < 0) {
-        criticalError(ERROR_ParseError, "Scope tracker went below 0. (decPrev, ritc.c)\n");
+        criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
     }
 }
 
@@ -338,7 +346,7 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
         if (!subject->returnType) {
             Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
-            addSymbol(insideClass ? currentClass : current, variable);
+            addSymbol(current, variable);
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
@@ -596,19 +604,6 @@ Object* parenthesize(Object* expr) {
     return parenthesized;
 }
 
-Object* objectVerb(Object* verb) {
-    printf("objectVerb(%s)\n", verb->name);
-    if (verb->paramTypes != 0) {
-        criticalError(ERROR_InvalidArguments, "Only zero-argument verbs can be used as objects.\n");
-    }
-    Object* result = CreateObject(0, 0, 0, Expression, verb->returnType);
-    char* buffer = malloc(BUFFLEN);
-    snprintf(buffer, BUFFLEN, "%s()", verb->fullname);
-    addParam(result, verb->returnType);
-    addCode(result, buffer);
-    return result;
-}
-
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
     Object* result;
@@ -617,17 +612,17 @@ Object* objectIdent(char* ident) {
     if (!identifier) {
         result = CreateObject(ident, ident, 0, Variable, Undefined);
     } else {
-        result = CreateObject(ident, ident, 0, identifier->type, identifier->returnType);
+        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
         addParam(result, identifier->returnType);
     }
-    addCode(result, ident);
+    addCode(result, identifier? identifier->fullname : ident);
     return result;
 }
 
 Object* objectFloat(float f) {
     printf("objectFloat(%f)\n", f);
-    char* buffer = malloc(256);
-    sprintf(buffer, "%f", f);
+    char buffer[128];
+    snprintf(buffer, BUFFLEN, "%f", f);
     Object* result = CreateObject(0, 0, 0, Expression, "Float");
     addCode(result, buffer);
     addParam(result, "Float");
@@ -636,7 +631,7 @@ Object* objectFloat(float f) {
 
 Object* objectInt(int d) {
     printf("objectInt(%d)\n", d);
-    char buffer[32]; // 21 = (log10(2^64)+1)
+    char buffer[32]; // 20 = (log10(2^64))
     snprintf(buffer, 32, "%d", d);
     Object* result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
@@ -658,7 +653,7 @@ Object* objectPrev() {
     printf("objectPrev(%s)\n", previous[prev_idx]);
     return objectIdent(previous[prev_idx]);
 
-    //brute force search of recent text lines
+    //brute force search of text lines in current scope
     /*
     char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
     char buffer[BUFFLEN];

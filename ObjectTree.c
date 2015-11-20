@@ -165,7 +165,7 @@ int setParentClass(Object* tree, Object* parentClass) {
    for V, T, C, F, CB
 */
 Object* searchCodeBlock(Object* scope, char* name) {
-    printf("\tSearch: CodeBlock\n");
+    //printf("\tSearch: CodeBlock\n");
     Object* result = 0;
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
@@ -178,12 +178,12 @@ Object* searchCodeBlock(Object* scope, char* name) {
     if (result == 0 && scope->parentScope != 0) {
         result = findByNameInScope(scope->parentScope, name);
         if (result) {
-            printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
+            //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
         } else {
-            printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
+            //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
     }
-    printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
+    //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
 }
 /*In a Function,
@@ -193,7 +193,7 @@ Object* searchCodeBlock(Object* scope, char* name) {
       for T, F
 */
 Object* searchFunction(Object* scope, char* name) {
-    printf("\tSearch: Function\n");
+    //printf("\tSearch: Function\n");
     Object* result = 0;
 
     ListObject* iter = scope->definedSymbols;
@@ -207,23 +207,31 @@ Object* searchFunction(Object* scope, char* name) {
 
     if (!result && scope->parentClass) {
         result = findByNameInScope(scope->parentClass, name);
+        if (result && result->type == Variable) {
+            //Prepend "self->" to fullName
+            char newFullName[BUFFLEN];
+            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
+            //TODO: memory leak. (allocating space that will never be freed)
+            Object* temp = CreateObject(result->name, newFullName, result->parentScope, result->type, result->returnType);
+            result = temp;
+        }
         if (result) {
-            printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
+            //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
         } else {
-            printf("\t  searched %s's superclass(%s) and found (null)\n", scope->fullname, scope->parentClass->fullname);
+            //printf("\t  searched %s's superclass(%s) and found (null)\n", scope->fullname, scope->parentClass->fullname);
         }
     }
 
     if (!result && scope->parentScope != 0) {
         result = findByNameInScope(scope->parentScope, name);
         if (result && result->type != Type && result->type != Function) {
-            printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
+            //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
         } else {
-            printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
+            //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
     }
-    printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
+    //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
 }
 /* In a Constructor,
@@ -233,7 +241,7 @@ Object* searchFunction(Object* scope, char* name) {
       for T, F
 */
 Object* searchConstructor(Object* scope, char* name) {
-    printf("\tSearch: Constructor\n");
+    //printf("\tSearch: Constructor\n");
     Object* result = 0;
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
@@ -247,36 +255,35 @@ Object* searchConstructor(Object* scope, char* name) {
     if (!result && scope->parentClass) {
         result = findByNameInScope(scope->parentClass, name);
         if (result && result->type != Variable && result->type != Type && result->type != Constructor) {
-            printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
+            //printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
             result = 0;
         } else {
-            printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result ? result->fullname : "(null)");
+            //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result ? result->fullname : "(null)");
         }
     }
 
     if (!result && scope->parentScope != 0) {
         result = findByNameInScope(scope->parentScope, name);
         if (result && result->type != Type && result->type != Function) {
-            printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
+            //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
         } else {
-            printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
+            //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
     }
-    printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
+    //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
 }
 /*In a Type
   Search the parent scope
-    for T, F
+    for T, F, V
 */
 Object* searchType(Object* scope, char* name) {
-    printf("\tSearch Types\n");
+    //printf("\tSearch Types\n");
     Object* result = 0;
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
         if (!strcmp(name, iter->value->name)) {
-            warningMsg("Self-reference detected in class definition.\n");
             result = iter->value;
             break;
         }
@@ -284,14 +291,22 @@ Object* searchType(Object* scope, char* name) {
     }
     if (result == 0 && scope->parentScope != 0) {
         result = findByNameInScope(scope->parentScope, name);
-        if (result && result->type != Type && result->type != Function) {
-            printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
+        if (result && result->type != Type && result->type != Function && result->type != Variable) {
+            //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
         } else {
-            printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
+            if (result && result->type == Variable) {
+                //Prepend "parent." to fullName
+                char newFullName[BUFFLEN];
+                snprintf(newFullName, BUFFLEN, "parent.%s", result->fullname);
+                //TODO: memory leak. (allocating space that will never be freed)
+                Object* temp = CreateObject(result->name, newFullName, result->parentScope, result->type, result->returnType);
+                result = temp;
+            }
+            //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
     }
-    printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
+    //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
 }
 
@@ -301,20 +316,27 @@ Object* findByNameInScope(Object* scope, char* name) {
         warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
         return 0;
     }
-    printf("in findByName, searching %s for %s\n", scope->fullname, name);
+    //printf("in findByName, searching %s for %s\n", scope->fullname, name);
+    Object* result;
     switch(scope->type) {
     case CodeBlock:
-        return searchCodeBlock(scope, name);
+        result = searchCodeBlock(scope, name);
+        break;
     case Function:
-        return searchFunction(scope, name);
+        result = searchFunction(scope, name);
+        break;
     case Constructor:
-        return searchConstructor(scope, name);
+        result = searchConstructor(scope, name);
+        break;
     case Type:
-        return searchType(scope, name);
+        result = searchType(scope, name);
+        break;
     default:
         warningMsg("cannot search within type %d\n", scope->type);
+        break;
     }
-    return 0;
+    //printf("exiting findByName (%s), found %s\n", scope->fullname, result? result->fullname : "nothing.");
+    return result;
 }
 
 Object* findByFullNameInScope(Object* scope, char* fullname) {
@@ -528,6 +550,9 @@ void printTreeList(ListObject* trees, int indent) {
 }
 
 void printTree(Object* tree, int indent) {
+  if (getFlag(tree, FLAG_EXTERNAL)) {
+    return;
+  }
   int i;
   if (tree == 0) {
     for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: (null)\n");
