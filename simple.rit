@@ -1,10 +1,3 @@
-p = "potato"
-
-/*
-i for 0, 10
-	print p
-
-
-z = "not potato"
-i for 0, 10
-	print z
+#
+int i = 3;
+#

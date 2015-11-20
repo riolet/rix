@@ -7,6 +7,7 @@
 #include "ritc.h"
 #include "error.h"
 
+#define INSERT_BUFF_LEN 1024
 #define INDENT_STACK_MAX 512
 
 int g_current_line_indent = 0;
@@ -49,6 +50,7 @@ void set_yycolumn(int val) {
     yycolumn += yyleng; \
 }
 
+char* handleCodeInsert(void);
 
 %}
 
@@ -184,6 +186,7 @@ booleanOp     "||"|"&&"
 
      [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
      [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
+     "#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
 <normal>{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
 <normal>{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 <normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
@@ -228,6 +231,22 @@ booleanOp     "||"|"&&"
 
 %%
 
-
+char* handleCodeInsert(void) {
+	 printf("lexer: code insert\n");
+	 int c;
+	 int index  = 0;
+	 char * ci = (char*)malloc(INSERT_BUFF_LEN);
+	 while ( c = input()) {
+	 	if ( c != '#' && index < INSERT_BUFF_LEN ) {
+	 		ci[index++] = c;
+	 	}else if ( c == '#' ) {
+	 		return ci;
+	 	}
+	 	if ( c == EOF ) {
+		     criticalError(ERROR_ParseError, "unterminated code insert\n");
+		     return 0;
+		 }
+	 }
+}
 
 

@@ -27,7 +27,12 @@ if [ -f ritc ]
 		echo -e "\e[32m"
 		read file
 		echo -e "\e[0m"
-		./ritc $file
+		if [ "$d" = "y" ]
+			then 
+				./ritc -t $file
+			else
+				./ritc $file
+		fi
 		if [ -f out.c ]
 			then
 				echo " "

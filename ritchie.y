@@ -56,6 +56,7 @@
 %token <sval> SLCOMMENT
 %token <sval> COMPARISON
 %token <ival> TERNARY
+%token <sval> CODE_INSERT
 
 %type <oval> ritchie;
 %type <oval> statements;
@@ -95,6 +96,7 @@ simple_statement:
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
   | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
+  | CODE_INSERT ENDOFLINE     { printf("parser: code-insert\n"); $$ = 0;  }
   ;
 function_definition:
   TYPE FUNCDEC IDENT  parameters { printf("parser: func-def\n"); $$ = funcHeader($1, $3, $4); }

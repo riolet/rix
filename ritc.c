@@ -829,8 +829,13 @@ int main(int argc,char **argv)
     extern char *optarg;
     extern int optind, optopt;
 
-    while ((c = getopt(argc, argv, "o:")) != -1) {
+    while ((c = getopt(argc, argv, "o:t")) != -1) {
         switch (c) {
+        case 't':
+        	printf("hit -t arg\n");
+        	printTreeBool = 1;
+        break;
+        
         case 'o':
             ofile = optarg;
             break;
@@ -853,12 +858,6 @@ int main(int argc,char **argv)
             ifile=argv[optind];
         }
     }
-	
-	if ( argc == 3 )
-		if ( strcmp( argv[2], "-t" ) == 0 ) {
-			printTreeBool = 1;
-			printf("%s", argv[2]);
-		}
 
     if (ifile==NULL) {
         errorMsg("No file to compile\n");
