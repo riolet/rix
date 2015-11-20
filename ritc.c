@@ -877,8 +877,7 @@ int main(int argc,char **argv)
         snprintf(oMainFileName,BUFFLEN,"%s.c",ofile);
         snprintf(oHeaderFileName,BUFFLEN,"%s.h",ofile);
     }
-    outMainFile=fopen(oMainFileName,"w");
-    outHeaderFile=fopen(oHeaderFileName,"w");
+    
 
 
 
@@ -887,10 +886,6 @@ int main(int argc,char **argv)
     "**********************************\n"
     "**********************************\n"
     "**********************************\n" ANSI_COLOR_RESET);
-    fprintf(outMainFile,"#include \"rsl.h\"\n");
-    fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
-    fprintf(outMainFile,"int main(void) {\n");
-
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
     current = root;
@@ -903,7 +898,15 @@ int main(int argc,char **argv)
     while (!hitEOF) {
         yyparse();
     }  
-        
+    outMainFile=fopen(oMainFileName,"w");
+    outHeaderFile=fopen(oHeaderFileName,"w");
+    
+    
+    fprintf(outMainFile,"#include \"rsl.h\"\n");
+    fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
+    fprintf(outMainFile,"int main(void) {\n");
+
+   
 	
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {

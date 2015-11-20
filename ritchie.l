@@ -182,6 +182,8 @@ booleanOp     "||"|"&&"
                 BEGIN(indent);
                 return ENDOFLINE; }
 
+     [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
+     [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
 <normal>{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
 <normal>{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 <normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
@@ -225,5 +227,7 @@ booleanOp     "||"|"&&"
 <normal>.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
+
+
 
 
