@@ -7,8 +7,8 @@ Rectangle :: BaseType
   h = Integer
 
   ::: Integer w, Integer h
-  $.w = w
-  $.h = h
+    $.w = w
+    $.h = h
 
   : doStuff
     print "Method Stuff: " + w
