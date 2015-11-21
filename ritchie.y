@@ -37,6 +37,7 @@
 %token <fval> FLOAT
 %token <sval> STRING
 %token <sval> IDENT
+%token <sval> FIELD
 %token <sval> VERB
 %token <sval> TYPE
 %token <sval> MATH_OP
@@ -139,6 +140,7 @@ object:
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
   | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
+  | FIELD   { printf("parser: object-field\n");     $$ = objectField($1); }
   ;
 
 

@@ -53,6 +53,7 @@ Object* objectFloat(float f);
 Object* objectInt(int i);
 Object* objectPrev();
 Object* objectString(char* string);
+Object* objectField(char* fullname);
 
 float simplifyFloat(float left, char* op, float right);
 int   simplifyInt  (int   left, char* op, int   right);

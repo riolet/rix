@@ -62,6 +62,16 @@ Object* beginClass(char* className, char* parentName) {
 }
 
 void doneClass(Object* tree) {
+    //check for 0-arg constructor.
+    //if no 0-arg ctor exists, add one.
+    char ctorName[BUFFLEN];
+    snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
+
+    Object* ctor = findByNameInScope(current, ctorName, true);
+    if (!ctor){
+        beginConstructor(CreateObject(0, 0, 0, Expression, 0));
+        doneConstructor(0);
+    }
     scope_pop();
 }
 
@@ -758,6 +768,63 @@ Object* objectPrev() {
     */
 }
 
+Object* objectField(char* fullname) {
+    char* parent;
+    char* field;
+    parent = strtok(fullname, ".");
+    field = strtok(0, ".");
+    printf("parent: %s\nfield: %s\n", parent, field);
+
+    //verify parent is defined
+    Object* oParent = findByName(parent);
+    if (!oParent) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find object named %s\n", parent);
+        criticalError(ERROR_UndefinedVariable, error);
+    }
+
+    char parentType[BUFFLEN];
+    strcpy(parentType, oParent->returnType);
+    //remove " *" from the end if present.
+    int length = 0;
+    while(parentType[length] != '\0' && parentType[length] != ' ' && parentType[length] != '*') {
+        length++;
+    }
+    parentType[length] = '\0';
+
+
+    Object* oParentType = findByName(parentType);
+    if (!oParentType) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find \"%s\" class description for object %s\n", parentType, parent);
+        criticalError(ERROR_UndefinedVariable, error);
+    }
+
+    Object* oField = 0;
+    //verify the type of parent has defined a variable named field
+    ListObject* oIter = oParentType->definedSymbols;
+    while (oIter) {
+        if (!strcmp(oIter->value->name, field)) {
+            oField = oIter->value;
+            break;
+        }
+        oIter = oIter->next;
+    }
+
+    if (!oField) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "%s %s has no member named %s.\n", parentType, parent, field);
+        criticalError(ERROR_UndefinedVariable, error);
+    }
+
+    Object* result = CreateObject(field, field, 0, Expression, oField->returnType);
+    char accessCode[BUFFLEN];
+    snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
+    addParam(result, oField->returnType);
+    addCode(result, accessCode);
+    printTree(result, 2);
+    return result;
+}
 
 
 Object* findByName(char* name) {

@@ -17,6 +17,7 @@ Rectangle :: BaseType
     print "Rectangle volume is " + (w*h*depth)
     
   Integer : staticArea Integer w, Integer h
+    -> w * h
 
 myInt = print 10
 myRect = Rectangle 10, 5
@@ -25,10 +26,10 @@ myRect area
 myRect volume 3
 
 //test for empty constructor.
-//myZeroRect = Rectangle
+myZeroRect = Rectangle
 
 //test for member access
-//print myRect.w
+print myRect.w
 
 //test for static access
 //print Rectangle.staticArea 13, 17

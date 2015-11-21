@@ -201,7 +201,7 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
-
+<normal>{identifier}\.{identifier} { printf("lexer: field access\n"); yylval->sval = strdup(yytext); return FIELD; }
 
 <normal>{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 <normal>{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
