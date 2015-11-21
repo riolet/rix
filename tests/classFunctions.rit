@@ -1,26 +1,28 @@
+import "file1.rit"
+//Wishlist -- looks for Shapes class in files
+//  import Shapes
+
 Rectangle :: BaseType
   w = Integer
   h = Integer
-  
+
+  ::: Integer w, Integer h
+  $.w = w
+  $.h = h
+
   : doStuff
     print "Method Stuff: " + w
-
-: doStuff
-  print "Stuff: " + 4
 
 : doStuff Rectangle r
   print "Friend Stuff: " + r.w
 
 
-
-
-myRect = Rectangle;
-myInt = 4;
-doStuff
+myRect = Rectangle
+myRect2 = Rectangle 10 5
 
 myRect doStuff
 
-doStuff myRect
+doStuff myRect2
 
 
 
