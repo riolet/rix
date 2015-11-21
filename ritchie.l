@@ -67,6 +67,7 @@ comment       \/\/.*
 funcDec       ":"
 paramComma    ","
 classDec      "::"
+classCtor     ":::"
 conditionLink "?"
 selfIdent     "$"
 
@@ -186,11 +187,10 @@ booleanOp     "||"|"&&"
 <normal>{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 <normal>{identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
-                        printf("returned from findByName\n");
                         if (!exists || exists->type == Variable) {
                           printf("lexer: identifier\n");
                           return IDENT;
-                        } else if (exists->type == Function) {
+                        } else if (exists->type == Function || exists->type == Constructor) {
                           printf("lexer: verb\n");
                           return VERB;
                         } else if (exists->type == Type) {
@@ -208,7 +208,8 @@ booleanOp     "||"|"&&"
 
 <normal>{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
 <normal>{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
-<normal>{classDec}      { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return CLASSDEC; }
+<normal>{classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
+<normal>{classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
 <normal>{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
 <normal>{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 

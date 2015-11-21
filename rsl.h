@@ -21,41 +21,41 @@ typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 
-#define if_Boolean(A) A; if (_$_prev_$_Boolean) {
-#define elif_Boolean_Boolean(A, B) (!A && B); if (_$_prev_$_Boolean) {
-#define else_Boolean(A) !A; if (_$_prev_$_Boolean) {
-#define while_Boolean(A) while (A) {
-#define for_Integer_Integer(i,a,b) for (i=a;i<b;i++) {
+#define Boolean_$_if(A) A; if (_$_prev_$_Boolean) {
+#define Boolean_$_elif_$_Boolean(A, B) (!A && B); if (_$_prev_$_Boolean) {
+#define Boolean_$_else(A) !A; if (_$_prev_$_Boolean) {
+#define Boolean_$_while(A) while (A) {
+#define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 
-float exponent_Float_Integer (float f, int i) {
+float Float_$_exponent_$_Integer (float f, int i) {
     return pow(f,i);
 }
 
-int exponent_Integer_Integer (int f, int i) {
-    return (int)pow(f,i);
+int Integer_$_exponent_$_Integer (int i1, int i2) {
+    return (int)pow(i1,i2);
 }
 
-float exponent_Integer_Float (int f, float i) {
-    return pow(f,i);
+float Integer_$_exponent_$_Float (int i, float f) {
+    return pow(i,f);
 }
 
-float exponent_Float_Float (float f, float i) {
-    return pow(f,i);
+float Float_$_exponent_$_Float (float f1, float f2) {
+    return pow(f1,f2);
 }
 
-String String_stringlit ( char * strlit) {
+String String_$_stringlit ( char * strlit) {
     String s;
     s.buffer = strlit;
     s.cap = s.length = strlen(strlit);
     return s;
 }
-String assign_String_String (String left, String right) {
+String String_$_assign_$_String (String left, String right) {
     left.buffer=malloc(right.length+1);
     memcpy(left.buffer,right.buffer,right.length);
     return left;
 }
 
-String plus_String_String (String left, String right) {
+String String_$_plus_$_String (String left, String right) {
     String newString;
     newString.buffer=malloc(left.length+right.length+1);
     memcpy(newString.buffer,left.buffer,left.length);
@@ -65,7 +65,7 @@ String plus_String_String (String left, String right) {
     return newString;
 }
 
-String plus_String_Integer (String left, int right) {
+String String_$_plus_$_Integer (String left, int right) {
     String newString;
     char rightStr[BUFFLEN];
     int right_length=snprintf(rightStr,BUFFLEN,"%i",right);
@@ -77,7 +77,7 @@ String plus_String_Integer (String left, int right) {
     return newString;
 }
 
-String plus_Integer_String (int left, String right) {
+String Integer_$_plus_$_String (int left, String right) {
     String newString;
     char leftStr[BUFFLEN];
     int left_length=snprintf(leftStr,BUFFLEN,"%i",left);
@@ -89,7 +89,7 @@ String plus_Integer_String (int left, String right) {
     return newString;
 }
 
-String plus_String_Float (String left, float right) {
+String String_$_plus_$_Float (String left, float right) {
     String newString;
     char rightStr[BUFFLEN];
     int right_length=snprintf(rightStr,BUFFLEN,"%f",right);
@@ -101,7 +101,7 @@ String plus_String_Float (String left, float right) {
     return newString;
 }
 
-String plus_Float_String (float left, String right) {
+String Float_$_plus_$_String (float left, String right) {
     String newString;
     char leftStr[BUFFLEN];
     int left_length=snprintf(leftStr,BUFFLEN,"%f",left);
@@ -117,48 +117,48 @@ String plus_Float_String (float left, String right) {
 
 
 /* Print prints the param and a newline char */
-int print_Stream_String(Stream stream,String s) {
+int Stream_$_print_$_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream)+fputc('\n',stream);
 }
 
-int print_Stream_Integer(Stream stream, int i) {
+int Stream_$_print_$_Integer(Stream stream, int i) {
     return fprintf(stream,"%d\n",i);
 }
 
-int print_Stream_Float(Stream stream, float f) {
+int Stream_$_print_$_Float(Stream stream, float f) {
     return fprintf(stream,"%f\n",f);
 }
 
-int print_String(String s) {
+int print_$_String(String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stdout)+fputc('\n',stdout);
 }
 
-int print_Integer(int i) {
+int print_$_Integer(int i) {
     return fprintf(stdout,"%d\n",i);
 }
 
-int print_Float(float f) {
+int print_$_Float(float f) {
     return fprintf(stdout,"%f\n",f);
 }
 
 /* Echo omits the newline char */
-int echo_Stream_String(Stream stream,String s) {
+int Stream_$_echo_$_String(Stream stream,String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stream);
 }
 
-int echo_Stream_Integer(Stream stream, int i) {
+int Stream_$_echo_$_Integer(Stream stream, int i) {
     return fprintf(stream,"%d",i);
 }
 
-int echo_Stream_Float(Stream stream, float f) {
+int Stream_$_echo_$_Float(Stream stream, float f) {
     return fprintf(stream,"%f",f);
 }
 
-int echo_String(String s) {
+int echo_$_String(String s) {
     return fwrite(s.buffer,sizeof(char),s.length,stdout);
 }
 
-int echo_Integer(int i) {
+int echo_$_Integer(int i) {
     return fprintf(stdout,"%d",i);
 }
 
@@ -166,7 +166,7 @@ int echo_Float(float f) {
     return fprintf(stdout,"%f",f);
 }
 
-Ternary compare_Integer_Integer (Integer a, Integer b) {
+Ternary Integer_$_compare_$_Integer (Integer a, Integer b) {
     if (a>b) {
         return lt;
     } else if (a==b) {
@@ -175,7 +175,7 @@ Ternary compare_Integer_Integer (Integer a, Integer b) {
         return gt;
     }
 }
-String pick_Ternary_String_String_String (Ternary ternary, String a, String b, String c) {
+String Ternary_$_pick_$_String_$_String_$_String (Ternary ternary, String a, String b, String c) {
     if (ternary==lt) {
         return a;
     } else if (ternary==eq) {

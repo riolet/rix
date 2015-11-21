@@ -1,7 +1,3 @@
-//import "file1.rit"
-//Wishlist -- looks for Shapes class in files
-//  import Shapes
-
 Rectangle :: BaseType
   w = Integer
   h = Integer
@@ -15,8 +11,6 @@ Rectangle :: BaseType
   
   : volume Integer depth
     print "Rectangle volume is " + (w*h*depth)
-    
-  Integer : staticArea Integer w, Integer h
 
 myInt = print 10
 myRect = Rectangle 10, 5
@@ -24,14 +18,4 @@ myRect = Rectangle 10, 5
 myRect area
 myRect volume 3
 
-//test for empty constructor.
-//myZeroRect = Rectangle
-
-//test for member access
-//print myRect.w
-
-//test for static access
-//print Rectangle.staticArea 13, 17
-
-
-
+//test for 

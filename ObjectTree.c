@@ -164,19 +164,23 @@ int setParentClass(Object* tree, Object* parentClass) {
    Search the parent scope
    for V, T, C, F, CB
 */
-Object* searchCodeBlock(Object* scope, char* name) {
+Object* searchCodeBlock(Object* scope, char* name, int bUseFullName) {
     //printf("\tSearch: CodeBlock\n");
     Object* result = 0;
+
+    //search locally first
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
-        if (!strcmp(name, iter->value->name)) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
             result = iter->value;
             break;
         }
         iter = iter->next;
     }
-    if (result == 0 && scope->parentScope != 0) {
-        result = findByNameInScope(scope->parentScope, name);
+
+    //try looking in the parent scope, if any
+    if (!result && scope->parentScope != 0) {
+        result = findByNameInScope(scope->parentScope, name, bUseFullName);
         if (result) {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
         } else {
@@ -192,13 +196,13 @@ Object* searchCodeBlock(Object* scope, char* name) {
     Search the parent scope
       for T, F
 */
-Object* searchFunction(Object* scope, char* name) {
+Object* searchFunction(Object* scope, char* name, int bUseFullName) {
     //printf("\tSearch: Function\n");
     Object* result = 0;
 
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
-        if (!strcmp(name, iter->value->name)) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
             result = iter->value;
             break;
         }
@@ -206,7 +210,7 @@ Object* searchFunction(Object* scope, char* name) {
     }
 
     if (!result && scope->parentClass) {
-        result = findByNameInScope(scope->parentClass, name);
+        result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->type == Variable) {
             //Prepend "self->" to fullName
             char newFullName[BUFFLEN];
@@ -223,7 +227,7 @@ Object* searchFunction(Object* scope, char* name) {
     }
 
     if (!result && scope->parentScope != 0) {
-        result = findByNameInScope(scope->parentScope, name);
+        result = findByNameInScope(scope->parentScope, name, bUseFullName);
         if (result && result->type != Type && result->type != Function) {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
@@ -240,12 +244,12 @@ Object* searchFunction(Object* scope, char* name) {
    Search the parent scope
       for T, F
 */
-Object* searchConstructor(Object* scope, char* name) {
+Object* searchConstructor(Object* scope, char* name, int bUseFullName) {
     //printf("\tSearch: Constructor\n");
     Object* result = 0;
     ListObject* iter = scope->definedSymbols;
     while (iter != 0) {
-        if (!strcmp(name, iter->value->name)) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
             result = iter->value;
             break;
         }
@@ -253,17 +257,22 @@ Object* searchConstructor(Object* scope, char* name) {
     }
 
     if (!result && scope->parentClass) {
-        result = findByNameInScope(scope->parentClass, name);
+        result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->type != Variable && result->type != Type && result->type != Constructor) {
             //printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
             result = 0;
-        } else {
+        } else if (result && result->type == Variable) {
+            char newFullName[BUFFLEN];
+            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
+            //TODO: memory leak. (allocating space that will never be freed)
+            Object* temp = CreateObject(result->name, newFullName, result->parentScope, result->type, result->returnType);
+            result = temp;
             //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result ? result->fullname : "(null)");
         }
     }
 
     if (!result && scope->parentScope != 0) {
-        result = findByNameInScope(scope->parentScope, name);
+        result = findByNameInScope(scope->parentScope, name, bUseFullName);
         if (result && result->type != Type && result->type != Function) {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
@@ -275,22 +284,22 @@ Object* searchConstructor(Object* scope, char* name) {
     return result;
 }
 /*In a Type
-  Search the parent scope
+  Search the parent class
     for T, F, V
 */
-Object* searchType(Object* scope, char* name) {
+Object* searchType(Object* scope, char* name, int bUseFullName) {
     //printf("\tSearch Types\n");
     Object* result = 0;
     ListObject* iter = scope->definedSymbols;
-    while (iter != 0) {
-        if (!strcmp(name, iter->value->name)) {
+    while (iter) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
             result = iter->value;
             break;
         }
         iter = iter->next;
     }
-    if (result == 0 && scope->parentScope != 0) {
-        result = findByNameInScope(scope->parentScope, name);
+    if (!result && scope->parentClass) {
+        result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->type != Type && result->type != Function && result->type != Variable) {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
@@ -300,9 +309,18 @@ Object* searchType(Object* scope, char* name) {
                 char newFullName[BUFFLEN];
                 snprintf(newFullName, BUFFLEN, "parent.%s", result->fullname);
                 //TODO: memory leak. (allocating space that will never be freed)
-                Object* temp = CreateObject(result->name, newFullName, result->parentScope, result->type, result->returnType);
+                Object* temp = CreateObject(result->name, newFullName, result->parentClass, result->type, result->returnType);
                 result = temp;
             }
+            //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
+        }
+    }
+    if (!result && scope->parentScope) {
+        result = findByNameInScope(scope->parentScope, name, bUseFullName);
+        if (result && result->type != Type && result->type != Function) {
+            //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
+            result = 0;
+        } else {
             //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
     }
@@ -311,7 +329,7 @@ Object* searchType(Object* scope, char* name) {
 }
 
 
-Object* findByNameInScope(Object* scope, char* name) {
+Object* findByNameInScope(Object* scope, char* name, int bUseFullName) {
     if (scope == 0 || name == 0) {
         warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
         return 0;
@@ -320,16 +338,16 @@ Object* findByNameInScope(Object* scope, char* name) {
     Object* result;
     switch(scope->type) {
     case CodeBlock:
-        result = searchCodeBlock(scope, name);
+        result = searchCodeBlock(scope, name, bUseFullName);
         break;
     case Function:
-        result = searchFunction(scope, name);
+        result = searchFunction(scope, name, bUseFullName);
         break;
     case Constructor:
-        result = searchConstructor(scope, name);
+        result = searchConstructor(scope, name, bUseFullName);
         break;
     case Type:
-        result = searchType(scope, name);
+        result = searchType(scope, name, bUseFullName);
         break;
     default:
         warningMsg("cannot search within type %d\n", scope->type);
@@ -337,33 +355,6 @@ Object* findByNameInScope(Object* scope, char* name) {
     }
     //printf("exiting findByName (%s), found %s\n", scope->fullname, result? result->fullname : "nothing.");
     return result;
-}
-
-Object* findByFullNameInScope(Object* scope, char* fullname) {
-  if (scope == 0 || fullname == 0) {
-    warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
-    return 0;
-  }
-
-  if (scope->definedSymbols == 0 && scope->parentScope == 0) {
-    return 0;
-  } else if (scope->definedSymbols == 0 && scope->parentScope != 0) {
-    return findByNameInScope(scope->parentScope, fullname);
-  }
-
-  //printf("fBFNIS - looking in %s\n", scope->name);
-  ListObject* iter = scope->definedSymbols;
-  while (iter != 0) {
-    if (!strcmp(fullname, iter->value->fullname)) {
-      //printf("fBFNIS -    returning %s\n", iter->value->fullname);
-      return iter->value;
-    }
-    iter = iter->next;
-  }
-  if (scope->parentScope != 0) {
-    return findByNameInScope(scope->parentScope, fullname);
-  }
-  return 0;
 }
 
 Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params) {
@@ -402,7 +393,7 @@ Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params) 
 }
 
 OBJ_TYPE getIdentType(Object* scope, char* identifier) {
-  Object* obj = findByNameInScope(scope, identifier);
+  Object* obj = findByNameInScope(scope, identifier, 0);
   if (obj)
     return obj->type;
   return Undefined;
@@ -411,7 +402,6 @@ OBJ_TYPE getIdentType(Object* scope, char* identifier) {
 void writeTree(FILE* outc, FILE* outh, Object* tree) {
     writeTreeHelper(outc, outh, tree, 0);
 }
-
 
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     FILE* output;
@@ -427,7 +417,8 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
       return;
 
     }
-    if (tree->type == Function) {
+
+    if (tree->type == Function || tree->type == Constructor) {
         output = outh;
     } else {
         output = outc;
@@ -436,7 +427,7 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     oIter = tree->definedSymbols;
     sIter = tree->paramTypes;
     //construct and print function header
-    if (tree->type == Function && !getFlag(tree, FLAG_EXTERNAL)) {
+    if ((tree->type == Function || tree->type == Constructor) && !getFlag(tree, FLAG_EXTERNAL)) {
         fprintf(output, "%s %s(", tree->returnType, tree->fullname);
 
         //add each param
@@ -458,7 +449,7 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
             //declare all local variables
-            fprintf(output, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+            fprintf(output, "    %s %s;\n", oIter->value->returnType, oIter->value->fullname);
         } else {
             writeTreeHelper(outc, outh, oIter->value, indent+1);
         }
@@ -471,9 +462,13 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
 
         sIter = tree->code;
         while (sIter != 0) {
-            fprintf(output, "  %s\n", sIter->value);
+            fprintf(output, "    %s\n", sIter->value);
             sIter = sIter->next;
         }
+    }
+    if (tree->type == Constructor && !getFlag(tree, FLAG_EXTERNAL)) {
+        fprintf(output, "    return self;\n"
+            "}\n");
     }
 
     if (tree->type == Function && !getFlag(tree, FLAG_EXTERNAL)) {
@@ -550,9 +545,9 @@ void printTreeList(ListObject* trees, int indent) {
 }
 
 void printTree(Object* tree, int indent) {
-  if (getFlag(tree, FLAG_EXTERNAL)) {
-    return;
-  }
+  //if (getFlag(tree, FLAG_EXTERNAL)) {
+  //  return;
+  //}
   int i;
   if (tree == 0) {
     for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: (null)\n");
@@ -561,11 +556,8 @@ void printTree(Object* tree, int indent) {
   for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: name: \"%s\"\n", tree->name);
   indent += 1;
   for(i = 0; i < indent; i++) { printf("  "); }   printf("fullname: \"%s\"\n", tree->fullname);
-  if(tree->parentScope == 0) {
-    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: (null)\n");
-  } else {
-    for(i = 0; i < indent; i++) { printf("  "); } printf("parentObject: %s\n", tree->parentScope->fullname);
-  }
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("parentScope: %s\n", tree->parentScope ? tree->parentScope->fullname : "(null)");
+  for(i = 0; i < indent; i++) { printf("  "); }   printf("parentClass: %s\n", tree->parentClass ? tree->parentClass->fullname : "(null)");
   for(i = 0; i < indent; i++) { printf("  "); }   printf("type: "); printType(tree->type); printf("\n");
   for(i = 0; i < indent; i++) { printf("  "); }   printf("returnType: \"%s\"\n", tree->returnType);
   for(i = 0; i < indent; i++) { printf("  "); }   printf("paramTypes: ");

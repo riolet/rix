@@ -10,6 +10,7 @@
 #define FLAG_SUBJECT    2
 #define FLAG_EXTERNAL   4
 #define BUFFLEN 1024
+#define COMPILER_SEP "_$_"
 
 typedef enum {
   Undefined,
@@ -69,12 +70,11 @@ void printTreeToFile(Object* tree, int indent, char* fname);
 //returns Undefined if identifier isn't found.
 OBJ_TYPE getIdentType(Object* scope, char* identifier);
 //return null if name not found
-Object* searchFunction(Object* scope, char* name);
-Object* searchConstructor(Object* scope, char* name);
-Object* searchType(Object* scope, char* name);
-Object* searchCodeBlock(Object* scope, char* name);
-Object* findByNameInScope(Object* scope, char* name);
-Object* findByFullNameInScope(Object* scope, char* name);
+Object* searchFunction(Object* scope, char* name, int bUseFullName);
+Object* searchConstructor(Object* scope, char* name, int bUseFullName);
+Object* searchType(Object* scope, char* name, int bUseFullName);
+Object* searchCodeBlock(Object* scope, char* name, int bUseFullName);
+Object* findByNameInScope(Object* scope, char* name, int bUseFullName);
 
 Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params);
 
