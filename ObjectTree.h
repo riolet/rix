@@ -62,6 +62,9 @@ int listlen(ListString* head);
 //writes the code of root first, then children in order
 void writeTree(FILE* outc, FILE* outh, Object* tree);
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent);
+void writeFunction(FILE* outh, Object* tree, int indent);
+void writeOther(FILE* outc, FILE* outh, Object* tree, int indent);
+void writeClass(FILE* outc, Object* tree, int indent);
 void printTree(Object* tree, int indent);
 void printTreeToFile(Object* tree, int indent, char* fname);
 
