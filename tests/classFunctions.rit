@@ -1,7 +1,3 @@
-import "file1.rit"
-//Wishlist -- looks for Shapes class in files
-//  import Shapes
-
 Rectangle :: BaseType
   w = Integer
   h = Integer
@@ -23,13 +19,6 @@ myRect2 = Rectangle 10 5
 myRect doStuff
 
 doStuff myRect2
-
-
-
-
-//given class MyOps and class method SpecialAdd
-//MyOps.specialAdd x, y  //static invocation
-//myops specialAdd x, y  //non-static invocation
 
 
 

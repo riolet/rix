@@ -7,8 +7,3 @@ Rectangle :: BaseType
 
 print "definitions worked"
 
-
-
-//given class MyOps and class method SpecialAdd
-//MyOps.specialAdd x, y  //static invocation
-//myops specialAdd x, y  //non-static invocation
