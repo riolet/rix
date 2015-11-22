@@ -83,6 +83,7 @@ int addParam(Object* tree, char* type) {
     return 1;
   }
   node->value = strdup(type);
+  node->next = 0;
   if (node->value == 0) {
     warningMsg("strdup failed in addParam. (ObjectTree.c)\n");
     return 2;
@@ -106,6 +107,7 @@ int addSymbol(Object* tree, Object* leaf) {
     return 1;
   }
   node->value = leaf;
+  node->next = 0;
   if(tree->definedSymbols == 0) {
     tree->definedSymbols = node;
     return 0;
@@ -123,6 +125,7 @@ int addCode(Object* tree, char* line) {
     return 1;
   }
   node->value = strdup(line);
+  node->next = 0;
   if (node->value == 0) {
     warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
     return 2;
