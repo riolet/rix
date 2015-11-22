@@ -177,15 +177,15 @@ booleanOp     "||"|"&&"
                 BEGIN(indent);
                 return ENDOFLINE; }
 
-     [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
-     [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
-     "#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
-<normal>{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
-<normal>{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
-<normal>{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
-<normal>{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
-<normal>{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
-<normal>{identifier}  { yylval->sval = strdup(yytext);
+[/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
+[/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
+"#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
+{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
+{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
+{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
+{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
+{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+{identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
                         if (!exists || exists->type == Variable) {
                           printf("lexer: identifier\n");
@@ -201,7 +201,7 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
-<normal>{identifier}\.{identifier} { 
+{identifier}\.{identifier} { 
                       printf("lexer: field access\n"); 
                       yylval->sval = strdup(yytext);
                       char* first = strtok(yytext, ".");
@@ -217,26 +217,26 @@ booleanOp     "||"|"&&"
                       }
                       }
 
-<normal>{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
-<normal>{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
+{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
+{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-<normal>{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
-<normal>{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
-<normal>{classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
-<normal>{classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
-<normal>{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
-<normal>{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
+{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
+{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
+{classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
+{classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
+{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
+{selfIdent}     { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 
-<normal>{booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
-<normal>{comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
-<normal>{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
-<normal>{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+{comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
+{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
+{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 
-<normal><<EOF>>       { return ENDOFFILE; }
-<normal>[ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-<normal>"("           { printf("lexer: (\n"); return LPAREN; }
-<normal>")"           { printf("lexer: )\n"); return RPAREN; }
-<normal>.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
+<<EOF>>       { return ENDOFFILE; }
+[ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
+"("           { printf("lexer: (\n"); return LPAREN; }
+")"           { printf("lexer: )\n"); return RPAREN; }
+.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
 
