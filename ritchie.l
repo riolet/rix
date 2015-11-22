@@ -201,7 +201,21 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
-<normal>{identifier}\.{identifier} { printf("lexer: field access\n"); yylval->sval = strdup(yytext); return FIELD; }
+<normal>{identifier}\.{identifier} { 
+                      printf("lexer: field access\n"); 
+                      yylval->sval = strdup(yytext);
+                      char* first = strtok(yytext, ".");
+                      Object* exists = findByName(first);
+                      if (!exists) {
+                        char error[1024];
+                        snprintf(error, 1024, "Cannot find static verb %s.%s\n", first, strtok(0, "."));
+                        criticalError(ERROR_ParseError, error);
+                      } else if (exists->type == Type) {
+                        return STATICVERB;
+                      } else {
+                        return FIELD; 
+                      }
+                      }
 
 <normal>{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 <normal>{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }

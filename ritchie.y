@@ -39,6 +39,7 @@
 %token <sval> IDENT
 %token <sval> FIELD
 %token <sval> VERB
+%token <sval> STATICVERB
 %token <sval> TYPE
 %token <sval> MATH_OP
 %token <sval> ASSIGNMENT
@@ -81,7 +82,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
 %}
 
-%right ASSIGNMENT MATHASSIGN VERB TYPE
+%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB
 %right PARAMCOMMA
 %right BOOLEANOP
 %right COMPARISON TERNARY
@@ -124,14 +125,17 @@ expr:
   | expr  TERNARY   expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
   | expr  MATH_OP   expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
 
-  | expr   TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2), $3); }
   | expr   VERB     expr  { printf("parser: expr-svo\n");   $$ = conjugate($1,  verbIdent($2), $3); }
-  | expr   TYPE           { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2),  0); }
   | expr   VERB           { printf("parser: expr-sv \n");   $$ = conjugate($1,  verbIdent($2),  0); }
-  |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   |        VERB     expr  { printf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
-  |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   |        VERB           { printf("parser: expr- v \n");   $$ = conjugate( 0,  verbIdent($1),  0); }
+  |      STATICVERB expr  { printf("parser: expr- Xo\n");   
+                            $$ = conjugate( 0, sVerbIdent($1), $2); }
+  |      STATICVERB       { printf("parser: expr- X \n");   $$ = conjugate( 0, sVerbIdent($1),  0); }
+//  | expr   TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2), $3); }
+//  | expr   TYPE           { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2),  0); }
+  |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
+  |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:

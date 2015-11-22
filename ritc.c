@@ -287,8 +287,6 @@ Object* declareVariable(char* name, char* type) {
     return var;
 }
 
-
-
 Object* completeExpression(Object* expression) {
     if (expression == 0) {
         warningMsg("expression was null\n");
@@ -358,6 +356,13 @@ void decPrev() {
         criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
     }
 }
+
+Object* injectC(char* code) {
+    addCode(current, code);
+    return 0;
+}
+
+
 
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     if (subject == 0) {
@@ -596,6 +601,13 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,", subject->code->value);
         else
             invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", subject->code->value);
+    } else if (strstr(verb->name, COMPILER_SEP)) {
+        //This is assumed to be a static verb of some class. Inject a 0 as first argument.
+        if (objects) {
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "0,");
+        } else {
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "0");
+        }
     }
 
     if (objects) {
@@ -617,11 +629,6 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     addCode(result, invocation);
     printf("\tConjugated: %s\n", invocation);
     return result;
-}
-
-Object* injectC(char* code) {
-    addCode(current, code);
-    return 0;
 }
 
 
@@ -659,6 +666,28 @@ Object* verbIdent(char* verb) {
         sprintf(error, "Function \"%s(..)\" used before declaration.\n", verb);
         criticalError(ERROR_UndefinedVerb, error);
     }
+    return result;
+}
+
+Object* sVerbIdent(char* staticVerb) {
+    char* type;
+    char* field;
+    type = strtok(staticVerb, ".");
+    field = strtok(0, ".");
+
+    //verify type exists
+    Object* oType = findByName(type);
+    if (!oType) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find type %s\n", type);
+        criticalError(ERROR_UndefinedVariable, error);
+    }
+
+    //build verb name
+    char verbname[BUFFLEN];
+    snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", oType->name, field);
+
+    Object* result = CreateObject(verbname, verbname, 0, Function, 0);
     return result;
 }
 
@@ -773,7 +802,6 @@ Object* objectField(char* fullname) {
     char* field;
     parent = strtok(fullname, ".");
     field = strtok(0, ".");
-    printf("parent: %s\nfield: %s\n", parent, field);
 
     //verify parent is defined
     Object* oParent = findByName(parent);
@@ -822,7 +850,6 @@ Object* objectField(char* fullname) {
     snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
     addParam(result, oField->returnType);
     addCode(result, accessCode);
-    printTree(result, 2);
     return result;
 }
 
