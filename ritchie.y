@@ -82,6 +82,14 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
 %}
 
+//  Precedence for the following tokens.
+//  Higher tokens happen last
+//  Lower tokens happen first / take priority
+//  Multiple tokens means treat as the same precedence
+//     and rely on associativity.
+//  %right (as opposed to %left) means, 
+//    given a compound expression, 
+//    evaluate from right to left.
 %right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB
 %right PARAMCOMMA
 %right BOOLEANOP
@@ -129,22 +137,19 @@ expr:
   | expr   VERB           { printf("parser: expr-sv \n");   $$ = conjugate($1,  verbIdent($2),  0); }
   |        VERB     expr  { printf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
   |        VERB           { printf("parser: expr- v \n");   $$ = conjugate( 0,  verbIdent($1),  0); }
-  |      STATICVERB expr  { printf("parser: expr- Xo\n");   
-                            $$ = conjugate( 0, sVerbIdent($1), $2); }
+  |      STATICVERB expr  { printf("parser: expr- Xo\n");   $$ = conjugate( 0, sVerbIdent($1), $2); }
   |      STATICVERB       { printf("parser: expr- X \n");   $$ = conjugate( 0, sVerbIdent($1),  0); }
-//  | expr   TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2), $3); }
-//  | expr   TYPE           { printf("parser: expr-sto\n");   $$ = conjugate($1,   verbCtor($2),  0); }
   |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
-  | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1); }
+  | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
   | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
-  | FIELD   { printf("parser: object-field\n");     $$ = objectField($1); }
+  | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
   ;
 
 

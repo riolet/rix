@@ -403,11 +403,10 @@ void writeTree(FILE* outc, FILE* outh, Object* tree) {
     writeTreeHelper(outc, outh, tree, 0);
 }
 
+
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
-    FILE* output;
     ListObject* oIter;
     ListString* sIter;
-
     if (tree == 0) {
       warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
       return;
@@ -415,66 +414,93 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     if (outc == 0 || outh == 0) {
       warningMsg("output file was null in writeTree. (ObjectTree.c)\n");
       return;
-
     }
-
-    if (tree->type == Function || tree->type == Constructor) {
-        output = outh;
-    } else {
-        output = outc;
-    }
-
     oIter = tree->definedSymbols;
     sIter = tree->paramTypes;
     //construct and print function header
     if ((tree->type == Function || tree->type == Constructor) && !getFlag(tree, FLAG_EXTERNAL)) {
-        fprintf(output, "%s %s(", tree->returnType, tree->fullname);
-
-        //add each param
-        while (sIter != 0) {
-            if (sIter->next == 0) {
-                fprintf(output, "%s %s", sIter->value, oIter->value->fullname);
-            } else {
-                fprintf(output, "%s %s, ", sIter->value, oIter->value->fullname);
-            }
-            sIter = sIter->next;
-            oIter = oIter->next;
-        }
-        //finish
-        fprintf(output, ") {\n");
+       writeFunction(outh, tree, indent);
+    } else if(tree->type == Type && !getFlag(tree, FLAG_EXTERNAL)) {
+        writeClass(outc, tree, indent);
+    } else {
+        writeOther(outc, outh, tree, indent);
     }
+}
 
-    //oIter may not be the head of the list of symbols, on purpose
-    //   Due to the function header above declaring parameters.
+void writeFunction(FILE* outh, Object* tree, int indent) {
+
+    ListObject* oIter;
+    ListString* sIter;
+
+    oIter = tree->definedSymbols;
+    sIter = tree->paramTypes;
+
+    if(tree->type == Constructor) {
+         fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
+    } else {
+        fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
+    }
+    //add each param
+    while (sIter != 0) {
+        if (sIter->next == 0) {
+            fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
+        } else {
+            fprintf(outh, "%s %s, ", sIter->value, oIter->value->fullname);
+        }
+        sIter = sIter->next;
+        oIter = oIter->next;
+    }
+    //finish
+    fprintf(outh, ") {\n");
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
             //declare all local variables
-            fprintf(output, "    %s %s;\n", oIter->value->returnType, oIter->value->fullname);
+            fprintf(outh, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+        }
+        oIter = oIter->next;
+    }
+    //print each line of code.
+    if (tree->code != 0 && tree->code->value != 0) {
+        sIter = tree->code;
+        while (sIter != 0) {
+            fprintf(outh, "  %s\n", sIter->value);
+            sIter = sIter->next;
+        }
+    }
+    fprintf(outh, "}\n");
+}
+
+void writeOther(FILE* outc, FILE* outh, Object* tree, int indent) {
+
+    ListObject* oIter;
+    ListString* sIter;
+
+    oIter = tree->definedSymbols;
+
+    while (oIter != 0) {
+        if (oIter->value->type == Variable) {
+            //declare all local variables
+            fprintf(outc, "    %s %s;\n", oIter->value->returnType, oIter->value->fullname);
         } else {
             writeTreeHelper(outc, outh, oIter->value, indent+1);
         }
         oIter = oIter->next;
     }
-
-
-    //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
-
         sIter = tree->code;
         while (sIter != 0) {
-            fprintf(output, "    %s\n", sIter->value);
+            fprintf(outc, "    %s\n", sIter->value);
             sIter = sIter->next;
         }
     }
-    if (tree->type == Constructor && !getFlag(tree, FLAG_EXTERNAL)) {
-        fprintf(output, "    return self;\n"
-            "}\n");
-    }
-
-    if (tree->type == Function && !getFlag(tree, FLAG_EXTERNAL)) {
-        fprintf(output, "}\n");
-    }
 }
+
+void writeClass(FILE* outc, Object* tree, int indent) {
+
+
+
+}
+
 
 
 //================  Testing / Printing =================
