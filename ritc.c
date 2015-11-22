@@ -191,6 +191,7 @@ Object* beginConstructor(Object* parameters) {
 }
 
 void doneConstructor(Object* tree) {
+    addCode(current, "return self;");
     scope_pop();
 }
 
