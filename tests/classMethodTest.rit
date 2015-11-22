@@ -25,7 +25,7 @@ myRect volume 3
 myZeroRect = Rectangle
 
 //test for member access
-print myRect.w
+print myZeroRect.w
 
 //test for static access
 print Rectangle.staticArea 13, 17

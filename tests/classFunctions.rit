@@ -14,7 +14,7 @@ Rectangle :: BaseType
 
 
 myRect = Rectangle
-myRect2 = Rectangle 10 5
+myRect2 = Rectangle 10, 5
 
 myRect doStuff
 
