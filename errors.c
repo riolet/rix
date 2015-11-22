@@ -54,6 +54,9 @@ void criticalError(ErrorCode code, char* message) {
     case ERROR_UndefinedVariable:
         errorMsg("Variable encountered without definition.\n");
         break;
+    case ERROR_UndefinedType:
+        errorMsg("Type encountered without definition.\n");
+        break;
     case ERROR_InvalidArguments:
         errorMsg("Attempted to run a function with invalid arguments.\n");
         break;

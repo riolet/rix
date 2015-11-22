@@ -147,9 +147,10 @@ object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
-  | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
-  | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
   | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
+  | STRING  { printf("parser: object-string\n");    $$ = objectString($1);  }
+  | SELFIDENT { printf("parser: object-self\n"); $$ = objectSelfIdent($1);   }
+  | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev();   }
   ;
 
 

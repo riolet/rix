@@ -48,7 +48,7 @@ Object* sVerbIdent(char* staticVerb);
 Object* verbCtor(char* type);
 Object* parenthesize(Object* expr);
 Object* objectIdent(char* ident);
-Object* subjectIdent(char* ident);
+Object* objectSelfIdent(char* ident);
 Object* objectFloat(float f);
 Object* objectInt(int i);
 Object* objectPrev();

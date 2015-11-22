@@ -41,6 +41,7 @@ Object* beginClass(char* className, char* parentName) {
 
     //build full name of class:  <ClassName><sep><ParentClassName>
     char fullname[BUFFLEN];
+    char codename[BUFFLEN];
     snprintf(fullname, BUFFLEN, "%s" COMPILER_SEP "%s", className, parentName);
 
     //get link to parent class definition
@@ -51,10 +52,11 @@ Object* beginClass(char* className, char* parentName) {
         criticalError(ERROR_ParseError, error);
     }
 
-    //TODO: should the type be BaseType or BaseType* ?
-    Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->fullname);
-    //Object* selfReference = CreateObject("self", "self", 0, Variable, fullname);
-    Object* result = CreateObject(className, fullname, current, Type, 0);
+    snprintf(codename, BUFFLEN, "%s *", className);
+
+    Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->name);
+    Object* result = CreateObject(className, fullname, current, Type, codename);
+    setParentClass(result, parent);
     //addSymbol(result, selfReference);
     addSymbol(result, parentReference);
     addSymbol(current, result);
@@ -87,14 +89,21 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   char funcFullName[BUFFLEN];
   int funcFullName_pos = 0;
 
+  //Build full name.
+  // full name starts with parent class, if available
   if (current->type == Type) {
     funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, current->name);
   }
 
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
+  //add each of the parameters to the fullname
   while(types != 0) {
     funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
+    while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
+        funcFullName_pos--;
+    }
+    funcFullName[funcFullName_pos] = '\0';
     types = types->next;
   }
   Object* parentScope;
@@ -198,6 +207,12 @@ void doneConstructor(Object* tree) {
 Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     //TODO: check if type is actually a defined type
     //TODO: check paramType is a valid Type
+    Object* type = findByName(paramType);
+    if (!type || type->type != Type) {
+        char error[BUFFLEN];
+        snprintf(error, BUFFLEN, "Cannot find type '%s'\n", paramType);
+        criticalError(ERROR_UndefinedType, error);
+    }
 
     Object* result;
     if (paramList == 0) {
@@ -205,7 +220,8 @@ Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     } else {
         result = paramList;
     }
-    addParam(result, paramType);
+
+    addParam(result, type->returnType);
     addCode(result, paramName);
     return result;
 }
@@ -545,6 +561,10 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         paramIter = objects->paramTypes;
         while (paramIter) {
             verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP "%s", paramIter->value);
+            while (verbname[verbname_pos-1] == '*' || verbname[verbname_pos-1] == ' ') {
+                verbname_pos--;
+            }
+            verbname[verbname_pos] = '\0';
             paramIter = paramIter->next;
         }
     }
@@ -558,6 +578,38 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     if (!realVerb) {
         realVerb = findFunctionByFullName(verbname);
     }
+    if (!realVerb && subject) {
+        //This part looks for an inherited method via parent classes.
+        //TODO: this seems too complex. It should be revisited.
+        char newName[BUFFLEN];
+        char newSubject[BUFFLEN];
+        int subject_idx = snprintf(newSubject, BUFFLEN, "&%s->", subject->code->value);
+        int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
+        while (newName[offset-1] == '*' || newName[offset-1] == ' ') {
+            offset--;
+        }
+        newName[offset] = '\0';
+        Object* parent = findByName(newName);
+        if (parent && parent->parentClass) {
+            //skip first level (already checked there)
+            parent = parent->parentClass;
+        }
+
+        while (!realVerb && parent && parent->type == Type) {
+            snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
+            printf("Trying parent class: %s\n", newName);
+            realVerb = findFunctionByFullName(newName);
+            subject_idx += snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "parent.");
+            parent = parent->parentClass;
+        }
+        newSubject[subject_idx-1] = '\0';
+        if (realVerb) {
+            //TODO: violates encapsulation. (just this once!)
+            free(subject->code->value);
+            subject->code->value = strdup(newSubject);
+        }
+    }
+
     if (!realVerb && isalpha(verb->name[0])) {
         char error[BUFFLEN];
         if (subject)
@@ -738,6 +790,23 @@ Object* objectIdent(char* ident) {
     return result;
 }
 
+Object* objectSelfIdent(char* ident) {
+    printf("objectSelfIdent($.%s)\n", ident);
+    if ((current->type != Function && current->type != Constructor) || scope_idx == 0 || scopeStack[scope_idx-1]->type != Type) {
+        criticalError(ERROR_ParseError, "Cannot use self identifier ($) outside of class verbs.\n");
+    }
+
+    Object* result;
+    Object* identifier = findByNameInScope(scopeStack[scope_idx-1], ident, false);
+
+    result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
+    addParam(result, identifier->returnType);
+    char code[BUFFLEN];
+    snprintf(code, BUFFLEN, "self->%s", ident);
+    addCode(result, code);
+    return result;
+}
+
 Object* objectFloat(float f) {
     printf("objectFloat(%f)\n", f);
     char buffer[128];
@@ -876,28 +945,28 @@ void defineRSLSymbols(Object* root) {
 
     // ==============  Built-in Types ===============
 
-    temp1 = CreateObject("BaseType", "BaseType", 0, Type, 0);
+    temp1 = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
     setFlags(temp1, FLAG_EXTERNAL);
     addSymbol(root, temp1);
-    temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", temp1, Type, 0);
+    temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", temp1, Type, "Boolean");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", temp1, Type, 0);
+    temp2 = CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", temp1, Type, "Ternary");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", temp1, Type, 0);
+    temp2 = CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", temp1, Type, "Stream");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", temp1, Type, 0);
+    temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", temp1, Type, "String");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", temp1, Type, 0);
+    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", temp1, Type, "Number");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp3 = CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, 0);
+    temp3 = CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
     setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
-    temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, 0);
+    temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
     setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
 
