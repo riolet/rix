@@ -25,6 +25,8 @@ Object* scopeStack[MAXSCOPE];
 int scope_idx = 0;
 Object* current;
 char* previous[MAXSCOPE];
+char* prevType[MAXSCOPE];
+ListString* prevNode[MAXSCOPE];
 int prev_idx = 0;
 
 Object*  scope_pop() { current = scopeStack[--scope_idx];  return scopeStack[scope_idx+1]; }
@@ -124,6 +126,7 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
     snprintf(pointer, BUFFLEN, "%s *", current->name);
     addParam(result, pointer);
     addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+    addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
   }
 
   //add parameters to the function
@@ -314,28 +317,63 @@ Object* completeExpression(Object* expression) {
     ListString* code = expression->code;
     while (code != 0) {
         snprintf(buffer, BUFFLEN, "%s;", code->value);
-        addCode(current, buffer);
+        prevNode[prev_idx] = addCode(current, buffer);
         code = code->next;
     }
     return current;
 }
 
 Object* finalize(Object* expression) {
+    char prevName[BUFFLEN];
+    int length = snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
+    while (prevName[length] == ' ' || prevName[length] == '*' || prevName[length] == '\0') {
+        length--;
+    }
+    prevName[length+1] = '\0'; //drop the " *" off the end if it's there
+    previous[prev_idx] = strdup(prevName);
+    prevType[prev_idx] = strdup(expression->returnType);
+    return expression;
+}
+
+int prependPrev() {
+    ///prepend "previous[idx] = "
+    char code[BUFFLEN];
+    if (!prevNode[prev_idx]) {
+        criticalError(ERROR_ParseError, "No previous value found.\n");
+    }
+    if (!strncmp(prevNode[prev_idx]->value, COMPILER_SEP "prev.", 8)) {
+        return 0;
+    }
+
+    snprintf(code, BUFFLEN, "%s = %s", previous[prev_idx], prevNode[prev_idx]->value);
+    free(prevNode[prev_idx]->value);
+    prevNode[prev_idx]->value = strdup(code);
+    return 0;
+}
+
+/*
+Object* finalizeOld(Object* expression) {
     Object* exprPrev;
     if (strcmp(expression->returnType, "void")) {
         char prevName[BUFFLEN];
-        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev" COMPILER_SEP "%s", expression->returnType);
+        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
         int length = 0;
         while (!(prevName[length] == ' ' || prevName[length] == '*' || prevName[length] == '\0')) {
             length++;
         }
         prevName[length] = '\0'; //drop the " *" off the end if it's there
         previous[prev_idx] = strdup(prevName);
-        exprPrev = conjugateAssign(objectIdent(prevName), verbAssignment("="), expression);
+        prevType[prev_idx] = strdup(expression->returnType);
+        exprPrev = CreateObject(0, 0, 0, Expression, expression->returnType);
+        char code[BUFFLEN];
+        snprintf(code, BUFFLEN, "%s = %s", prevName, expression->code->value);
+        addCode(exprPrev, code);
+        //exprPrev = conjugateAssign(objectIdent(prevName), verbAssignment("="), expression);
         return exprPrev;
     }
     return expression;
 }
+*/
 
 void closeBrace() {
     addCode(current, "}");
@@ -365,6 +403,7 @@ Object* makeReturn(Object* expression) {
 
 void incPrev() {
     prev_idx++;
+    addCode(current, COMPILER_SEP "Last " COMPILER_SEP "prev;");
 }
 
 void decPrev() {
@@ -578,6 +617,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     if (!realVerb) {
         realVerb = findFunctionByFullName(verbname);
     }
+
     if (!realVerb && subject) {
         //This part looks for an inherited method via parent classes.
         //TODO: this seems too complex. It should be revisited.
@@ -644,6 +684,16 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         printf("\tConjugated: \"%s\"\n", invocation);
         return result;
     }
+
+    //Hack to allow if statements without codeblocks working yet.
+    //TODO: remove this.
+    if (realVerb
+     && !strcmp(realVerb->fullname, "Boolean_$_if")
+     || !strcmp(realVerb->fullname, "Boolean_$_else")
+     || !strcmp(realVerb->fullname, "Boolean_$_elif_$_Boolean")) {
+        return conjugateConditional(subject, realVerb, objects);
+     }
+
     //build code line statement invoking that verb.
     invoke_pos = 0;
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(", realVerb->fullname);
@@ -679,8 +729,49 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
 
 
     addParam(result, realVerb->returnType);
-    addCode(result, invocation);
+
+    if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
+        char temp[BUFFLEN];
+        snprintf(temp, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s", invocation);
+        addCode(result, temp);
+    } else {
+        addCode(result, invocation);
+    }
     printf("\tConjugated: %s\n", invocation);
+    return result;
+}
+
+Object* conjugateConditional(Object* subject, Object* realverb, Object* objects) {
+    //do the stuff.
+    char code[BUFFLEN];
+
+    //if statement:
+    // A if
+    // becomes
+    // _$_prev = A; Boolean_if(_$_prev)
+    if (!strcmp(realverb->fullname, "Boolean_$_if")) {
+        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(" COMPILER_SEP "prev.pBoolean)", subject->code->value, realverb->fullname);
+    }
+
+    //elif statement:
+    // A elif B
+    // becomes
+    // _$_prev = A; Boolean_elif_Boolean(!_$_prev && B)
+    else if (!strcmp(realverb->fullname, "Boolean_$_elif_$_Boolean")) {
+        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean && %s)", subject->code->value, realverb->fullname, objects->code->value);
+    }
+
+    //else statement:
+    // A else
+    // becomes
+    // _$_prev = A; Boolean_else(!_$_prev)
+    else {
+        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean)", subject->code->value, realverb->fullname);
+    }
+
+    Object* result = CreateObject(0, 0, 0, Expression, realverb->returnType);
+    addCode(result, code);
+    addParam(result, realverb->returnType);
     return result;
 }
 
@@ -839,7 +930,13 @@ Object* objectString(char* string) {
 
 Object* objectPrev() {
     printf("objectPrev(%s)\n", previous[prev_idx]);
-    return objectIdent(previous[prev_idx]);
+    Object* result = CreateObject(0, 0, 0, Expression, prevType[prev_idx]);
+    addCode(result, previous[prev_idx]);
+    addParam(result, prevType[prev_idx]);
+
+    prependPrev();
+
+    return result;
 
     //brute force search of text lines in current scope
     /*
@@ -960,7 +1057,7 @@ void defineRSLSymbols(Object* root) {
     temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", temp1, Type, "String");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", temp1, Type, "Number");
+    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", temp1, Type, "Number *");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp3 = CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
@@ -1030,15 +1127,18 @@ void defineRSLSymbols(Object* root) {
 
     rslFunc = CreateObject("if", "Boolean" COMPILER_SEP "if", 0, Function, "Boolean");
     setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_SAVERESULT);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("elif", "Boolean" COMPILER_SEP "elif" COMPILER_SEP "Boolean", 0, Function, "Boolean");
     setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_SAVERESULT);
     addParam(rslFunc, "Boolean");
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("else", "Boolean" COMPILER_SEP "else", 0, Function, "Boolean");
     setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_SAVERESULT);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
 
@@ -1196,6 +1296,7 @@ int main(int argc,char **argv)
     "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
+    addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);

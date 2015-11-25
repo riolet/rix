@@ -37,6 +37,7 @@ Object* declareVariable(char* name, char* type);
 
 Object* conjugateAssign(Object* subject, Object* verb, Object* objects);
 Object* conjugate(Object* lhs, Object* verb, Object* rhs);
+Object* conjugateConditional(Object* lhs, Object* verb, Object* rhs);
 Object* injectC(char* code);
 
 Object* verbAssignment(char* verb);

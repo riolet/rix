@@ -118,27 +118,26 @@ int addSymbol(Object* tree, Object* leaf) {
   return 0;
 }
 
-int addCode(Object* tree, char* line) {
+ListString* addCode(Object* tree, char* line) {
   ListString* node = malloc(sizeof(ListString));
   if (node == 0) {
     warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
-    return 1;
+    return 0;
   }
   node->value = strdup(line);
   node->next = 0;
   if (node->value == 0) {
     warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
-    return 2;
+    return 0;
   }
   if(tree->code == 0) {
     tree->code = node;
-    return 0;
+    return node;
   }
   ListString* tail = tree->code;
   while(tail->next != 0) { tail = tail->next; }
   tail->next = node;
-  return 0;
-
+  return node;
 }
 
 int listlen(ListString* head) {
@@ -403,6 +402,15 @@ OBJ_TYPE getIdentType(Object* scope, char* identifier) {
 }
 
 void writeTree(FILE* outc, FILE* outh, Object* tree) {
+    ListObject * iter;
+    fprintf(outh, "typedef union {\n");
+    for(iter = tree->definedSymbols; iter != 0; iter = iter->next) {
+        if (iter->value->type == Type) {
+            fprintf(outh, "    %s p%s;\n", iter->value->returnType, iter->value->name);
+        }
+    }
+    fprintf(outh, "} " COMPILER_SEP "Last;\n");
+
     writeTreeHelper(outc, outh, tree, 0);
 }
 

@@ -13,6 +13,11 @@ typedef struct {
 typedef struct {
   int object_$_id;
 } BaseType;
+
+typedef struct {
+  BaseType parent;
+} Number;
+
 typedef FILE * Stream;
 typedef void * UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
@@ -21,9 +26,9 @@ typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 
-#define Boolean_$_if(A) A; if (_$_prev_$_Boolean) {
-#define Boolean_$_elif_$_Boolean(A, B) (!A && B); if (_$_prev_$_Boolean) {
-#define Boolean_$_else(A) !A; if (_$_prev_$_Boolean) {
+#define Boolean_$_if(A) if (A) {
+#define Boolean_$_elif_$_Boolean(A) if (A) {
+#define Boolean_$_else(A) if (A) {
 #define Boolean_$_while(A) while (A) {
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 

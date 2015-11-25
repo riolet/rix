@@ -9,6 +9,7 @@
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2
 #define FLAG_EXTERNAL   4
+#define FLAG_SAVERESULT     8
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
 
@@ -54,7 +55,7 @@ Object * CreateObject(char* name, char* fullname, Object* parentScope, OBJ_TYPE 
 //append item to end of linked list
 int addParam(Object* tree, char* type);
 int addSymbol(Object* tree, Object* leaf);
-int addCode(Object* tree, char* line);
+ListString* addCode(Object* tree, char* line);
 int setFlags(Object* tree, int flags);
 int getFlag(Object* tree, int flag);
 int setParentClass(Object* tree, Object* parentClass);
