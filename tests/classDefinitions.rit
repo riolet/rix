@@ -1,0 +1,9 @@
+Rectangle :: BaseType
+  n1 = Integer
+  f1 = Float
+  
+  : printAll
+    print n1 + " " + f1
+
+print "definitions worked"
+

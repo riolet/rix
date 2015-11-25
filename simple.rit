@@ -1,4 +1,1 @@
-#
-int i = 3;
-printf("The number in c import code was: %d\n", i);
-#
+print "1<>2 = " + ((1<>2) pick "Greater", "Equal", "Lesser")

@@ -37,7 +37,9 @@
 %token <fval> FLOAT
 %token <sval> STRING
 %token <sval> IDENT
+%token <sval> FIELD
 %token <sval> VERB
+%token <sval> STATICVERB
 %token <sval> TYPE
 %token <sval> MATH_OP
 %token <sval> ASSIGNMENT
@@ -51,6 +53,7 @@
 %token <sval> BOOLEANOP
 %token <sval> FUNCDEC
 %token <sval> CLASSDEC
+%token <sval> CTORDEC
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
 %token <sval> SELFIDENT
@@ -70,6 +73,7 @@
 %type <oval> classblock;
 %type <oval> function_definition;
 %type <oval> class_definition;
+%type <oval> ctor_definition;
 %type <oval> expr;
 %type <oval> object;
 
@@ -78,7 +82,15 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
 %}
 
-%right ASSIGNMENT MATHASSIGN VERB
+//  Precedence for the following tokens.
+//  Higher tokens happen last
+//  Lower tokens happen first / take priority
+//  Multiple tokens means treat as the same precedence
+//     and rely on associativity.
+//  %right (as opposed to %left) means, 
+//    given a compound expression, 
+//    evaluate from right to left.
+%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB
 %right PARAMCOMMA
 %right BOOLEANOP
 %right COMPARISON TERNARY
@@ -99,9 +111,13 @@ simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
-  | function_definition ENDOFLINE codeblock { printf("parser: s_s-func\n"); doneFunction($1); }
-  | CODE_INSERT ENDOFLINE     { printf("parser: code-insert\n"); $$ = 0;  }
-  | class_definition ENDOFLINE classblock { printf("parser: s_s-class - Class Defined!\n"); doneClass($1); }
+  | function_definition ENDOFLINE codeblock { 
+          printf("parser: s_s-func - Function Defined! %s\n", $1->fullname); 
+          doneFunction($1); }
+  | CODE_INSERT ENDOFLINE     { printf("parser: code-insert\n"); $$ = injectC($1);  }
+  | class_definition ENDOFLINE classblock { 
+          printf("parser: s_s-class - Class Defined! %s\n", $1->fullname); 
+          doneClass($1); }
   ;
 statement:
   expr              { printf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
@@ -114,20 +130,27 @@ expr:
   | expr MATHASSIGN expr  { printf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr COMPARISON expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr BOOLEANOP  expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
-  | expr  TERNARY   expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbTernary(), $3); }
+  | expr  TERNARY   expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
   | expr  MATH_OP   expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
-  | expr   VERB     expr  { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), $3); }
-  |        VERB     expr  { printf("parser: expr-vbe\n");   $$ = conjugate( 0, verbIdent($1), $2); }
-  | expr   VERB           { printf("parser: expr-evb\n");   $$ = conjugate($1, verbIdent($2), 0); }
-  |        VERB           { printf("parser: expr- v \n");   $$ = conjugate( 0, verbIdent($1), 0); }
+
+  | expr   VERB     expr  { printf("parser: expr-svo\n");   $$ = conjugate($1,  verbIdent($2), $3); }
+  | expr   VERB           { printf("parser: expr-sv \n");   $$ = conjugate($1,  verbIdent($2),  0); }
+  |        VERB     expr  { printf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
+  |        VERB           { printf("parser: expr- v \n");   $$ = conjugate( 0,  verbIdent($1),  0); }
+  |      STATICVERB expr  { printf("parser: expr- Xo\n");   $$ = conjugate( 0, sVerbIdent($1), $2); }
+  |      STATICVERB       { printf("parser: expr- X \n");   $$ = conjugate( 0, sVerbIdent($1),  0); }
+  |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
+  |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   ;
 object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
-  | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1); }
+  | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
-  | STRING  { printf("parser: object-string\n");    $$ = objectString($1); }
-  | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev(); }
+  | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
+  | STRING  { printf("parser: object-string\n");    $$ = objectString($1);  }
+  | SELFIDENT { printf("parser: object-self\n"); $$ = objectSelfIdent($1);   }
+  | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev();   }
   ;
 
 
@@ -152,6 +175,9 @@ codeblock:
 class_definition:
   IDENT CLASSDEC TYPE { printf("parser: class-def\n"); $$ = beginClass($1, $3); }
   ;
+ctor_definition:
+  CTORDEC parameters { printf("parser: class-def\n"); $$ = beginConstructor($2); }
+  ;
 classblock:
   INDENT class_statements UNINDENT { $$ = $2; }
   ;
@@ -162,7 +188,12 @@ class_statements:
 class_statement:
   ENDOFLINE { printf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
   | IDENT ASSIGNMENT TYPE ENDOFLINE { printf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
-  | function_definition ENDOFLINE codeblock { printf("parser: c_s-func - Function Defined!\n"); doneFunction($1); }
+  | function_definition ENDOFLINE codeblock { 
+          printf("parser: c_s-func - Function Defined! %s\n", $1->fullname); 
+          doneFunction($1); }
+  | ctor_definition ENDOFLINE codeblock { 
+          printf("parser: c_s-func - Constructor Defined! %s\n", $1->fullname); 
+          doneConstructor($1); }
   ;
 
 %%

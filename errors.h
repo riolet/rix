@@ -22,6 +22,7 @@ typedef enum {
     ERROR_UnrecognizedSymbol,
     ERROR_UndefinedVerb,
     ERROR_UndefinedVariable,
+    ERROR_UndefinedType,
     ERROR_CannotAllocateMemory,
     ERROR_InvalidArguments,
     ERROR_ParseError

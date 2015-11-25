@@ -1,10 +1,9 @@
-
 Rectangle :: BaseType
   w = Integer
   h = Integer
 
   ::: Integer a, Integer b
-    w = a //Creates a new w???
+    w = a
     h = b
 
   : area
@@ -26,9 +25,10 @@ myRect volume 3
 myZeroRect = Rectangle
 
 //test for member access
-print myRect.w
+print myZeroRect.w
 
 //test for static access
 print Rectangle.staticArea 13, 17
+
 
 
