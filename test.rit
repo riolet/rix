@@ -1,7 +1,7 @@
 Integer : myPrint Integer num
   print num
   -> 100
-
+print "printing in test.rit"
 a = 1 + 2 + 4
 b = 3.0 - 1.47
 c = 3 * 2.5

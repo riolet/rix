@@ -2,6 +2,7 @@
 #define RITC_H
 
 #include "ObjectTree.h"
+#include "preproc.h"
 #include "errors.h"
 #include "ctype.h"
 

@@ -17,7 +17,7 @@ echo -e "\e[1m\e[32m[OK]\e[0m"
 echo -----------------------------------------------------------------
 
 #gcc -W -Wall -pedantic -std=c99 ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
-gcc ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
+gcc preproc.c ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
 
 if [ -f ritc ]
 	then

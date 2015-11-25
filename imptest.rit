@@ -1,0 +1,12 @@
+import "test.rit"
+import "simple.rit"
+
+print "printing in imptest.rit"
+Integer : myPrint Integer num, Integer p
+  print num + p
+  -> 100
+	
+i = 4
+k = 90
+
+myPrint i, k
