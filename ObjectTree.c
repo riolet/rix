@@ -424,7 +424,7 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     if ((tree->type == Function || tree->type == Constructor) && !getFlag(tree, FLAG_EXTERNAL)) {
        writeFunction(outh, tree, indent);
     } else if(tree->type == Type && !getFlag(tree, FLAG_EXTERNAL)) {
-        writeClass(outc, tree, indent);
+        writeClass(outc, outh, tree, indent);
     } else {
         writeOther(outc, outh, tree, indent);
     }
@@ -457,7 +457,7 @@ void writeFunction(FILE* outh, Object* tree, int indent) {
     fprintf(outh, ") {\n");
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
-            //declare all local variables
+            //declare all class variables
             fprintf(outh, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
         }
         oIter = oIter->next;
@@ -498,9 +498,39 @@ void writeOther(FILE* outc, FILE* outh, Object* tree, int indent) {
     }
 }
 
-void writeClass(FILE* outc, Object* tree, int indent) {
+void writeClass(FILE* outc, FILE* outh, Object* tree, int indent) {
 
+    ListObject* oIter;
+    ListString* sIter;
 
+    oIter = tree->definedSymbols;
+
+    fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
+            tree->name);
+    fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
+    oIter = oIter->next;
+
+    while (oIter != 0) {
+        if (oIter->value->type == Variable) {
+            //declare all local variables
+            fprintf(outh, "    %s %s;\n", oIter->value->returnType, oIter->value->fullname);
+        } else {
+            oIter = oIter->next;
+            break;
+            //writeTreeHelper(outc, outh, oIter->value, indent+1);
+        }
+        oIter = oIter->next;
+    }
+
+    fprintf(outh, "\n};\n");
+
+    while(oIter != 0) {
+        if(oIter->value->type == Constructor || oIter->value->type == Function) {
+            writeFunction(outh, tree, indent);
+        } else {
+            writeTreeHelper(outc, outh, tree, indent);
+        }
+    }
 
 }
 
