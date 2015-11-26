@@ -343,7 +343,6 @@ Object* finalize(Object* expression) {
 
 int prependPrev() {
     //ensure variable is declared
-    warningMsg("###############CHECKING\n");
     checkPrevExists();
 
     //prepend "previous[idx] = "
@@ -358,6 +357,7 @@ int prependPrev() {
     snprintf(code, BUFFLEN, "%s = %s", previous[prev_idx], prevNode[prev_idx]->value);
     free(prevNode[prev_idx]->value);
     prevNode[prev_idx]->value = strdup(code);
+
     return 0;
 }
 
@@ -393,12 +393,9 @@ void checkPrevExists() {
     ListString * oldNode;
     ListString * oldNext;
     if (!prevExists[prev_idx]) {
-        warningMsg("======================Doing stuff!\n");
         char code[BUFFLEN];
         snprintf(code, BUFFLEN, COMPILER_SEP "Last " COMPILER_SEP "prev;");
-
         //addSymbol(current, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last "));
-
         if (prevNode[prev_idx]) {
             oldNode = prevNode[prev_idx];
             oldNext = prevNode[prev_idx]->next;
@@ -407,6 +404,7 @@ void checkPrevExists() {
             node->next = oldNext;
             node->value = oldNode->value;
             oldNode->value = strdup(code);
+            prevNode[prev_idx] = node;
         } else {
             addCode(current, code);
         }
@@ -769,7 +767,7 @@ Object* conjugateConditional(Object* subject, Object* realverb, Object* objects)
     // becomes
     // _$_prev = A; Boolean_if(_$_prev)
     if (!strcmp(realverb->fullname, "Boolean_$_if")) {
-        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(" COMPILER_SEP "prev.pBoolean)", subject->code->value, realverb->fullname);
+        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; if(" COMPILER_SEP "prev.pBoolean) {", subject->code->value);
     }
 
     //elif statement:
@@ -777,6 +775,7 @@ Object* conjugateConditional(Object* subject, Object* realverb, Object* objects)
     // becomes
     // _$_prev = A; Boolean_elif_Boolean(!_$_prev && B)
     else if (!strcmp(realverb->fullname, "Boolean_$_elif_$_Boolean")) {
+
         snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean && %s)", subject->code->value, realverb->fullname, objects->code->value);
     }
 

@@ -622,9 +622,9 @@ void printTreeList(ListObject* trees, int indent) {
 }
 
 void printTree(Object* tree, int indent) {
-  //if (getFlag(tree, FLAG_EXTERNAL)) {
-  //  return;
-  //}
+  if (getFlag(tree, FLAG_EXTERNAL)) {
+    return;
+  }
   int i;
   if (tree == 0) {
     for(i = 0; i < indent; i++) { printf("  "); }   printf("Object: (null)\n");
