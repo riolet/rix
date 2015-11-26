@@ -23,6 +23,7 @@ Object* completeExpression(Object* expression);
 Object* finalize(Object* expression);
 void closeBrace();
 Object* makeReturn(Object* expression);
+void checkPrevExists();
 void incPrev();
 void decPrev();
 

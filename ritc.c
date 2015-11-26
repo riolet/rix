@@ -26,6 +26,7 @@ int scope_idx = 0;
 Object* current;
 char* previous[MAXSCOPE];
 char* prevType[MAXSCOPE];
+char  prevExists[MAXSCOPE];
 ListString* prevNode[MAXSCOPE];
 int prev_idx = 0;
 
@@ -126,7 +127,7 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
     snprintf(pointer, BUFFLEN, "%s *", current->name);
     addParam(result, pointer);
     addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
-    addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+    //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
   }
 
   //add parameters to the function
@@ -336,7 +337,11 @@ Object* finalize(Object* expression) {
 }
 
 int prependPrev() {
-    ///prepend "previous[idx] = "
+    //ensure variable is declared
+    warningMsg("###############CHECKING\n");
+    checkPrevExists();
+
+    //prepend "previous[idx] = "
     char code[BUFFLEN];
     if (!prevNode[prev_idx]) {
         criticalError(ERROR_ParseError, "No previous value found.\n");
@@ -351,29 +356,6 @@ int prependPrev() {
     return 0;
 }
 
-/*
-Object* finalizeOld(Object* expression) {
-    Object* exprPrev;
-    if (strcmp(expression->returnType, "void")) {
-        char prevName[BUFFLEN];
-        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
-        int length = 0;
-        while (!(prevName[length] == ' ' || prevName[length] == '*' || prevName[length] == '\0')) {
-            length++;
-        }
-        prevName[length] = '\0'; //drop the " *" off the end if it's there
-        previous[prev_idx] = strdup(prevName);
-        prevType[prev_idx] = strdup(expression->returnType);
-        exprPrev = CreateObject(0, 0, 0, Expression, expression->returnType);
-        char code[BUFFLEN];
-        snprintf(code, BUFFLEN, "%s = %s", prevName, expression->code->value);
-        addCode(exprPrev, code);
-        //exprPrev = conjugateAssign(objectIdent(prevName), verbAssignment("="), expression);
-        return exprPrev;
-    }
-    return expression;
-}
-*/
 
 void closeBrace() {
     addCode(current, "}");
@@ -401,12 +383,39 @@ Object* makeReturn(Object* expression) {
     return expression;
 }
 
+void checkPrevExists() {
+    ListString * oldNode;
+    ListString * oldNext;
+    if (!prevExists[prev_idx]) {
+        warningMsg("======================Doing stuff!\n");
+        char code[BUFFLEN];
+        snprintf(code, BUFFLEN, COMPILER_SEP "Last " COMPILER_SEP "prev;");
+
+        //addSymbol(current, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last "));
+
+        if (prevNode[prev_idx]) {
+            oldNode = prevNode[prev_idx];
+            oldNext = prevNode[prev_idx]->next;
+            ListString * node = malloc(sizeof(ListString));
+            oldNode->next = node;
+            node->next = oldNext;
+            node->value = oldNode->value;
+            oldNode->value = strdup(code);
+        } else {
+            addCode(current, code);
+        }
+
+        prevExists[prev_idx] = 1;
+    }
+}
+
 void incPrev() {
     prev_idx++;
-    addCode(current, COMPILER_SEP "Last " COMPILER_SEP "prev;");
+    //addCode(current, COMPILER_SEP "Last " COMPILER_SEP "prev;");
 }
 
 void decPrev() {
+    prevExists[prev_idx] = 0;
     prev_idx--;
     if (prev_idx < 0) {
         criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
@@ -745,6 +754,8 @@ Object* conjugateConditional(Object* subject, Object* realverb, Object* objects)
     //do the stuff.
     char code[BUFFLEN];
 
+    checkPrevExists();
+
     //if statement:
     // A if
     // becomes
@@ -1022,18 +1033,12 @@ Object* objectField(char* fullname) {
 
 
 Object* findByName(char* name) {
-    printf(ANSI_COLOR_YELLOW "Searching for %s in %s\n" ANSI_COLOR_RESET, name, current->name);
     Object* result = findByNameInScope(current, name, false);
-    printf(ANSI_COLOR_YELLOW "Found: %s\n" ANSI_COLOR_RESET, result ? result->fullname : "(null)");
     return result;
 }
 
 Object* findFunctionByFullName(char* name) {
-    printf(ANSI_COLOR_YELLOW "Searching by fullname for %s in %s\n" ANSI_COLOR_RESET, name, current->name);
-
     Object* result = findByNameInScope(current, name, true);
-
-    printf(ANSI_COLOR_YELLOW "Found: %s\n" ANSI_COLOR_RESET, result ? result->fullname : "(null)");
     return result;
 }
 
@@ -1298,7 +1303,7 @@ int main(int argc,char **argv)
     "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
-    addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+    //addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
@@ -1311,9 +1316,9 @@ int main(int argc,char **argv)
   	printf("%s\n", ifile);
   	readFile(ifile, ritTempFile, &numline);
   	fclose(ritTempFile);
-  	
+
 	file = fopen("ritchie_temp_file.rit", "r+");
-	
+
     yyin = file;
 
     //getln();
@@ -1330,19 +1335,20 @@ int main(int argc,char **argv)
     fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
     fprintf(outMainFile,"int main(void) {\n");
 
+
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
 
 		printTreeToFile(root, 0, "./treeOutput.txt");
 	}
 
-	
+
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(file);
     remove("ritchie_temp_file.rit");
-   
+
 
     //printf("\n%s compiled successfully.\n", ifile);
 

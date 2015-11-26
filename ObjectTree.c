@@ -403,17 +403,30 @@ OBJ_TYPE getIdentType(Object* scope, char* identifier) {
 
 void writeTree(FILE* outc, FILE* outh, Object* tree) {
     ListObject * iter;
-    fprintf(outh, "typedef union {\n");
+
+    //create the output union
+    writeTypeDefs(outh, tree);
+    fprintf(outh, "union " COMPILER_SEP COMPILER_SEP "Last {\n");
     for(iter = tree->definedSymbols; iter != 0; iter = iter->next) {
         if (iter->value->type == Type) {
             fprintf(outh, "    %s p%s;\n", iter->value->returnType, iter->value->name);
         }
     }
-    fprintf(outh, "} " COMPILER_SEP "Last;\n");
+    fprintf(outh, "};\n");
 
     writeTreeHelper(outc, outh, tree, 0);
 }
 
+void writeTypeDefs(FILE* outh, Object* tree) {
+    ListObject * iter = tree->definedSymbols;
+    fprintf(outh, "typedef union " COMPILER_SEP COMPILER_SEP "Last " COMPILER_SEP "Last;\n");
+    while (iter) {
+        if (iter->value->type == Type && !getFlag(iter->value, FLAG_EXTERNAL)) {
+            fprintf(outh, "typedef struct " COMPILER_SEP "%s %s;\n", iter->value->name, iter->value->name);
+        }
+        iter = iter->next;
+    }
+}
 
 void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
     ListObject* oIter;
@@ -466,7 +479,7 @@ void writeFunction(FILE* outh, Object* tree, int indent) {
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
             //declare all class variables
-            fprintf(outh, "%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+            fprintf(outh, "    %s %s;\n", oIter->value->returnType, oIter->value->fullname);
         }
         oIter = oIter->next;
     }
@@ -474,7 +487,7 @@ void writeFunction(FILE* outh, Object* tree, int indent) {
     if (tree->code != 0 && tree->code->value != 0) {
         sIter = tree->code;
         while (sIter != 0) {
-            fprintf(outh, "  %s\n", sIter->value);
+            fprintf(outh, "    %s\n", sIter->value);
             sIter = sIter->next;
         }
     }
@@ -509,14 +522,12 @@ void writeOther(FILE* outc, FILE* outh, Object* tree, int indent) {
 void writeClass(FILE* outc, FILE* outh, Object* tree, int indent) {
 
     ListObject* oIter;
-    ListString* sIter;
 
     oIter = tree->definedSymbols;
 
-    fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
-            tree->name);
+    //fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
+    //        tree->name);
     fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
-    oIter = oIter->next;
 
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
@@ -529,7 +540,7 @@ void writeClass(FILE* outc, FILE* outh, Object* tree, int indent) {
         oIter = oIter->next;
     }
 
-    fprintf(outh, "\n};\n");
+    fprintf(outh, "};\n");
 
     while(oIter != 0) {
         if(oIter->value->type == Constructor || oIter->value->type == Function) {
