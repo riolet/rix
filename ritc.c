@@ -364,8 +364,9 @@ void closeBrace() {
 
 Object* makeReturn(Object* expression) {
     if (expression == 0) {
-        warningMsg("makeReturn: Cannot return null expression\n");
-        return 0;
+        Object* result = CreateObject(0, 0, 0, Expression, "void");
+        addCode(result, "return");
+        return result;
     }
     //add "return" to the last expression
     ListString* line = expression->code;
@@ -896,19 +897,30 @@ Object* objectIdent(char* ident) {
 }
 
 Object* objectSelfIdent(char* ident) {
-    printf("objectSelfIdent($.%s)\n", ident);
+    printf("objectSelfIdent(%s)\n", ident);
+    //must be Function or Constructor and be inside a class
     if ((current->type != Function && current->type != Constructor) || scope_idx == 0 || scopeStack[scope_idx-1]->type != Type) {
         criticalError(ERROR_ParseError, "Cannot use self identifier ($) outside of class verbs.\n");
     }
 
     Object* result;
-    Object* identifier = findByNameInScope(scopeStack[scope_idx-1], ident, false);
+    Object* identifier;
 
-    result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
-    addParam(result, identifier->returnType);
-    char code[BUFFLEN];
-    snprintf(code, BUFFLEN, "self->%s", ident);
-    addCode(result, code);
+    if (strlen(ident) == 1) {
+        //must be $ by itself.
+        result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx-1]->returnType);
+        addParam(result, scopeStack[scope_idx-1]->returnType);
+        addCode(result, "self");
+    } else {
+        ident += 2; // bypass the "$."
+        identifier = findByNameInScope(scopeStack[scope_idx-1], ident, false);
+
+        result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
+        addParam(result, identifier->returnType);
+        char code[BUFFLEN];
+        snprintf(code, BUFFLEN, "self->%s", ident);
+        addCode(result, code);
+    }
     return result;
 }
 

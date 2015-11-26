@@ -122,6 +122,7 @@ simple_statement:
 statement:
   expr              { printf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
   | RETURN expr     { printf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
+  | RETURN          { printf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
   ;
 expr:
   object                  { printf("parser: expr-obj\n");   $$ = $1; }
@@ -149,7 +150,7 @@ object:
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1);  }
-  | SELFIDENT { printf("parser: object-self\n"); $$ = objectSelfIdent($1);   }
+  | SELFIDENT { printf("parser: object-self\n");    $$ = objectSelfIdent($1);}
   | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev();   }
   ;
 

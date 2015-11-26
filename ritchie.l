@@ -226,7 +226,8 @@ booleanOp     "||"|"&&"
 {classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
 {return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
-{selfIdent}\.{identifier}  { printf("lexer: selfIdent\n");  yylval->sval = strdup(yytext+2); return SELFIDENT; }
+{selfIdent}\.{identifier}  { printf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
+{selfIdent}     { printf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
 
 {booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
