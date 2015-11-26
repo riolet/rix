@@ -81,6 +81,7 @@ ternary       "<>"
 bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
+
 %%
         int indent_caller = normal;
 

@@ -1,1 +1,15 @@
-print "this is a print from file.rit"
+Integer : add Integer first, Integer second
+    -> first + second
+
+i = 5                 //Integer i
+k = 2                 //Integer k
+
+print add i , k       //prints 7
+
+#                   
+i = 6;
+printf("%d \n", add_$_Integer_$_Integer( i , k ) );  //prints 8
+#                   
+
+print add i , k     //prints 8 as well since 'i' was changed at the source
+
