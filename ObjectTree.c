@@ -517,7 +517,6 @@ void writeClass(FILE* outc, FILE* outh, Object* tree, int indent) {
         } else {
             oIter = oIter->next;
             break;
-            //writeTreeHelper(outc, outh, oIter->value, indent+1);
         }
         oIter = oIter->next;
     }
