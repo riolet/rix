@@ -163,6 +163,10 @@ Object* beginConstructor(Object* parameters) {
 
     while(types != 0) {
         funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
+        while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
+            funcFullName_pos--;
+        }
+        funcFullName[funcFullName_pos] = '\0';
         types = types->next;
     }
     Object* parentScope;
@@ -1021,6 +1025,7 @@ Object* objectField(char* fullname) {
         criticalError(ERROR_UndefinedVariable, error);
     }
 
+
     Object* oField = 0;
     //verify the type of parent has defined a variable named field
     ListObject* oIter = oParentType->definedSymbols;
@@ -1040,7 +1045,7 @@ Object* objectField(char* fullname) {
 
     Object* result = CreateObject(field, field, 0, Expression, oField->returnType);
     char accessCode[BUFFLEN];
-    snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
+    snprintf(accessCode, BUFFLEN, "%s->%s", oParent->fullname, field);
     addParam(result, oField->returnType);
     addCode(result, accessCode);
     return result;

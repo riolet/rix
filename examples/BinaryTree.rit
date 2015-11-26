@@ -7,56 +7,40 @@ Node :: BaseType
     value = v
   
   : printPreOrder
-    #
-    if (!self) { return; }
-    #
+    $ == 0 if
+      ->
     print value
     left printPreOrder
     right printPreOrder
     
   : printInOrder
-    #
-    if (!self) { return; }
-    #
+    $ == 0 if
+      ->
     left printInOrder
     print value
     right printInOrder
     
   : printPostOrder
-    #
-    if (!self) { return; }
-    #
+    $ == 0 if
+      ->
     left printPostOrder
     right printPostOrder
     print value
   
   : add Integer x
     x < value if
-      #
-      if (!self->left) {
-      #
-      left = Node x
-      #
-      } else {
-      #
-      left add x
-      #
-      }
-      #
+      left == 0 if
+        left = Node x
+      ? else
+        left add x
     ? elif x > value
-      #
-      if (!self->right) {
-      #
-      right = Node x
-      #
-      } else {
-      #
-      right add x
-      #
-      }
-      #
+      right == 0 if
+        right = Node x
+      ? else
+        right add x
     x == value if
       print "banana"
+
 
 a = Node 3
 a add 2
@@ -73,8 +57,3 @@ a printInOrder
 print "-----"
 
 a printPostOrder
-
-
-
-
-    
