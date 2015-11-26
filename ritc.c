@@ -1232,10 +1232,12 @@ int main(int argc,char **argv)
     int c,i,fd,old_stdout;
     int errflg=0;
 	int  printTreeBool = 0;
+	int numline = 0;
     char *ifile = NULL;
     char *ofile = NULL;
     extern char *optarg;
     extern int optind, optopt;
+    FILE* ritTempFile;
 
     while ((c = getopt(argc, argv, "o:t")) != -1) {
         switch (c) {
@@ -1301,6 +1303,17 @@ int main(int argc,char **argv)
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
+	ritTempFile = fopen("ritchie_temp_file.rit", "w");
+ 	if (ritTempFile == 0) {
+    	perror("fopen");
+    	return 1;
+  	}
+  	printf("%s\n", ifile);
+  	readFile(ifile, ritTempFile, &numline);
+  	fclose(ritTempFile);
+  	
+	file = fopen("ritchie_temp_file.rit", "r+");
+	
     yyin = file;
 
     //getln();
@@ -1323,10 +1336,13 @@ int main(int argc,char **argv)
 		printTreeToFile(root, 0, "./treeOutput.txt");
 	}
 
+	
     fprintf(outMainFile,"  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(file);
+    remove("ritchie_temp_file.rit");
+   
 
     //printf("\n%s compiled successfully.\n", ifile);
 

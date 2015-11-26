@@ -1,3 +1,4 @@
+
 Rectangle :: BaseType
   w = Integer
   h = Integer
@@ -29,6 +30,5 @@ print myRect.w
 
 //test for static access
 print Rectangle.staticArea 13, 17
-
 
 
