@@ -1,0 +1,12 @@
+Integer : add Integer first, Integer second //creating an add function
+    -> first + second
+i = 5 //Integer i
+k = 2 //Integer k
+swag = "swag"
+
+print swag + " " +i+k
+# //this begins C code insert operation
+i = 6;
+printf("%d \n", add_$_Integer_$_Integer( i , k ) );
+
+# // close C code import
