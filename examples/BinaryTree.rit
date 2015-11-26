@@ -1,0 +1,80 @@
+Node :: BaseType
+  value = Integer
+  left = Node
+  right = Node
+  
+  ::: Integer v
+    value = v
+  
+  : printPreOrder
+    #
+    if (!self) { return; }
+    #
+    print value
+    left printPreOrder
+    right printPreOrder
+    
+  : printInOrder
+    #
+    if (!self) { return; }
+    #
+    left printInOrder
+    print value
+    right printInOrder
+    
+  : printPostOrder
+    #
+    if (!self) { return; }
+    #
+    left printPostOrder
+    right printPostOrder
+    print value
+  
+  : add Integer x
+    x < value if
+      #
+      if (!self->left) {
+      #
+      left = Node x
+      #
+      } else {
+      #
+      left add x
+      #
+      }
+      #
+    ? elif x > value
+      #
+      if (!self->right) {
+      #
+      right = Node x
+      #
+      } else {
+      #
+      right add x
+      #
+      }
+      #
+    x == value if
+      print "banana"
+
+a = Node 3
+a add 2
+a add 7
+a add 6
+a add 8
+
+a printPreOrder
+
+print "-----"
+
+a printInOrder
+
+print "-----"
+
+a printPostOrder
+
+
+
+
+    

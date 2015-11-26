@@ -230,7 +230,7 @@ Object* searchFunction(Object* scope, char* name, int bUseFullName) {
 
     if (!result && scope->parentScope != 0) {
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
-        if (result && result->type != Type && result->type != Function) {
+        if (result && result->type != Type && result->type != Function && result->type != Constructor) {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
         } else {

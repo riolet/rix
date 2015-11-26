@@ -195,7 +195,7 @@ Object* beginConstructor(Object* parameters) {
 
     //Add allocation code
     char allocator[BUFFLEN];
-    snprintf(allocator, BUFFLEN, "%s self = malloc(sizeof(%s));", returnType, current->name);
+    snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType, current->name);
     addCode(result, allocator);
 
     addSymbol(parentScope, result);
@@ -303,7 +303,8 @@ Object* concatParams(Object* existing, Object* newParam) {
 }
 
 Object* declareVariable(char* name, char* type) {
-    Object* var = CreateObject(name, name, 0, Variable, type);
+    Object* oType = findByName(type);
+    Object* var = CreateObject(name, name, 0, Variable, oType->returnType);
     addSymbol(current, var);
     return var;
 }
@@ -416,6 +417,8 @@ void incPrev() {
 
 void decPrev() {
     prevExists[prev_idx] = 0;
+    prevNode[prev_idx] = 0;
+    prevType[prev_idx] = 0;
     prev_idx--;
     if (prev_idx < 0) {
         criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
