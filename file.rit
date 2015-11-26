@@ -1,15 +1,80 @@
-Integer : add Integer first, Integer second
-    -> first + second
+Student :: BaseType
+	fname = String
+	lname = String
+	score = Integer
+	
+	::: String s, String l, Integer sc
+		fname = s
+		lname = l
+		score = sc
+	
+	Integer : modStudent String s, String l, Integer sc
+		fname = s
+		lname = l
+		score = sc
+		-> 1
+	: Destroy
+		#
+		self->fname.buffer = "";
+		self->lname.buffer = "";
+		self->score = 0;
+		#
+	String : getFName
+		->fname
+	String : getLName
+		->lname
+	Integer : getScore
+		->score
 
-i = 5                 //Integer i
-k = 2                 //Integer k
+stu1 = Student "Joe", "Pelz", 111
 
-print add i , k       //prints 7
+print stu1 getFName
+print stu1 getLName
+print stu1 getScore + "\n"
 
-#                   
-i = 6;
-printf("%d \n", add_$_Integer_$_Integer( i , k ) );  //prints 8
-#                   
+stu1 modStudent "Ron", "Swanson", 22
 
-print add i , k     //prints 8 as well since 'i' was changed at the source
+print stu1 getFName
+print stu1 getLName
+print stu1 getScore + "\n"
 
+stu2 = Student "Phil", "Hood", 1
+
+print stu2 getFName
+print stu2 getLName
+print stu2 getScore + "\n"
+
+stu3 = Student "Dimitry", "Rakhlei", 0
+
+print stu3 getFName
+print stu3 getLName
+print stu3 getScore + "\n"
+
+#
+Student ** sp = malloc(sizeof(Student) * 3);
+sp[0] = stu1;
+sp[1] = stu2;
+sp[2] = stu3;
+
+int iter = 0;
+Student * temp;
+
+while (1) {
+	if ( iter >= 2 ) {
+		printf("reset iter\n");
+		iter = 0;
+	}
+	if ( sp[iter++]->score < sp[iter]->score ) {
+		temp = sp[iter];
+		sp[iter] = sp[iter-1];
+		sp[iter-1] = temp;
+		printf("one was bigger \n");
+	}else {
+	    break;
+	}
+}
+printf("\n");
+for (int i = 0; i < 3; i++ ) {
+	printf("%s\n%s\n%d\n\n", sp[i]->fname.buffer, sp[i]->lname.buffer, sp[i]->score);
+}
+#
