@@ -6,7 +6,7 @@ Ritchie is an expressive and efficient language for the C eco system. Ritchie us
 Features
 ========
 
-Ritchie Language is being developed by a lazy ~~programmers~~ cloud DevOps engineer for lazy ~~programmers~~ cloud DevOps engineers who want both the conciseness of Python and the efficiency of C.
+Ritchie Language is being developed by a cloud DevOps engineer and a team of BCIT students for lazy ~~programmers~~ cloud DevOps engineers who want both the conciseness of Python and the efficiency of C.
 
 1. Ritchie uses type inferencing, so the boilerplate Java statement:
 
@@ -36,13 +36,16 @@ Expression := Subject Verb Objects
 Objects := Object | Object, ',', {Objects}
 Subject := Noun | '(' Expression ')'
 Object := Noun | Expression | '(' Expression ')'
+Noun := Integer | Float | String | Identifier
+Verb := '+' | '>' | '=' | "print" | ...
 ```
 
-  The following parses as:  
+  The following phrase:
 
 ```
 hello = "Hello"
 ```
+parses as:  
 
 subject: hello
 
@@ -51,39 +54,17 @@ verb: =
 object: "Hello"
 
 
+3. Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, hello gets type String. 
 
-3. Every unknown identifier belongs to the built in class Identifier. Nouns of the Identifier type are the only nouns that can change type.
 
-  In  
-
+4. Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would type
 ```
-hello = "Hello"
+SomeClass : SomeBaseClass
 ```
-
-  hello starts out life as an "Identifier" but becomes a "String".  
-
-
-4. We are still debating whether to support operator precedence or not. 
-
-  Right now  
+The `:` represents class definition right now, but it needn't mean that in the future. 
 
 
-```
-f = 2 * 3 + 4
-```
-
-
-  is parsed right to left as  
-
-
-```
-f = (2 * (3+4))
-```
-
-5. Ritchie has no keywords. More on that later.
-
-
-6. We call verbs what the constructs called functions, methods or subroutines in other languages
+5. We call verbs what the constructs called functions, methods or subroutines in other languages
 
   Plain vanilla verbs behave like C functions  
   
@@ -98,11 +79,11 @@ Integer: factorial Integer n
   Had we written the the above verb as an assignment verb
 	
 ```
-Integer: factorial Identifier ident, Integer n
+Integer := factorial Integer n
 	result = 1
 	i for 1,n+1
 		result = result * i.
-	ident=result.
+	-> result
 ```	
 
   we could then call the function as  
@@ -115,7 +96,7 @@ Integer: factorial Identifier ident, Integer n
   
   There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.  
   
-7. A special type of verb is a control flow verb. 
+6. A special type of verb is a control flow verb. 
 
 `if`, `while` and `for`  in Ritchie are all such verbs. They are not keywords, as you can redefine them, although this is probably not a good idea.
 
