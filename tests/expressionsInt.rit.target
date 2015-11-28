@@ -1,0 +1,13 @@
+a = 13
+b = 17
+addition = 30
+subtraction = -4
+multiplication = 221
+division = 0
+exponent = 371293
+reassign = 9
+copyValues = 17
+precedenceA = 15
+precedenceB = 21
+linearAssign = 20
+geometricAssign = 27

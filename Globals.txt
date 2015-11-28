@@ -1,0 +1,77 @@
+=========
+Structs:
+=========
+Function
+    char name[BUFFLEN];           //Name of the function
+    char type[BUFFLEN];           //Return type of the function
+    bool codeBlocks;              //bool, indicates if the function accepts a block of code. (while or if statements)
+    char defaultObject[BUFFLEN];  //default parameter to include
+    bool assigns;                 //
+    
+Identifier
+    char name[BUFFLEN];
+    char type[BUFFLEN];
+    char ofType[BUFFLEN];
+
+Type
+    char name[BUFFLEN];
+    char parent[BUFFLEN];
+
+OperStruct
+    Symbol oper;               //enum.  intnumber, stringlit, ident, minus, assign, exponent
+    char operSymStr[BUFFLEN];  //symbol's literal value: 13, "hello", myVariable, -, =, ^^
+    int args;                  //
+    char type[BUFFLEN];        //For operand, type = 0. For oper=function type is return type
+
+
+=========
+Globals:
+=========
+Function    funcList[]
+Identifier  idents[][] 
+Type        typeList[]
+
+int         funcListIdx;   //pointer to next available slot
+int         identIdx[];    //pointer to next available slot
+int         typeIdx;       //pointer to next available slot
+char        currentType[]; //name of current object scope
+
+ExpType     expType;       //Enum, one of "object" or "method"
+
+Symbol      sym;           //type of symbol (assign, exponent, ident, intnumber, etc...)
+char        symStr[];      //symbol as written ("=", "\"hello\"", "myVar", "13.5")
+int         symStrIdx;     //pointer to next available slot
+
+FILE*       file           //helloworld.rit
+FILE*       outfile        //currently selected output file. (out.c, out.h, reassigned at will)
+FILE*       outMainFile    //out.c
+FILE*       outHeaderFile  //out.h
+
+OperStruct  optrStack[]
+OperStruct  oprnStack[]
+int         optrStackPtr   //pointer to next available slot
+int         oprnStackPtr   //pointer to next available slot
+
+int         lParenList[]
+int         lParenPtr;
+
+char        buff[]         //holds the currently explored line of the file
+int         linePos        //holds the current position in `buff`
+int         lineNum
+int         scopeLevel
+int         indentLevel[]
+int         args
+bool        expectScopeIncrease;
+
+=========
+Enums:
+=========
+Symbol {eol, eof, exponent, assign, minus, comment, ...}
+symnames[Symbol] = {"eol", "eof", "exponent", "assign", "minus", "comment", ...}
+ExpType {object, method}
+
+
+
+
+
+

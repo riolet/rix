@@ -1,0 +1,7 @@
+String: bottles Integer b 
+	-> (b<>1) pick (b+" bottles"), "1 bottle", "No more bottles"
+		   
+line = (bottles b=99) + (ob = " of beer")
+while b>0
+	print line + ob + (w = " on the wall\n") + line + ob + "\nTake one down and pass it around"
+	print (line = (bottles b = b-1)) + ob + w

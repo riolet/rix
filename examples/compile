@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#compiler path
+compiler="../ritc"
+#location of rsl.h
+rsl=".."
+
+#isolate the filename, without the extension
+pathless=$(basename "$1")
+name="${pathless%.*}"
+
+#compile the Ritchie file
+bash -c "$compiler -o $name $1 >/dev/null 2>/dev/null"
+
+#compile the C file
+bash -c "gcc -I$rsl $name.c -o $name.out -lm >/dev/null 2>/dev/null"
+
+if [ $? -ne 0 ]; then
+  printf "Error: C code failed to compile.\n"
+  printf "\tSee \"$name.c\"\n"
+  printf "\tand \"$name.h\"\n"
+else
+  printf "Compiled Successfully. Run the program by typing ./$name.out\n"
+fi
+

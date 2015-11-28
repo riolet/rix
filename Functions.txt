@@ -1,0 +1,274 @@
+createType
+----------------------------------------
+  Append a new type into the end of `typeList[]`
+  
+  Params: name   - Name of the type
+          parent - Name of the parent type
+  
+  Return: void
+
+createObject
+----------------------------------------
+  Append a new identifier into the list of identifiers
+  
+  Params: name - Name of the identifier/variable.
+          type - Type of the variable (see `typeList[]`)
+          
+  Return: void
+
+
+createFunction
+----------------------------------------
+  Append a function to the list of functions with the given values.
+  
+  Params: name          - Name of the function
+          type          - Return type of the function
+          codeBlock     - UNKNOWN (false)
+          defaultObject - UNKNOWN (NULL)
+          assigns       - UNKNOWN (false)
+          
+  Return: void
+
+get*
+----------------------------------------
+  Searches the appropriate list for the given element name
+  and returns the related data component
+  
+  Params: name - the name of the function/object/type to search for
+          
+  Return: the requested data component (function.assigns, type.parent, etc)
+
+
+errorMsg
+----------------------------------------
+  works as printf to print the given message to stderr
+  
+  Params: format - the format-string/message
+          va_args - the format parameters
+          
+          
+  Return: int - vfprintf result
+
+
+@PRINTS_OUT_C
+doAssignDeclare
+----------------------------------------
+  1. Checks if identifier (tor) exists in the objectList and has a type. 
+     exit(0) if it already does.
+  2. copies name from operator list to object list
+  3. if (rtype == stringlit), copies String to objectList.type, otherwise just copies rtype
+  4. prints out a declaration of the variable and a newline to out.c (e.g. "int i;\n")
+  
+  Params: tor            - operator index in the operator stack
+          rnd            - operand index in the operand stack
+          holderSymStack - not used.
+          ltype          - not used.
+          rtype          - the type of the new identifier
+          
+  Return: false - always false
+
+
+oprnStackUpdate()
+----------------------------------------
+  Appends the current symbol (sym) to the operand stack (oprnStack[])
+  Operands include: 13, myVariable, "hello, world!"
+  If the symbol is a string literal,
+    operSymStr is set to "String_stringlit(\"Hello, world!\")"
+  Else, 
+    operSymStr is set to the value of symStr
+  expType is also set to "object" (as opposed to method)
+  
+  Params: none
+  Return: void
+
+
+optrStackUpdate()
+----------------------------------------
+  Appends the current symbol (sym) to the operator stack (optsStack[])
+  Operators include: function, assign, plus, exponent
+  args is set to 0.
+  expType is also set to "method" (as opposed to object)
+  
+  Params: none
+  Return: void
+
+
+getln
+----------------------------------------
+  Reads the next line of the file into `buff` and resets `linePos` to 0.
+  sets `sym` to eof on failure
+  calls evaluateAndReset()
+  
+  Params: none
+  Return: void
+
+
+getsym
+----------------------------------------
+  Get the next symbol in the ritchie file and put it into `sym`.
+  It does this by skipping whitespace then reading character by character.
+    First it validates indentation
+       and on newlines, it sets `sym` to eol and calls getln
+    On [a-zA-Z], read [a-zA-Z0-9]+ chars into `symStr`
+       if it's in the typeList[], set `sym` to type     and update the operator stack
+       if expType==object,        set `sym` to function and update the operator stack
+       if it's in the funcList[], set `sym` to function and update the operator stack
+           if the function has a default object,      append that to the operand stack
+           otherwise, append an ident, UNKNOWNOBJECT, UNKNOWNTYPE to the operand stack
+       else it's a variable. set `sym` to ident and update the operand stack
+    On ["], read "[^"]+" and push it onto the operand stack
+    On [0-9] read [0-9] into symStr.
+       if .[0-9] is found, push a floatnumber onto the operand stack
+       else push an int value onto the operand stack
+    Switch between next two characters and push appropriate optr on stack.
+       Includes: =, ==, /, /=, //, *, *=, +, +=, -, -=, ->, <, <=, <>, >=, >, 
+                 .(end symbol), ,(comma), ^^, ^, (, ), #, :
+    Else unrecognized symbol. (exit(0))
+  
+  Params: none
+  Return: void
+
+
+evaluateAndReset
+----------------------------------------
+  Calls `evaluate()` to process the data loaded into the operStacks. 
+  This is called after a line has been fully read (or a semicolon reached)
+      and before reading the next line.
+  When `evaluate` is done, this resets: 
+    expType to method
+    optrStackPtr to 0
+    oprnStackPtr to 0
+    lParenPtr to 0
+  
+  Params: none
+  Return: void
+
+
+@PRINTS_OUT_C
+evaluate
+----------------------------------------
+  First,
+      set `tor` and `rnd` to the last items in the operator and operand stacks
+      `parenMode` is a bool indicating the last item in the stack is a rparen
+      `rtype` is set to the .type of the last operator "String", "Integer"
+      `holderSymStack` is the variable that holds your result so far.
+  Then, 
+  Iterates through the operators, filling in operands until done.
+  It checks for Return, End of Scope, rParen, and lParen (return on lParen), then
+  On comma,
+      insert `addParam` into head of holderSymStack as "addParam, (holderSymStack)"
+      append `rtype` onto addParamTypes
+  If oper is a function, copy it's name into fn. (otherwise sym type into fn)
+  plugs operand type into `ltype` as above
+  
+  
+  Params: none          
+  Return: void
+
+
+@PRINTS_OUT_C
+readCinc
+----------------------------------------
+  Copies text from the ritchie file directly to the out.c file
+  Used for comments and inserting C code into Ritchie.
+  Reads to \n and sets `sym` to eol
+  
+  Params: none 
+  Return: void
+
+
+@PRINTS_OUT_H
+readFunDec
+----------------------------------------
+  called after a function declaration line has been identified as such. (return type read)
+  prints return type into out.h, reads the : (colon)
+      "String "
+  calls createFunction with symStr, returnType. (e.g. "bottles", "String")
+  prints into `funcName` parentType_name (e.g. "UNKNOWNTYPE_bottles")
+  prints into `argList` (parentType, self, (e.g. "(UNKNOWNTYPE self, ")
+  keep reading (getsym()) until the end of the line (eol)
+      for each parameter, createObject
+      append parameter types to the `funcName`
+          "UNKNOWNTYPE_bottles_Integer"
+      append parameter types and names to the `arglist`
+          "(UNKNOWNTYPE self, Integer b"
+      if there's a comma, add a comma to `arglist`
+          "(UNKNOWNTYPE self, Integer b, "
+  finally, print to out.h with a closing paren and open brace.
+      String UNKNOWNTYPE_bottles_Integer(UNKNOWNTYPE self, Integer b)
+      {
+  and createFunction one more time. (Why the first time??)
+  
+  Params: none
+  Return: void
+
+
+@PRINTS_OUT_C
+parse
+----------------------------------------
+  Splits on the value of `sym`, while the EOF hasn't been reached.
+  On rparen (')') evaluate() the parenthesis section
+  On cinc ('#') copy the c code directly over to out.c
+  On comment ("//") print a "//" and copy the rest of the line directly.
+  On colon (as the second operator received) assume a function and read that.
+  finally, print a closing brace.
+  
+  Params: none
+  Return: void
+
+
+main
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+
+----------------------------------------
+  
+  
+  Params: 
+          
+          
+  Return: void
+
+

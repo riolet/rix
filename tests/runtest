@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#compiler path
+compiler="../ritc"
+#location of rsl.h
+rsl=".."
+
+runtest() {
+  #compile .rit file
+  bash -c "$compiler $1 &>/dev/null"
+  
+  #compile out.c
+  bash -c "gcc -I$rsl out.c -lm >/dev/null 2>$1.my.out"
+  
+  if [ $? -ne 0 ]; then
+    printf "FAILED: C code file couldn't be compiled.\n" "$1"
+    printf "\tSee \"%s.my.out\"\n" "$1"
+    printf "\tand \"out.c\"\n"
+    return
+  fi
+  
+  #run a.out
+  bash -c "./a.out >$1.my.out 2> /dev/null"
+  
+  #compare output of a.out to expected.
+  paste -d@ $1.target $1.my.out | while IFS='@' read -r f1 f2 || [[ -n "$line" ]]
+  do
+    if [ "$f1" = "$f2" ]; then
+      printf "pass:   %s\n" "$f1"
+    else
+      printf "FAILED: Expected: %s; Received: %s\n" "$f1" "$f2"
+    fi
+  done
+}
+
+runtest $1
+
+

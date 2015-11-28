@@ -1,4 +1,4 @@
 all:
-	gcc -ggdb -o factorial factorial.c
+	gcc -ggdb -o ritc ritc.c errors.c
 clean:
-	rm factorial
+	rm ritc
