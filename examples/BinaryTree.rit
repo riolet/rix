@@ -5,6 +5,8 @@ Node :: BaseType
   
   ::: Integer v
     value = v
+    left  = ~
+    right = ~
   
   : printPreOrder
     $ == 0 if
@@ -39,7 +41,7 @@ Node :: BaseType
       ? else
         right add x
     x == value if
-      print "banana"
+      print "Entry already exists"
 
 
 a = Node 3

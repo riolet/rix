@@ -1,1 +1,2 @@
-print "1<>2 = " + ((1<>2) pick "Greater", "Equal", "Lesser")
+i for 1, 100
+  print i % 10

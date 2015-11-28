@@ -23,7 +23,8 @@ if [ -f ritc ]
 	then
 		echo " "
 		echo -e "\e[5m\e[33m>Ritchie File to Compile\e[0m"
-		find . -type f -name "*.rit"
+		#find . -type f -name "*.rit"
+		ls *.rit
 		echo -e "\e[32m"
 		read file
 		echo -e "\e[0m"

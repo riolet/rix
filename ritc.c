@@ -591,17 +591,18 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     //erase the " *" if it's there from the name
 
     //build base name of verb (e.g. "+" becomes "plus")
-    if (!strcmp(verb->name, "+"))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus"); }
-    else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus"); }
-    else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times"); }
-    else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash"); }
-    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent"); }
-    else if (!strcmp(verb->name, "<"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt"); }
-    else if (!strcmp(verb->name, ">"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt"); }
+    if (!strcmp(verb->name, "+"))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus");    }
+    else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus");   }
+    else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times");   }
+    else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash");   }
+    else if (!strcmp(verb->name, "%"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "modulus"); }
+    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent");}
+    else if (!strcmp(verb->name, "<"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt");   }
+    else if (!strcmp(verb->name, ">"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt");   }
     else if (!strcmp(verb->name, "<=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq"); }
     else if (!strcmp(verb->name, ">=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq"); }
-    else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq"); }
-    else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq"); }
+    else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");   }
+    else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");  }
     else if (!strcmp(verb->name, "<>")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 

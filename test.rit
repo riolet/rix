@@ -1,32 +1,27 @@
-
 Rectangle :: BaseType
   w = Integer
   h = Integer
-
-  ::: Integer a, Integer b
-    w = a //Creates a new w???
-    h = b
-
-  : area
-    print "Rectangle area is " + (w*h)
   
-  : volume Integer depth
-    print "Rectangle volume is " + (w*h*depth)
-    
-  Integer : staticArea Integer w, Integer h
+  ::: Integer w, Integer h
+    $.w = w
+    $.h = h
+  
+  Integer : area
     -> w * h
 
-myInt = print 10
-myRect = Rectangle 10, 5
+Square :: Rectangle
+  ::: Integer edge
+    w = edge
+    h = edge
 
-myRect area
-myRect volume 3
+Integer : calcArea Rectangle r
+  -> r.w * r.h
 
-//test for empty constructor.
-myZeroRect = Rectangle
 
-//test for member access
-print myRect.w
+r = Rectangle 5, 10
+s = Square 16
 
-//test for static access
-print Rectangle.staticArea 13, 17
+print r area
+print s area
+print (calcArea r)
+print (calcArea s.parent)

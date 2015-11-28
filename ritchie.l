@@ -71,7 +71,7 @@ classCtor     ":::"
 conditionLink "?"
 selfIdent     "$"
 
-mathOp        "+"|"-"|"*"|"/"|"^^"
+mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
 assignment    "="
 return        "->"
 
