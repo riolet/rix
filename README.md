@@ -47,7 +47,7 @@ Objects := Object | Object, ',', {Objects}
 Subject := Noun | '(' Expression ')'
 Object := Noun | Expression | '(' Expression ')'
 Noun := Integer | Float | String | Identifier
-Verb := '+' | '>' | '=' | "print" | ...
+Verb := '+' | '>' | '=' | "for" | "print" | ...
 ```
 
   The following phrase:
@@ -71,7 +71,7 @@ object: "Hello"
 ```
 SomeClass : SomeBaseClass
 ```
-The `:` represents class definition right now, but it needn't mean that in the future. 
+  The `:` represents class definition right now, but it needn't mean that in the future. 
 
 
 * We call verbs what the constructs called functions, methods or subroutines in other languages
@@ -79,11 +79,11 @@ The `:` represents class definition right now, but it needn't mean that in the f
   Plain vanilla verbs behave like C functions  
   
 ```
-Integer: factorial Integer n
+Integer : factorial Integer n
 	result = 1
 	i for 1,n+1
-		result = result * i.
-	->result.
+		result = result * i
+	-> result
 ```
 
   Had we written the the above verb as an assignment verb
@@ -92,7 +92,7 @@ Integer: factorial Integer n
 Integer := factorial Integer n
 	result = 1
 	i for 1,n+1
-		result = result * i.
+		result = result * i
 	-> result
 ```	
 
