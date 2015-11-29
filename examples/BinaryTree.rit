@@ -5,8 +5,6 @@ Node :: BaseType
   
   ::: Integer v
     value = v
-    left  = ~
-    right = ~
   
   : printPreOrder
     $ == 0 if
