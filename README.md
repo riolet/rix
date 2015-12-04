@@ -13,7 +13,7 @@ There are four core principals behind Ritchie:
 |                    | Ritchie | C   | Python |
 |--------------------|---------|-----|--------|
 | Runtime (ms)       | 457     | 424 | 7836   |
-| Characters of code | 423     | 542 | 653    |
+| Characters of code | 423     | 542 | 474    |
 
 The best way to introduce yourself to this language is to take a look at some of the examples, and try running them yourself.  Ritchie is still in early development and many features have not yet been fully implemented and described.  A list of major [development tasks remaining](https://github.com/riolet/ritchie/wiki/State-of-the-Compiler) can be found in the wiki.
 
