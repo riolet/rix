@@ -10,7 +10,7 @@ There are four core principals behind Ritchie:
 3. Ability to go lower level and write C code
 4. No reserved keywords, everything is redefinable
 
-We did ran the []prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
+We did ran the [prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
 
 |                    | Ritchie | C   | Python |
 |--------------------|---------|-----|--------|

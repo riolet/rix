@@ -19,7 +19,7 @@ numPrimes = 0
 n = 0
 
 i for 1, lim
-    ((isPrime i) == 0) if
+    ((isPrime i) == 1) if
         numPrimes = (numPrimes + 1)
 
 print "Number of primes in the interval [0,"+lim+"]: "+numPrimes
