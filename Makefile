@@ -4,17 +4,17 @@
 LEX        = flex
 YACC       = bison -y
 YFLAGS     = -d
-CFLAGS     = -lfl
-objects    = scan.o parse.o ritc.o preproc.o ObjectTree.o ritchie.tab.o errors.o
 
-ritc: $(objects) $(CFLAGS)
-scan.o: ritchie.l
-parse.o: ritchie.y
-preproc.o: preproc.c
-ObjectTree.o: ObjectTree.c
-ritchie.tab.o: ritchie.tab.c
-errors.o: errors.c
-ritc.o: ritc.c
+all: ritc
+
+ritchie.tab.c ritchie.tab.h:	ritchie.y
+	bison -d ritchie.y
+
+lex.yy.c: ritchie.l ritchie.tab.h
+	flex ritchie.l
+
+ritc: lex.yy.c ritchie.tab.c ritchie.tab.h
+	gcc preproc.c ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
 
 clean:
-	rm -f *.o
+	rm ritc ritchie.tab.c lex.yy.c ritchie.tab.h
