@@ -10,6 +10,8 @@ There are four core principals behind Ritchie:
 3. Ability to go lower level and write C code
 4. No reserved keywords, everything is redefinable
 
+We did ran the []prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
+
 |                    | Ritchie | C   | Python |
 |--------------------|---------|-----|--------|
 | Runtime (ms)       | 457     | 424 | 7836   |
@@ -120,5 +122,6 @@ Team
 Ritchie Language is being developed by a group of efficiency obsessed programmers for demanding programmers who want both the conciseness of Python and the efficiency of C.
 
 Concept: Rohana Rezel (Riolet Corporation)
+
 Design and implementation: [Joe Pelz](https://github.com/JoePelz), [Phillip Hood](https://github.com/pvgh) and [Dimitry Rakhlei](https://github.com/DimitryRakhlei) (final year students at BCIT, Burnaby, BC, Canada)
 
