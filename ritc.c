@@ -1115,6 +1115,13 @@ void defineRSLSymbols(Object* root) {
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
 
+    // ============== Sqrt functions ==============
+    // ============== TODO sqrt(Integer) should be a float? ==============
+    rslFunc = CreateObject("sqrt", "Integer" COMPILER_SEP "sqrt", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+
     // ==============  String Functions ===============
 
     rslFunc = CreateObject("assign", "String" COMPILER_SEP "assign" COMPILER_SEP "String", 0, Function, "String");

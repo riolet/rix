@@ -1,5 +1,7 @@
-#include <math.h>
+#include <stdio.h>
+#include <math.h> /* For sqrt */
 
+/* Check if the number n is prime */
 int isPrime(int n) {
     if (n < 2)
         return 0;
@@ -18,10 +20,13 @@ int isPrime(int n) {
     return 1;
 }
 
+/* count the number of primes up to and including limit */
 int main() {
-    int i;
-    for (i = 1; i < 2000000; i++) {
-        isPrime(i);
+    int noPrimes = 0, limit = 2000000, n;
+    for (n = 0; n <= limit; n++) {
+        if (isPrime(n))
+            noPrimes ++;
     }
+    printf("pi(%d) = %d\n", limit, noPrimes);
     return 0;
 }
