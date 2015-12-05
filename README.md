@@ -25,34 +25,20 @@ Features
 * Ritchie uses type inferencing, so the boilerplate Java statement:
 
 ```
-SomeClass someInstance = new SomeClass (someArgument)
+Point point = new Point (x,y)
 ```
 
   becomes a short Ritchie statement:
 
 ```
-someInstance = SomeClass someArgument
+point = Point x, y
 ```
-  Smooth, eh?
+Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, point gets type Point.
 
 
 * Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
 
   Subject Verb Object
-
-  Currently, the grammar of Ritchie Language is as follows:
-
-
-```
-Program := Expressions
-Expressions := Expression | Expression, NEWLINE, {Expressions}
-Expression := Subject Verb Objects
-Objects := Object | Object, ',', {Objects}
-Subject := Noun | '(' Expression ')'
-Object := Noun | Expression | '(' Expression ')'
-Noun := Integer | Float | String | Identifier
-Verb := '+' | '>' | '=' | "for" | "print" | ...
-```
 
   The following phrase:
 
@@ -61,14 +47,10 @@ hello = "Hello"
 ```
 parses as:
 
-subject: hello
 
-verb: =
-
-object: "Hello"
-
-
-* Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, hello gets type String.
+| Subject | Verb | Object  |
+|---------|------|---------|
+| hello   | =    | "Hello" |
 
 
 * Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would type
@@ -88,27 +70,11 @@ Integer : factorial Integer n
 	i for 1,n+1
 		result = result * i
 	-> result
+
+print factorial 5
 ```
 
-  Had we written the the above verb as an assignment verb
-
-```
-Integer := factorial Integer n
-	result = 1
-	i for 1,n+1
-		result = result * i
-	-> result
-```
-
-  we could then call the function as
-
-```
-  result factorial 5
-```
-
-  which would first create the variable result and then assign 5! to it.
-
-  There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.
+There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.
 
 * A special type of verb is a control flow verb.
 
@@ -121,7 +87,7 @@ Team
 ====
 Ritchie Language is being developed by a group of efficiency obsessed programmers for demanding programmers who want both the conciseness of Python and the efficiency of C.
 
-Concept: Rohana Rezel (Riolet Corporation)
+Concept: [Rohana Rezel](https://github.com/rrezel) ([Riolet Corporation](https://github.com/riolet))
 
 Design and implementation: [Joe Pelz](https://github.com/JoePelz), [Phillip Hood](https://github.com/pvgh) and [Dimitry Rakhlei](https://github.com/DimitryRakhlei) (final year students at BCIT, Burnaby, BC, Canada)
 
