@@ -5,9 +5,7 @@ Integer : isPrime Integer n
         -> 1
     (n % 2 == 0) if
         -> 0
-    upperLimit = 0;
-    #  upperLimit = sqrt(n);  #
-    
+    upperLimit = (n sqrt)
     i = 3
     i <= upperLimit while
         (n % i == 0) if
@@ -16,5 +14,12 @@ Integer : isPrime Integer n
     -> 1
 
 
-i for 1, 2000000
-    isPrime i
+lim = 2000000
+numPrimes = 0
+n = 0
+
+i for 1, lim
+    ((isPrime i) == 1) if
+        numPrimes = (numPrimes + 1)
+
+print "Number of primes in the interval [0,"+lim+"]: "+numPrimes

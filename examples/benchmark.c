@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <math.h>
 
 int isPrime(int n) {
@@ -19,9 +20,11 @@ int isPrime(int n) {
 }
 
 int main() {
-    int i;
-    for (i = 1; i < 2000000; i++) {
-        isPrime(i);
+    int noPrimes = 0, limit = 2000000, n;
+    for (n = 0; n <= limit; n++) {
+        if (isPrime(n))
+            noPrimes ++;
     }
+    printf("pi(%d) = %d\n", limit, noPrimes);
     return 0;
 }

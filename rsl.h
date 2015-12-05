@@ -48,6 +48,10 @@ float Float_$_exponent_$_Float (float f1, float f2) {
     return pow(f1,f2);
 }
 
+int Integer_$_sqrt (int i) {
+    return (int) sqrt(i);
+}
+
 String String_$_stringlit ( char * strlit) {
     String s;
     s.buffer = strlit;
