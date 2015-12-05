@@ -7,8 +7,9 @@ There are four core principals behind Ritchie:
 
 1. Ease of programming, inspired by Python
 2. Fast, like C code
-3. Ability to go lower level and write C code
-4. No reserved keywords, everything is redefinable
+3. Type safe, like Scala
+4. Ability to go lower level and write C code
+5. No reserved keywords, everything is redefinable
 
 We ran the [prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
 
@@ -79,6 +80,15 @@ There's no assignment operator in Ritchie, but `=` is defined as an assignment v
 `if`, `while` and `for`  in Ritchie are all such verbs. They are not keywords, as you can redefine them, although this is probably not a good idea.
 
 * Ritchie is whitespace sensitive
+
+
+
+Get started
+===========
+1. Build the ritchie compiler `make clean;make`
+2. Write your ritchie program in your favourite text editor (let's call it program.rit)
+3. Run `./ritchie.sh program.rit` and ritchie will build and execute the program
+
 
 
 Team
