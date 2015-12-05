@@ -55,14 +55,12 @@ parses as:
 
 * Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would type
 ```
-SomeClass : SomeBaseClass
+SomeClass :: SomeBaseClass
 ```
-  The `:` represents class definition right now, but it needn't mean that in the future.
+  The `::` is simply a verb that reads "become a subclass of".
 
 
-* We call verbs what the constructs called functions, methods or subroutines in other languages
-
-  Plain vanilla verbs behave like C functions
+* We call verbs what the constructs called functions, methods or subroutines in other languages. For example:
 
 ```
 Integer : factorial Integer n
@@ -74,7 +72,7 @@ Integer : factorial Integer n
 print factorial 5
 ```
 
-There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.
+There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `Identifier`.
 
 * A special type of verb is a control flow verb.
 
