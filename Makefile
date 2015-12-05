@@ -1,10 +1,3 @@
-# Makefile example -- scanner and parser.
-# Creates "myprogram" from "scan.l", "parse.y", and "myprogram.c"
-#
-LEX        = flex
-YACC       = bison -y
-YFLAGS     = -d
-
 all: ritc
 
 ritchie.tab.c ritchie.tab.h:	ritchie.y

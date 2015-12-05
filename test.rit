@@ -14,14 +14,8 @@ Square :: Rectangle
     w = edge
     h = edge
 
-Integer : calcArea Rectangle r
-  -> r.w * r.h
-
-
 r = Rectangle 5, 10
 s = Square 16
 
 print r area
 print s area
-print (calcArea r)
-print (calcArea s.parent)
