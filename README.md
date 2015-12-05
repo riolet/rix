@@ -7,8 +7,9 @@ There are four core principals behind Ritchie:
 
 1. Ease of programming, inspired by Python
 2. Fast, like C code
-3. Ability to go lower level and write C code
-4. No reserved keywords, everything is redefinable
+3. Type safe, like Scala
+4. Ability to go lower level and write C code
+5. No reserved keywords, everything is redefinable
 
 We ran the [prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
 
@@ -55,14 +56,12 @@ parses as:
 
 * Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would type
 ```
-SomeClass : SomeBaseClass
+SomeClass :: SomeBaseClass
 ```
-  The `:` represents class definition right now, but it needn't mean that in the future.
+  The `::` is simply a verb that reads "become a subclass of".
 
 
-* We call verbs what the constructs called functions, methods or subroutines in other languages
-
-  Plain vanilla verbs behave like C functions
+* We call verbs what the constructs called functions, methods or subroutines in other languages. For example:
 
 ```
 Integer : factorial Integer n
@@ -74,13 +73,22 @@ Integer : factorial Integer n
 print factorial 5
 ```
 
-There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `BaseType`.
+There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `Identifier`.
 
 * A special type of verb is a control flow verb.
 
 `if`, `while` and `for`  in Ritchie are all such verbs. They are not keywords, as you can redefine them, although this is probably not a good idea.
 
 * Ritchie is whitespace sensitive
+
+
+
+Get started
+===========
+1. Build the ritchie compiler `make clean;make`
+2. Write your ritchie program in your favourite text editor (let's call it program.rit)
+3. Run `./ritchie.sh program.rit` and ritchie will build and execute the program
+
 
 
 Team
