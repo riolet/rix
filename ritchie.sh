@@ -1,5 +1,8 @@
 #!/bin/bash
-./ritc -o ${1} ${1} &> /dev/null
-gcc -o ${1}.out ${1}.c -lm
-./${1}.out
-rm ${1}.out ${1}.c ${1}.h
+RITCHIE_HOME_=${RITCHIE_HOME:-.}
+RITCHIE_FILE=${1}
+${RITCHIE_HOME_}/ritc -o ${RITCHIE_FILE} ${RITCHIE_FILE} &> /dev/null
+gcc -o ${RITCHIE_FILE}.out ${RITCHIE_FILE}.c -lm -I ${RITCHIE_HOME_}
+shift
+./${RITCHIE_FILE}.out $@
+rm ${RITCHIE_FILE}.out ${RITCHIE_FILE}.c ${RITCHIE_FILE}.h

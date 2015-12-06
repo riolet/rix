@@ -21,6 +21,7 @@ typedef enum {
   Function,
   CodeBlock,
   Expression,
+  Dummy,
 } OBJ_TYPE;
 
 typedef struct _Object      Object;

@@ -446,6 +446,8 @@ void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent) {
        writeFunction(outh, tree, indent);
     } else if(tree->type == Type && !getFlag(tree, FLAG_EXTERNAL)) {
         writeClass(outc, outh, tree, indent);
+    } else if(tree->type == Dummy) {
+        //Dummy
     } else {
         writeOther(outc, outh, tree, indent);
     }

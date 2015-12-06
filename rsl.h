@@ -25,12 +25,19 @@ typedef int Integer;
 typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
+typedef void * System;
 
+#define TRUE() true
+#define FALSE() false
 #define Boolean_$_if(A) if (A) {
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {
 #define Boolean_$_while(A) while (A) {
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
+
+int Integer_$_Integer_$_String (String s) {
+    return atoi(s.buffer);
+}
 
 float Float_$_exponent_$_Integer (float f, int i) {
     return pow(f,i);
@@ -192,4 +199,11 @@ String Ternary_$_pick_$_String_$_String_$_String (Ternary ternary, String a, Str
     } else if (ternary==gt) {
         return c;
     }
+}
+
+int _$$_argc;
+char **_$$_argv;
+
+ String args_$_Integer (Integer i) {
+    return String_$_stringlit(_$$_argv[i]);
 }
