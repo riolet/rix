@@ -27,6 +27,8 @@ typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 typedef void * System;
 
+#define TRUE() true
+#define FALSE() false
 #define Boolean_$_if(A) if (A) {
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {

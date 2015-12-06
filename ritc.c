@@ -1191,6 +1191,16 @@ void defineRSLSymbols(Object* root) {
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
 
+    // ==============  Boolean true, false as Dummies ===============
+    // TODO: Introduce constants
+    rslFunc = CreateObject("false", "false", 0, Dummy, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addSymbol(root, rslFunc);
+
+    rslFunc = CreateObject("true", "true", 0, Dummy, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addSymbol(root, rslFunc);
+
     // ==============  Looping Functions ===============
 
     rslFunc = CreateObject("while", "Boolean" COMPILER_SEP "while", 0, Function, "void");
@@ -1268,6 +1278,7 @@ void defineRSLSymbols(Object* root) {
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
+
 
     // ==============  Integer Functions ===============
     rslFunc = CreateObject("Integer", "Integer" COMPILER_SEP "Integer" COMPILER_SEP "String", 0, Function, "Integer");
@@ -1380,8 +1391,8 @@ int main(int argc,char **argv)
     //fprintf(outMainFile,"int _$$_argc;\n");
     //fprintf(outMainFile,"char **_$$_argv;\n");
     fprintf(outMainFile,"int main(int _$$_argc_, char **_$$_argv_) {\n");
-    fprintf(outMainFile,"_$$_argc=_$$_argc_;\n");
-    fprintf(outMainFile,"_$$_argv=_$$_argv_;\n");
+    fprintf(outMainFile,"    _$$_argc=_$$_argc_;\n");
+    fprintf(outMainFile,"    _$$_argv=_$$_argv_;\n");
 
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
