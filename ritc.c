@@ -1063,26 +1063,26 @@ Object* findFunctionByFullName(char* name) {
 }
 
 void defineRSLSymbols(Object* root) {
-    Object *temp1, *temp2, *temp3, *rslFunc;
+    Object *objBaseType, *temp2, *temp3, *temp4, *temp5, *rslFunc;
 
     // ==============  Built-in Types ===============
 
-    temp1 = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
-    setFlags(temp1, FLAG_EXTERNAL);
-    addSymbol(root, temp1);
-    temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", temp1, Type, "Boolean");
+    objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
+    setFlags(objBaseType, FLAG_EXTERNAL);
+    addSymbol(root, objBaseType);
+    temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", objBaseType, Type, "Boolean");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", temp1, Type, "Ternary");
+    temp2 = CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", objBaseType, Type, "Ternary");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", temp1, Type, "Stream");
+    temp2 = CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", objBaseType, Type, "Stream");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", temp1, Type, "String");
+    temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", objBaseType, Type, "String");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", temp1, Type, "Number *");
+    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type, "Number *");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
     temp3 = CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
@@ -1091,6 +1091,19 @@ void defineRSLSymbols(Object* root) {
     temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
     setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
+
+    temp4 = CreateObject("System", "System" COMPILER_SEP "BaseType", objBaseType, Type, "System");
+    setFlags(temp4, FLAG_EXTERNAL);
+    addSymbol(root, temp4);
+
+    // ==============  True and False ================
+    temp5 = CreateObject("true", "true", temp2, Variable, "System");
+    setFlags(temp4, FLAG_EXTERNAL);
+    addSymbol(root, temp5);
+
+    temp5 = CreateObject("false", "false", temp2, Variable, "System");
+    setFlags(temp4, FLAG_EXTERNAL);
+    addSymbol(root, temp5);
 
     // ==============  Exponent functions ===============
 
@@ -1257,6 +1270,19 @@ void defineRSLSymbols(Object* root) {
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
+
+    // ==============  System Functions ===============
+
+    rslFunc = CreateObject("args", "args" COMPILER_SEP "Integer", 0, Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+
+    // ==============  Integer Functions ===============
+    rslFunc = CreateObject("Integer", "Integer" COMPILER_SEP "Integer" COMPILER_SEP "String", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
 }
 
 int main(int argc,char **argv)
@@ -1360,8 +1386,11 @@ int main(int argc,char **argv)
 
     fprintf(outMainFile,"#include \"rsl.h\"\n");
     fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
-    fprintf(outMainFile,"int main(void) {\n");
-
+    //fprintf(outMainFile,"int _$$_argc;\n");
+    //fprintf(outMainFile,"char **_$$_argv;\n");
+    fprintf(outMainFile,"int main(int _$$_argc_, char **_$$_argv_) {\n");
+    fprintf(outMainFile,"_$$_argc=_$$_argc_;\n");
+    fprintf(outMainFile,"_$$_argv=_$$_argv_;\n");
 
     writeTree(outMainFile, outHeaderFile, root);
 	if ( printTreeBool == 1 ) {
