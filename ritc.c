@@ -1096,15 +1096,6 @@ void defineRSLSymbols(Object* root) {
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
-    // ==============  True and False ================
-    temp5 = CreateObject("true", "true", temp2, Variable, "System");
-    setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp5);
-
-    temp5 = CreateObject("false", "false", temp2, Variable, "System");
-    setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp5);
-
     // ==============  Exponent functions ===============
 
     rslFunc = CreateObject("exponent", "Float" COMPILER_SEP "exponent" COMPILER_SEP "Integer", 0, Function, "Float");
