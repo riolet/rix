@@ -3,11 +3,11 @@ Ritchie Language
 
 Ritchie is an expressive and efficient language for the C ecosystem. Ritchie uses C libraries natively and generates easy to understand C code. It is named after the great computer scientist Dennis Ritchie, if not for whom we would all be programming in Visual Basic.
 
-There are five core principals behind Ritchie:
+There are five core principles behind Ritchie:
 
 1. Ease of programming, inspired by Python
 2. Fast, like C code
-3. Type safe, like Scala
+3. Type safety, like Scala
 4. Ability to go lower level and write C code
 5. No reserved keywords, everything is redefinable
 
