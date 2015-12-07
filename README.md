@@ -34,7 +34,7 @@ Point point = new Point (x,y)
 ```
 point = Point x, y
 ```
-Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, `point` gets type `Point`.
+Identifiers have their type inferred when they are first used and their type cannot be changed after that. In the above example, `point` gets type `Point`.
 
 
 * Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
