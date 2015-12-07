@@ -87,8 +87,8 @@ Get started
 ===========
 1. Build the ritchie compiler `make clean;make`
 2. Write your ritchie program in your favourite text editor (let's call it program.rit)
-3. Set RITCHIE_HOME `export  RITCHIE_HOME=/path/to/ritchie/`
-4. Run `./ritchie.sh program.rit` and ritchie will build and execute the program
+3. Set RITCHIE_HOME `export  RITCHIE_HOME=/path/to/ritchie`
+4. Run `${RITCHIE_HOME}/ritchie.sh program.rit` and ritchie will build, execute and run the program
 
 
 
