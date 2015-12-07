@@ -34,6 +34,7 @@ typedef void * System;
 #define Boolean_$_else(A) if (A) {
 #define Boolean_$_while(A) while (A) {
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
+#define for_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i<b;i+=c) {
 
 int Integer_$_Integer_$_String (String s) {
     return atoi(s.buffer);
