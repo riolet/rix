@@ -5,12 +5,12 @@ Boolean : isPrime Integer n
         -> true
     (n % 2 == 0) if
         -> false
-    upperLimit = (n sqrt)
-    i = 3
-    i <= upperLimit while
+
+    upperLimit = (n sqrt) + 1
+    i for 3, upperLimit, 2
         (n % i == 0) if
             -> false
-        i += 2
+
     -> true
 
 
