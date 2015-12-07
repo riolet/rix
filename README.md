@@ -1,9 +1,9 @@
 Ritchie Language
 ================
 
-Ritchie is an expressive and efficient language for the C eco system. Ritchie uses C libraries natively, and generates easy to understand C code. It is named after the great computer scientist Dennis Ritchie, if not for whom we would all be programming in Visual Basic.
+Ritchie is an expressive and efficient language for the C ecosystem. Ritchie uses C libraries natively, and generates easy to understand C code. It is named after the great computer scientist Dennis Ritchie, if not for whom we would all be programming in Visual Basic.
 
-There are four core principals behind Ritchie:
+There are five core principals behind Ritchie:
 
 1. Ease of programming, inspired by Python
 2. Fast, like C code
@@ -11,14 +11,14 @@ There are four core principals behind Ritchie:
 4. Ability to go lower level and write C code
 5. No reserved keywords, everything is redefinable
 
-We ran the [prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python, and here's what we go:
+We ran the [prime counting benchmark](https://bjpelc.wordpress.com/2015/01/10/yet-another-language-speed-test-counting-primes-c-c-java-javascript-php-python-and-ruby-2/) for Ritchie, C and Python. Here's what we got:
 
 |                    | Ritchie | C   | Python |
 |--------------------|---------|-----|--------|
 | Runtime (ms)       | 457     | 424 | 7836   |
 | Characters of code | 423     | 542 | 474    |
 
-The best way to introduce yourself to this language is to take a look at some of the examples, and try running them yourself.  Ritchie is still in early development and many features have not yet been fully implemented and described.  A list of major [development tasks remaining](https://github.com/riolet/ritchie/wiki/State-of-the-Compiler) can be found in the wiki.
+The best way to introduce yourself to this language is to take a look at some of the examples and try running them yourself.  Ritchie is still in early development; many features have not yet been fully implemented or described.  A list of major [development tasks remaining](https://github.com/riolet/ritchie/wiki/State-of-the-Compiler) can be found in the wiki.
 
 Features
 ========
@@ -34,7 +34,7 @@ Point point = new Point (x,y)
 ```
 point = Point x, y
 ```
-Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, point gets type Point.
+Identifiers are have their type inferred when they are first used and their type cannot be changed after that. In the above example, `point` gets type `Point`.
 
 
 * Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
