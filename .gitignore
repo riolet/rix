@@ -30,3 +30,6 @@ ritc
 
 out.c
 out.h
+
+# Misc
+*.swp
