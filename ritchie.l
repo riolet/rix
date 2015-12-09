@@ -61,7 +61,7 @@ alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
 decimal       {numeral}*+"."{numeral}*
 float         {decimal}|({decimal}[eE][-+]?{integer})
-string        \"(\\.|[^"])*\"
+string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
 
