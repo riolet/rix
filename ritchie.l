@@ -60,7 +60,7 @@ numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
 decimal       {numeral}*+"."{numeral}*
-float         {decimal}|({decimal}[eE][-+]?{integer})
+float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
