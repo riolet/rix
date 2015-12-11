@@ -59,7 +59,8 @@ alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
-float         {numeral}+"."{numeral}*
+decimal       {numeral}*+"."{numeral}*
+float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
