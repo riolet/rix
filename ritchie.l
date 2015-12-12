@@ -65,7 +65,8 @@ string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
 
-funcDec       ":"
+pipe          "|"
+colon         ":"
 paramComma    ","
 classDec      "::"
 classCtor     ":::"
@@ -79,7 +80,7 @@ return        "->"
 mathAssign    "+="|"-="|"*="|"/="
 comparison    "<"|">"|"<="|">="|"=="|"!="
 ternary       "<>"
-bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
+bitwiseOp     "&"|"^"|pipe|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
 
@@ -182,7 +183,7 @@ booleanOp     "||"|"&&"
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
 "#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
-{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
+{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 {float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
@@ -203,8 +204,8 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
-{identifier}\.{identifier} { 
-                      printf("lexer: field access\n"); 
+{identifier}\.{identifier} {
+                      printf("lexer: field access\n");
                       yylval->sval = strdup(yytext);
                       char* first = strtok(yytext, ".");
                       Object* exists = findByName(first);
@@ -215,7 +216,7 @@ booleanOp     "||"|"&&"
                       } else if (exists->type == Type) {
                         return STATICVERB;
                       } else {
-                        return FIELD; 
+                        return FIELD;
                       }
                       }
 
@@ -223,7 +224,7 @@ booleanOp     "||"|"&&"
 {conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
 {paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
-{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
+{colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
 {return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
@@ -239,6 +240,8 @@ booleanOp     "||"|"&&"
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
 "("           { printf("lexer: (\n"); return LPAREN; }
 ")"           { printf("lexer: )\n"); return RPAREN; }
+"["           { printf("lexer: (\n"); return LBRACKET; }
+"]"           { printf("lexer: )\n"); return RBRACKET; }
 .             { printf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%

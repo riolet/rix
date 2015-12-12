@@ -45,13 +45,15 @@
 %token <sval> ASSIGNMENT
 %token <sval> LPAREN
 %token <sval> RPAREN
+%token <sval> LBRACKET
+%token <sval> RBRACKET
 %token <ival> INDENT
 %token <ival> UNINDENT
 %token <sval> CONDITIONLINK
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
 %token <sval> BOOLEANOP
-%token <sval> FUNCDEC
+%token <sval> COLON
 %token <sval> CLASSDEC
 %token <sval> CTORDEC
 %token <sval> PARAMCOMMA
@@ -87,8 +89,8 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //  Lower tokens happen first / take priority
 //  Multiple tokens means treat as the same precedence
 //     and rely on associativity.
-//  %right (as opposed to %left) means, 
-//    given a compound expression, 
+//  %right (as opposed to %left) means,
+//    given a compound expression,
 //    evaluate from right to left.
 %right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB
 %right PARAMCOMMA
@@ -111,12 +113,12 @@ simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
-  | function_definition ENDOFLINE codeblock { 
-          printf("parser: s_s-func - Function Defined! %s\n", $1->fullname); 
+  | function_definition ENDOFLINE codeblock {
+          printf("parser: s_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }
   | CODE_INSERT ENDOFLINE     { printf("parser: code-insert\n"); $$ = injectC($1);  }
-  | class_definition ENDOFLINE classblock { 
-          printf("parser: s_s-class - Class Defined! %s\n", $1->fullname); 
+  | class_definition ENDOFLINE classblock {
+          printf("parser: s_s-class - Class Defined! %s\n", $1->fullname);
           doneClass($1); }
   ;
 statement:
@@ -157,10 +159,10 @@ object:
 
 
 function_definition:
-  TYPE FUNCDEC IDENT  parameters { printf("parser: func-def\n"); $$ = beginFunction($1, $3, $4); }
-  | TYPE FUNCDEC VERB parameters { printf("parser: func-def\n"); $$ = beginFunction($1, $3, $4); }
-  | FUNCDEC IDENT parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $2, $3); }
-  | FUNCDEC VERB  parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $2, $3); }
+  IDENT RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
+  | VERB RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
+  | IDENT RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
+  | VERB RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   ;
 parameters:
   %empty                              { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
@@ -189,11 +191,11 @@ class_statements:
 class_statement:
   ENDOFLINE { printf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
   | IDENT ASSIGNMENT TYPE ENDOFLINE { printf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
-  | function_definition ENDOFLINE codeblock { 
-          printf("parser: c_s-func - Function Defined! %s\n", $1->fullname); 
+  | function_definition ENDOFLINE codeblock {
+          printf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }
-  | ctor_definition ENDOFLINE codeblock { 
-          printf("parser: c_s-func - Constructor Defined! %s\n", $1->fullname); 
+  | ctor_definition ENDOFLINE codeblock {
+          printf("parser: c_s-func - Constructor Defined! %s\n", $1->fullname);
           doneConstructor($1); }
   ;
 
