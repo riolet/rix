@@ -65,7 +65,6 @@ string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
 
-pipe          "|"
 colon         ":"
 paramComma    ","
 classDec      "::"
@@ -80,7 +79,7 @@ return        "->"
 mathAssign    "+="|"-="|"*="|"/="
 comparison    "<"|">"|"<="|">="|"=="|"!="
 ternary       "<>"
-bitwiseOp     "&"|"^"|pipe|"~"|">>"|"<<"
+bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
 
@@ -182,7 +181,7 @@ booleanOp     "||"|"&&"
 
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
-"#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
+"`"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
 {comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
@@ -252,9 +251,9 @@ char* handleCodeInsert(void) {
 	 int index  = 0;
 	 char * ci = (char*)malloc(INSERT_BUFF_LEN);
 	 while ( c = input()) {
-	 	if ( c != '#' && index < INSERT_BUFF_LEN ) {
+	 	if ( c != '`' && index < INSERT_BUFF_LEN ) {
 	 		ci[index++] = c;
-	 	}else if ( c == '#' ) {
+	 	}else if ( c == '`' ) {
 	 		return ci;
 	 	}
 	 	if ( c == EOF ) {

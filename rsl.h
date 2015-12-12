@@ -27,14 +27,16 @@ typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 typedef void * System;
 
-#define TRUE() true
-#define FALSE() false
 #define Boolean_$_if(A) if (A) {
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {
 #define Boolean_$_while(A) while (A) {
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 #define for_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i<b;i+=c) {
+
+#define if_$_Boolean(A) if (A) {
+#define elif_$_Boolean(A) else if (A) {
+#define else_$_() else {
 
 int Integer_$_Integer_$_String (String s) {
     return atoi(s.buffer);

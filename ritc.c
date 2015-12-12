@@ -101,14 +101,20 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
   //add each of the parameters to the fullname
-  while(types != 0) {
-    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
-    while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
-        funcFullName_pos--;
-    }
-    funcFullName[funcFullName_pos] = '\0';
-    types = types->next;
+  if (types !=0) {
+      while(types != 0) {
+        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
+        while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
+            funcFullName_pos--;
+        }
+        funcFullName[funcFullName_pos] = '\0';
+        types = types->next;
+      }
+  } else {
+        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP);
+        funcFullName[funcFullName_pos] = '\0';
   }
+
   Object* parentScope;
   int i = scope_idx;
   while (i >= 0) {
@@ -622,6 +628,10 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             verbname[verbname_pos] = '\0';
             paramIter = paramIter->next;
         }
+    } else {
+        //To stop getting verb names getting confused with keywords
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
+        verbname[verbname_pos] = '\0';
     }
 
     //search for the definition of that object
@@ -1176,6 +1186,22 @@ void defineRSLSymbols(Object* root) {
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_SAVERESULT);
     addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+
+    //============= Python style conditional Functions =============
+    rslFunc = CreateObject("if", "if" COMPILER_SEP "Boolean" , 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    //setFlags(rslFunc, FLAG_SAVERESULT);
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("elif", "elif" COMPILER_SEP "Boolean", 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    //setFlags(rslFunc, FLAG_SAVERESULT);
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+    rslFunc = CreateObject("else", "else" COMPILER_SEP, 0, Function, "Boolean");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    //setFlags(rslFunc, FLAG_SAVERESULT);
     addSymbol(root, rslFunc);
 
     rslFunc = CreateObject("compare", "Integer" COMPILER_SEP "compare" COMPILER_SEP "Integer", 0, Function, "Ternary");
