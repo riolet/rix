@@ -32,9 +32,9 @@ Point point = new Point (x,y)
   becomes a short Ritchie statement:
 
 ```
-point = Point x, y
+#point = Point x, y
 ```
-Identifiers have their type inferred when they are first used and their type cannot be changed after that. In the above example, `point` gets type `Point`.
+Identifiers have their type inferred if they are marked as new with "#". Their types cannot be changed once set. In the above example, `point` gets type `Point`.
 
 
 * Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
@@ -64,13 +64,21 @@ SomeClass :: SomeBaseClass
 * We call verbs what the constructs called functions, methods or subroutines in other languages. For example:
 
 ```
-Integer : factorial Integer n
-	result = 1
-	i for 1,n+1
+factorial -> Integer: Integer n
+	#result = 1
+	#i for 1,n+1
 		result = result * i
 	-> result
 
 print factorial 5
+```
+
+You can also write succint one liner verbs like the one below which gives the nth Fibonacci number:
+
+```
+fib -> Integer:  Integer n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
+
+print fib 5
 ```
 
 There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `Identifier`.
