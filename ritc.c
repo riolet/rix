@@ -502,8 +502,14 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
 
         if (!subject->returnType) {
-            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
-            addSymbol(current, variable);
+            if (subject->type == NewMarkedIdent) {
+                Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
+                addSymbol(current, variable);
+            }  else {
+                char error[1024];
+                snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
+                criticalError(ERROR_ParseError, error);
+            }
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
@@ -548,8 +554,15 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     }
 
     if (subject && subject->returnType == 0) {
-        Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
-        addSymbol(current, variable);
+        if (subject->type == NewMarkedIdent) {
+            printf("NewMarkedIdent %s",subject->name);
+            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
+            addSymbol(current, variable);
+        }  else {
+            char error[1024];
+            snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
+            criticalError(ERROR_ParseError, error);
+        }
     }
 
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
@@ -895,13 +908,46 @@ Object* parenthesize(Object* expr) {
     return parenthesized;
 }
 
+Object* objectNewIdent(char* ident) {
+    printf("objectNewIdent(%s)\n", ident);
+    Object* result;
+    Object* identifier = findByName(ident);
+
+    if (!identifier) {
+        result = CreateObject(ident, ident, 0, NewMarkedIdent, Undefined);
+    } else {
+        char error[1024];
+        snprintf(error, 1024, "Using an existing identifier as new %s\n", ident);
+        criticalError(ERROR_ParseError, error);
+    }
+    addCode(result, identifier? identifier->fullname : ident);
+    return result;
+}
+
+Object* objectUnmarkedNewIdent(char* ident) {
+    printf("objectNewIdent(%s)\n", ident);
+    Object* result;
+    Object* identifier = findByName(ident);
+
+    if (!identifier) {
+        result = CreateObject(ident, ident, 0, NewUnmarkedIdent, Undefined);
+    } else {
+        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
+        addParam(result, identifier->returnType);
+    }
+    addCode(result, identifier? identifier->fullname : ident);
+    return result;
+}
+
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
     Object* result;
     Object* identifier = findByName(ident);
 
     if (!identifier) {
-        result = CreateObject(ident, ident, 0, Variable, Undefined);
+        char error[1024];
+        snprintf(error, 1024, "Unknown identifier %s\n", ident);
+        criticalError(ERROR_ParseError, error);
     } else {
         result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
         addParam(result, identifier->returnType);
@@ -1229,10 +1275,15 @@ void defineRSLSymbols(Object* root) {
 
     // ==============  Looping Functions ===============
 
-    rslFunc = CreateObject("while", "Boolean" COMPILER_SEP "while", 0, Function, "void");
+    rslFunc = CreateObject("while", "Boolean" COMPILER_SEP "while" COMPILER_SEP, 0, Function, "void");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
+    rslFunc = CreateObject("while","while" COMPILER_SEP "Boolean", 0, Function, "void");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Boolean");
+    addSymbol(root, rslFunc);
+
     rslFunc = CreateObject("for", "for" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0, Function, "Integer");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);

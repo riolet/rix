@@ -71,6 +71,7 @@ classDec      "::"
 classCtor     ":::"
 conditionLink "?"
 selfIdent     "$"
+hash          "#"
 
 mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
 assignment    "="
@@ -187,9 +188,26 @@ booleanOp     "||"|"&&"
 {integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 {float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
 {mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+
+{hash}{identifier}  {   char* first = strtok(yytext, "#");
+                        Object* exists = findByName(first);
+                        if (!exists) {
+                          printf("lexer: new identifier %s\n",first);
+                          yylval->sval = strdup(first);
+                          return NEWIDENT;
+                        } else {
+                          char error[1024];
+                          snprintf(error, 1024, "Trying to recreate identifier %s\n", first);
+                          criticalError(ERROR_ParseError, error);
+                        }
+                      }
+
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
-                        if (!exists || exists->type == Variable) {
+                        if (!exists) {
+                          printf("lexer: unidentified identifier\n");
+                          return UNMARKEDNEWIDENT;
+                        } else if (exists->type == Variable) {
                           printf("lexer: identifier\n");
                           return IDENT;
                         } else if (exists->type == Function || exists->type == Constructor) {
@@ -203,6 +221,7 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
+
 {identifier}\.{identifier} {
                       printf("lexer: field access\n");
                       yylval->sval = strdup(yytext);

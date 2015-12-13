@@ -37,6 +37,8 @@
 %token <fval> FLOAT
 %token <sval> STRING
 %token <sval> IDENT
+%token <sval> NEWIDENT
+%token <sval> UNMARKEDNEWIDENT
 %token <sval> FIELD
 %token <sval> VERB
 %token <sval> STATICVERB
@@ -150,6 +152,8 @@ object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
+  | NEWIDENT   { printf("parser: object-new-identifer\n"); $$ = objectNewIdent($1); }
+  | UNMARKEDNEWIDENT { printf("parser: object-unmarked-new-identifer\n"); $$ = objectUnmarkedNewIdent($1); }
   | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1);  }
   | SELFIDENT { printf("parser: object-self\n");    $$ = objectSelfIdent($1);}
@@ -159,15 +163,15 @@ object:
 
 
 function_definition:
-  IDENT RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
+  UNMARKEDNEWIDENT RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
   | VERB RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
-  | IDENT RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
+  | UNMARKEDNEWIDENT RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   | VERB RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   ;
 parameters:
-  %empty                              { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | TYPE IDENT                        { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE IDENT  { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
+  %empty                                { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
+  | TYPE UNMARKEDNEWIDENT                       { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA TYPE UNMARKEDNEWIDENT { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
 codeblock:
   INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }

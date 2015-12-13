@@ -22,6 +22,8 @@ typedef enum {
   CodeBlock,
   Expression,
   Dummy,
+  NewMarkedIdent,
+  NewUnmarkedIdent,
 } OBJ_TYPE;
 
 typedef struct _Object      Object;
