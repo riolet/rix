@@ -36,10 +36,14 @@ typedef void * System;
 #define else_$_() else {
 
 #define Boolean_$_while_$_(A) while (A) {
-#define while_$_Boolean_(A) while (A) {
+#define while_$_Boolean(A) while (A) {
 
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 #define for_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i<b;i+=c) {
+
+#define false_$_() false
+#define true_$_() true
+#define Boolean_$_condreturn_$__$GP0(A,B) if (A) return B;
 
 
 
@@ -63,7 +67,7 @@ float Float_$_exponent_$_Float (float f1, float f2) {
     return pow(f1,f2);
 }
 
-int Integer_$_sqrt (int i) {
+int Integer_$_sqrt_$_ (int i) {
     return (int) sqrt(i);
 }
 

@@ -582,8 +582,10 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     Object* realVerb = 0;
     Object* result = 0;
     char verbname[BUFFLEN];
+    char genericVerbName[BUFFLEN];
     char invocation[BUFFLEN];
     int verbname_pos = 0;
+    int genericVerbNamePos = 0;
     int invoke_pos = 0;
     //if this is an assignment verb, treat it differently.
     if (getFlag(verb, FLAG_ASSIGNMENT)) {
@@ -623,23 +625,32 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");   }
     else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");  }
     else if (!strcmp(verb->name, "<>")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare"); }
+    else if (!strcmp(verb->name, "-->")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
     //verify objects exists and is a known variable or is an expression composed of known variables
+    verbname[verbname_pos] = '\0';
+    strncpy(genericVerbName,verbname, (verbname_pos<BUFFLEN) ? verbname_pos:BUFFLEN);
+    genericVerbNamePos=strlen(genericVerbName);
+
+    int paramNumber = 0;
     if (objects) {
         if (!objects->paramTypes) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", objects->code->value);
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n", objects->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
         paramIter = objects->paramTypes;
         while (paramIter) {
             verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP "%s", paramIter->value);
+            genericVerbNamePos += snprintf(&genericVerbName[genericVerbNamePos], BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s%d", GENERIC_PARAM,paramNumber);
             while (verbname[verbname_pos-1] == '*' || verbname[verbname_pos-1] == ' ') {
                 verbname_pos--;
             }
             verbname[verbname_pos] = '\0';
+            genericVerbName[genericVerbNamePos] = '\0';
             paramIter = paramIter->next;
+            paramNumber++;
         }
     } else {
         //To stop getting verb names getting confused with keywords
@@ -655,6 +666,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
     if (!realVerb) {
         realVerb = findFunctionByFullName(verbname);
+    }
+
+    //Is this a generic function
+    if (!realVerb) {
+        realVerb = findFunctionByFullName(genericVerbName);
     }
 
     if (!realVerb && subject) {
@@ -834,6 +850,12 @@ Object* verbComparison(char* verb) {
 Object* verbTernary() {
     printf("verbTernary(<>)\n");
     Object* result = CreateObject("<>", "<>", 0, Function, "Boolean");
+    return result;
+}
+
+Object* verbCondReturn() {
+    printf("verbCondReturn(-->)\n");
+    Object* result = CreateObject("-->", "-->", 0, Function, "Boolean");
     return result;
 }
 
@@ -1177,7 +1199,7 @@ void defineRSLSymbols(Object* root) {
 
     // ============== Sqrt functions ==============
     // ============== TODO sqrt(Integer) should be a float? ==============
-    rslFunc = CreateObject("sqrt", "Integer" COMPILER_SEP "sqrt", 0, Function, "Integer");
+    rslFunc = CreateObject("sqrt", "Integer" COMPILER_SEP "sqrt" COMPILER_SEP, 0, Function, "Integer");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
@@ -1250,6 +1272,7 @@ void defineRSLSymbols(Object* root) {
     //setFlags(rslFunc, FLAG_SAVERESULT);
     addSymbol(root, rslFunc);
 
+    //============= Ternary Functions =============
     rslFunc = CreateObject("compare", "Integer" COMPILER_SEP "compare" COMPILER_SEP "Integer", 0, Function, "Ternary");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Integer");
@@ -1265,11 +1288,11 @@ void defineRSLSymbols(Object* root) {
 
     // ==============  Boolean true, false as Dummies ===============
     // TODO: Introduce constants
-    rslFunc = CreateObject("false", "false", 0, Dummy, "Boolean");
+    rslFunc = CreateObject("false", "false" COMPILER_SEP, 0, Function, "Boolean");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addSymbol(root, rslFunc);
 
-    rslFunc = CreateObject("true", "true", 0, Dummy, "Boolean");
+    rslFunc = CreateObject("true", "true" COMPILER_SEP, 0, Function, "Boolean");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addSymbol(root, rslFunc);
 
@@ -1367,6 +1390,12 @@ void defineRSLSymbols(Object* root) {
     rslFunc = CreateObject("Integer", "Integer" COMPILER_SEP "Integer" COMPILER_SEP "String", 0, Function, "Integer");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
+
+    // ==============  Condreturn Functions ===============
+    rslFunc = CreateObject("condreturn", "Boolean" COMPILER_SEP "condreturn" COMPILER_SEP GENERIC_PARAM "0", 0, Function, "void");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
 }
 

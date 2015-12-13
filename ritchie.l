@@ -83,6 +83,8 @@ ternary       "<>"
 bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
+condReturn    "-->"
+implies       "==>"
 
 %%
         int indent_caller = normal;
@@ -252,6 +254,7 @@ booleanOp     "||"|"&&"
 {booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
+{condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
 {mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 
 <<EOF>>       { return ENDOFFILE; }

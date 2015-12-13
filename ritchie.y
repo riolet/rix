@@ -66,6 +66,8 @@
 %token <ival> TERNARY
 %token <sval> CODE_INSERT
 
+%token <sval> CONDRETURN
+
 %type <oval> ritchie;
 %type <oval> statements;
 %type <oval> statement;
@@ -94,7 +96,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //  %right (as opposed to %left) means,
 //    given a compound expression,
 //    evaluate from right to left.
-%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB
+%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB CONDRETURN
 %right PARAMCOMMA
 %right BOOLEANOP
 %right COMPARISON TERNARY
@@ -136,6 +138,7 @@ expr:
   | expr COMPARISON expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr BOOLEANOP  expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr  TERNARY   expr  { printf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
+  | expr  CONDRETURN   expr  { printf("parser: expr-crt\n");   $$ = conjugate($1,  verbCondReturn(), $3); }
   | expr  MATH_OP   expr  { printf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
 
   | expr   VERB     expr  { printf("parser: expr-svo\n");   $$ = conjugate($1,  verbIdent($2), $3); }
