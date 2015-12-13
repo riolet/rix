@@ -1,4 +1,4 @@
-i for 1,13
+#i for 1,13
 	echo "\t"+i
 print ""
 
@@ -7,11 +7,8 @@ i for 0,100
 print ""
 
 i for 1,13
-	echo ""+i+"|" 
-	j for 1,13
-		(j<i) if
-			echo "\t"
-		? else
-			echo "\t"+i*j
+	echo ""+i+"|"
+	#j for 1,13
+		(j<i) tf	(echo "\t"), (echo "\t"+i*j)
 	print ""
 
