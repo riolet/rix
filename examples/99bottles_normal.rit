@@ -1,12 +1,12 @@
-String :line Integer b, String end
-    (b>1) if
+line -> String: Integer b, String end
+    if (b>1)
         -> "" + b + " bottles " + end
-    (b==1) if
+    if (b==1)
         -> "" + b + " bottle " + end
     -> "No more bottles " + end
 
-i = 99
-(i>0) while
+#i = 99
+while (i>0)
     print line i, "of beer on the wall,"
     print line i, "of beer,"
     print "Take one down, pass it around,"
