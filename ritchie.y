@@ -83,6 +83,8 @@
 %type <oval> expr;
 %type <oval> object;
 
+%type <sval> parameterIdent
+
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
 //void yyerror(const char* msg);
@@ -176,9 +178,15 @@ function_definition:
   ;
 parameters:
   %empty                                { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | TYPE UNMARKEDNEWIDENT                       { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE UNMARKEDNEWIDENT { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
+  | TYPE parameterIdent                       { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA TYPE parameterIdent { printf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
+
+parameterIdent:
+  IDENT                                 { printf("parser: IDENT\n"); $$ = $1; }
+  |UNMARKEDNEWIDENT                     { printf("parser: UNMARKEDNEWIDENT\n"); $$ = $1; }
+  ;
+
 codeblock:
   INDENT statements UNINDENT { printf("parser: codeblock\n"); $$ = $2; }
   ;
@@ -186,7 +194,7 @@ codeblock:
 
 
 class_definition:
-  IDENT CLASSDEC TYPE { printf("parser: class-def\n"); $$ = beginClass($1, $3); }
+  UNMARKEDNEWIDENT CLASSDEC TYPE { printf("parser: class-def\n"); $$ = beginClass($1, $3); }
   ;
 ctor_definition:
   CTORDEC parameters { printf("parser: class-def\n"); $$ = beginConstructor($2); }
@@ -200,7 +208,7 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { printf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
-  | IDENT ASSIGNMENT TYPE ENDOFLINE { printf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
+  | UNMARKEDNEWIDENT ASSIGNMENT TYPE ENDOFLINE { printf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
   | function_definition ENDOFLINE codeblock {
           printf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }

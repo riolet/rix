@@ -1,2 +1,0 @@
-i for 1, 100
-  print i % 10

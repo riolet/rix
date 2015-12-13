@@ -1,12 +1,12 @@
 Rectangle :: BaseType
   w = Integer
   h = Integer
-  
+
   ::: Integer w, Integer h
     $.w = w
     $.h = h
-  
-  Integer : area
+
+  area -> Integer :
     -> w * h
 
 Square :: Rectangle
@@ -14,8 +14,8 @@ Square :: Rectangle
     w = edge
     h = edge
 
-r = Rectangle 5, 10
-s = Square 16
+#r = Rectangle 5, 10
+#s = Square 16
 
-print r area
-print s area
+print ("Rectange area " + (r area))
+print ("Square Area " + (s area))
