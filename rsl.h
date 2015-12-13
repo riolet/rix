@@ -26,6 +26,7 @@ typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 typedef void * System;
+typedef void * Generic_$$;
 
 #define Boolean_$_if(A) if (A) {
 #define Boolean_$_elif_$_Boolean(A) if (A) {

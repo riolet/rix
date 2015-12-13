@@ -585,6 +585,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     char verbname[BUFFLEN];
     char genericVerbName[BUFFLEN];
     char invocation[BUFFLEN];
+    char *paramTypes[BUFFLEN];
     int verbname_pos = 0;
     int genericVerbNamePos = 0;
     int invoke_pos = 0;
@@ -651,6 +652,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             }
             verbname[verbname_pos] = '\0';
             genericVerbName[genericVerbNamePos] = '\0';
+            paramTypes[paramNumber] = strdup(paramIter->value);
             paramIter = paramIter->next;
             paramNumber++;
         }
@@ -681,6 +683,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         //TODO: this seems too complex. It should be revisited.
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
+        char paramTypes[BUFFLEN][BUFFLEN];
         int subject_idx = snprintf(newSubject, BUFFLEN, "&%s->", subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset-1] == '*' || newName[offset-1] == ' ') {
@@ -785,8 +788,14 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
 
-
-    addParam(result, realVerb->returnType);
+    if (strcmp(realVerb->returnType,"Generic_$$")) {
+        addParam(result, realVerb->returnType);
+    } else {
+        if (realVerb->genericType)
+            addParam(result, realVerb->genericType);
+        else
+            addParam(result, paramTypes[realVerb->genericTypeArgPos-1]);
+    }
 
     if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
         char temp[BUFFLEN];

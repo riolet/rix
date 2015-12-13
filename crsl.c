@@ -10,6 +10,11 @@ void defineRSLSymbols(Object* root) {
     objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
     setFlags(objBaseType, FLAG_EXTERNAL);
     addSymbol(root, objBaseType);
+
+    temp2 = CreateObject("Generic_$$", "Generic_$$" COMPILER_SEP "BaseType", objBaseType, Type, "Generic_$$");
+    setFlags(temp2, FLAG_EXTERNAL);
+    addSymbol(root, temp2);
+
     temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", objBaseType, Type, "Boolean");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
@@ -121,8 +126,8 @@ void defineRSLSymbols(Object* root) {
     rslFunc = CreateObject("tf", "Boolean" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1", 0, Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
     addSymbol(root, rslFunc);
     //============= Python style conditional Functions =============
     rslFunc = CreateObject("if", "if" COMPILER_SEP "Boolean" , 0, Function, "Boolean");
@@ -146,19 +151,23 @@ void defineRSLSymbols(Object* root) {
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("gel", "Ternary" COMPILER_SEP "gel" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0, Function, "String");
+
+    rslFunc = CreateObject("gel", "Ternary" COMPILER_SEP "gel" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0, Function, "Generic_$$");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Ternary");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addGenericType(rslFunc,0,1);
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("leg", "Ternary" COMPILER_SEP "leg" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0, Function, "String");
+
+    rslFunc = CreateObject("leg", "Ternary" COMPILER_SEP "leg" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0, Function, "Generic_$$");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Ternary");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addGenericType(rslFunc,0,1);
     addSymbol(root, rslFunc);
     // ==============  Boolean true, false as Dummies ===============
     // TODO: Introduce constants

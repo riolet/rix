@@ -100,6 +100,12 @@ int addParam(Object* tree, char* type) {
   return 0;
 }
 
+//append item to end of linked list
+int addGenericType(Object* tree, char* genericType, int genericTypeArgPos) {
+  tree->genericType = genericType ? strdup(genericType) : 0;
+  tree->genericTypeArgPos = genericTypeArgPos;
+}
+
 int addSymbol(Object* tree, Object* leaf) {
   ListObject* node = malloc(sizeof(ListObject));
   if (node == 0) {
