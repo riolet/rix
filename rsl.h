@@ -43,8 +43,9 @@ typedef void * System;
 
 #define false_$_() false
 #define true_$_() true
-#define Boolean_$_condreturn_$__$GP0(A,B) if (A) return B;
-
+#define Boolean_$_condreturn_$__$GP0(A,B) (A) ? return B;
+#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? A : ((T==eq) ? B : C)
+#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? C : ((T==eq) ? B : A)
 
 
 int Integer_$_Integer_$_String (String s) {

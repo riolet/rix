@@ -632,7 +632,8 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     //verify objects exists and is a known variable or is an expression composed of known variables
     verbname[verbname_pos] = '\0';
     strncpy(genericVerbName,verbname, (verbname_pos<BUFFLEN) ? verbname_pos:BUFFLEN);
-    genericVerbNamePos=strlen(genericVerbName);
+    genericVerbName[verbname_pos] = '\0';
+    genericVerbNamePos=verbname_pos;
 
     int paramNumber = 0;
     if (objects) {
@@ -661,6 +662,7 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
 
     //search for the definition of that object
     printf("Conjugate: fullVerbName: %s\n", verbname);
+    printf("Conjugate: genericVerbName: %s\n", genericVerbName);
     if (verb->type == Type) {
         //look for ctor inside class
         realVerb = findByNameInScope(verb, verbname, true);
