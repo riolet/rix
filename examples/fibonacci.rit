@@ -1,10 +1,6 @@
-fib -> Integer:  Integer n
-    if (n <= 1)
-        -> n
-    else
-        -> (fib (n-1)) + (fib (n-2))
+fib -> Integer:  Integer n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
 
-N = Integer (args 1)
+#N = Integer (args 1)
 
-i for 1, N+1
+#i for 1, N+1
     print i + ": " + (fib i)

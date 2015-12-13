@@ -31,6 +31,11 @@ typedef void * System;
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {
 
+#define Boolean_$_tf_$__$GP0_$__$GP1(T,A,B) (T) ? (A) : (B);
+#define Boolean_$_ft_$__$GP0_$__$GP1(T,A,B) (T) ? (B) : (A);
+
+#define Boolean_$_condreturn_$__$GP0(T,B) (T) ? return B;
+
 #define if_$_Boolean(A) if (A) {
 #define elif_$_Boolean(A) else if (A) {
 #define else_$_() else {
@@ -43,9 +48,10 @@ typedef void * System;
 
 #define false_$_() false
 #define true_$_() true
-#define Boolean_$_condreturn_$__$GP0(A,B) (A) ? return B;
-#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? A : ((T==eq) ? B : C)
-#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? C : ((T==eq) ? B : A)
+
+
+#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
+#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
 
 
 int Integer_$_Integer_$_String (String s) {
