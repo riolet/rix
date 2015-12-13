@@ -1,11 +1,3 @@
-:solve Integer n, String start, String auxiliary, String end
-	(n == 1) if
-	   print start + " -> " + end
-	? else
-	   solve n - 1, start, end, auxiliary;
-	   print start + " -> " + end;
-	   solve n - 1, auxiliary, start, end;
-	
+hanoi -> Integer: Integer n, String s, String a, String e   =     (n == 1) tf (print s + " -> " + e), ((hanoi n - 1, s, e, a)+(print s + " -> " + e)+(hanoi n - 1, a, s, e))
 
-discs = Integer (args 1)
-solve discs, "A", "B", "C"
+hanoi (Integer (args 1)), "A", "B", "C"

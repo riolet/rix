@@ -1,25 +1,22 @@
-Boolean : isPrime Integer n
-    (n < 2) if
-        -> false
-    (n == 2) if
-        -> true
-    (n % 2 == 0) if
-        -> false
+isPrime -> Boolean:  Integer n
+    (n < 2)       --> false
+    (n == 2)      --> true
+    (n % 2 == 0)  --> false
 
-    upperLimit = (n sqrt) + 1
-    i for 3, upperLimit, 2
-        (n % i == 0) if
-            -> false
+    #upperLimit = (n sqrt) + 1
+    #i for 3, upperLimit, 2
+        if (n % i) == 0
+            ->false
 
     -> true
 
 
-lim = 2000000
-numPrimes = 0
-n = 0
+#lim = 2000000
+#numPrimes = 0
+#n = 0
 
-i for 1, lim
-    (isPrime i) if
-        numPrimes = (numPrimes + 1)
+#i for 1, lim
+    if isPrime i
+        numPrimes += 1
 
 print "Number of primes in the interval [0,"+lim+"]: "+numPrimes

@@ -22,6 +22,8 @@ typedef enum {
   CodeBlock,
   Expression,
   Dummy,
+  NewMarkedIdent,
+  NewUnmarkedIdent,
 } OBJ_TYPE;
 
 typedef struct _Object      Object;
@@ -44,6 +46,8 @@ struct _Object{
   Object*      parentScope;    //parent scope    (global scope, global scope, BaseType)
   OBJ_TYPE     type;           //What is this?   (Variable, Function, Class)
   char*        returnType;     //What value type?(Integer,  Integer,  NULL)
+  char*        genericType;    //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
+  int          genericTypeArgPos;    //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
   ListString*  paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
   ListObject*  definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
   ListString*  code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
@@ -55,6 +59,7 @@ Object * CreateObject(char* name, char* fullname, Object* parentScope, OBJ_TYPE 
 
 //append item to end of linked list
 int addParam(Object* tree, char* type);
+int addGenericType(Object* tree, char* genericType, int genericTypeArgPos);
 int addSymbol(Object* tree, Object* leaf);
 ListString* addCode(Object* tree, char* line);
 int setFlags(Object* tree, int flags);

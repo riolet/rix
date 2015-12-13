@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "ritc.h"
+#include "crsl.h"
 
 typedef enum {false, true} bool;
 
@@ -101,14 +102,20 @@ Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
   funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
 
   //add each of the parameters to the fullname
-  while(types != 0) {
-    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
-    while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
-        funcFullName_pos--;
-    }
-    funcFullName[funcFullName_pos] = '\0';
-    types = types->next;
+  if (types !=0) {
+      while(types != 0) {
+        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
+        while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
+            funcFullName_pos--;
+        }
+        funcFullName[funcFullName_pos] = '\0';
+        types = types->next;
+      }
+  } else {
+        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP);
+        funcFullName[funcFullName_pos] = '\0';
   }
+
   Object* parentScope;
   int i = scope_idx;
   while (i >= 0) {
@@ -496,8 +503,14 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
 
         if (!subject->returnType) {
-            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
-            addSymbol(current, variable);
+            if (subject->type == NewMarkedIdent) {
+                Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
+                addSymbol(current, variable);
+            }  else {
+                char error[1024];
+                snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
+                criticalError(ERROR_ParseError, error);
+            }
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
@@ -542,8 +555,15 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
     }
 
     if (subject && subject->returnType == 0) {
-        Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
-        addSymbol(current, variable);
+        if (subject->type == NewMarkedIdent) {
+            printf("NewMarkedIdent %s",subject->name);
+            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
+            addSymbol(current, variable);
+        }  else {
+            char error[1024];
+            snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
+            criticalError(ERROR_ParseError, error);
+        }
     }
 
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
@@ -563,8 +583,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     Object* realVerb = 0;
     Object* result = 0;
     char verbname[BUFFLEN];
+    char genericVerbName[BUFFLEN];
     char invocation[BUFFLEN];
+    char *paramTypes[BUFFLEN];
     int verbname_pos = 0;
+    int genericVerbNamePos = 0;
     int invoke_pos = 0;
     //if this is an assignment verb, treat it differently.
     if (getFlag(verb, FLAG_ASSIGNMENT)) {
@@ -604,28 +627,44 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");   }
     else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");  }
     else if (!strcmp(verb->name, "<>")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare"); }
+    else if (!strcmp(verb->name, "-->")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn"); }
     else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
 
     //verify objects exists and is a known variable or is an expression composed of known variables
+    verbname[verbname_pos] = '\0';
+    strncpy(genericVerbName,verbname, (verbname_pos<BUFFLEN) ? verbname_pos:BUFFLEN);
+    genericVerbName[verbname_pos] = '\0';
+    genericVerbNamePos=verbname_pos;
+
+    int paramNumber = 0;
     if (objects) {
         if (!objects->paramTypes) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", objects->code->value);
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n", objects->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
         paramIter = objects->paramTypes;
         while (paramIter) {
             verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP "%s", paramIter->value);
+            genericVerbNamePos += snprintf(&genericVerbName[genericVerbNamePos], BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s%d", GENERIC_PARAM,paramNumber);
             while (verbname[verbname_pos-1] == '*' || verbname[verbname_pos-1] == ' ') {
                 verbname_pos--;
             }
             verbname[verbname_pos] = '\0';
+            genericVerbName[genericVerbNamePos] = '\0';
+            paramTypes[paramNumber] = strdup(paramIter->value);
             paramIter = paramIter->next;
+            paramNumber++;
         }
+    } else {
+        //To stop getting verb names getting confused with keywords
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
+        verbname[verbname_pos] = '\0';
     }
 
     //search for the definition of that object
     printf("Conjugate: fullVerbName: %s\n", verbname);
+    printf("Conjugate: genericVerbName: %s\n", genericVerbName);
     if (verb->type == Type) {
         //look for ctor inside class
         realVerb = findByNameInScope(verb, verbname, true);
@@ -634,11 +673,17 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         realVerb = findFunctionByFullName(verbname);
     }
 
+    //Is this a generic function
+    if (!realVerb) {
+        realVerb = findFunctionByFullName(genericVerbName);
+    }
+
     if (!realVerb && subject) {
         //This part looks for an inherited method via parent classes.
         //TODO: this seems too complex. It should be revisited.
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
+        char paramTypes[BUFFLEN][BUFFLEN];
         int subject_idx = snprintf(newSubject, BUFFLEN, "&%s->", subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset-1] == '*' || newName[offset-1] == ' ') {
@@ -743,8 +788,14 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     }
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
 
-
-    addParam(result, realVerb->returnType);
+    if (strcmp(realVerb->returnType,"Generic_$$")) {
+        addParam(result, realVerb->returnType);
+    } else {
+        if (realVerb->genericType)
+            addParam(result, realVerb->genericType);
+        else
+            addParam(result, paramTypes[realVerb->genericTypeArgPos-1]);
+    }
 
     if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
         char temp[BUFFLEN];
@@ -811,6 +862,12 @@ Object* verbComparison(char* verb) {
 Object* verbTernary() {
     printf("verbTernary(<>)\n");
     Object* result = CreateObject("<>", "<>", 0, Function, "Boolean");
+    return result;
+}
+
+Object* verbCondReturn() {
+    printf("verbCondReturn(-->)\n");
+    Object* result = CreateObject("-->", "-->", 0, Function, "Boolean");
     return result;
 }
 
@@ -885,13 +942,46 @@ Object* parenthesize(Object* expr) {
     return parenthesized;
 }
 
+Object* objectNewIdent(char* ident) {
+    printf("objectNewIdent(%s)\n", ident);
+    Object* result;
+    Object* identifier = findByName(ident);
+
+    if (!identifier) {
+        result = CreateObject(ident, ident, 0, NewMarkedIdent, Undefined);
+    } else {
+        char error[1024];
+        snprintf(error, 1024, "Using an existing identifier as new %s\n", ident);
+        criticalError(ERROR_ParseError, error);
+    }
+    addCode(result, identifier? identifier->fullname : ident);
+    return result;
+}
+
+Object* objectUnmarkedNewIdent(char* ident) {
+    printf("objectNewIdent(%s)\n", ident);
+    Object* result;
+    Object* identifier = findByName(ident);
+
+    if (!identifier) {
+        result = CreateObject(ident, ident, 0, NewUnmarkedIdent, Undefined);
+    } else {
+        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
+        addParam(result, identifier->returnType);
+    }
+    addCode(result, identifier? identifier->fullname : ident);
+    return result;
+}
+
 Object* objectIdent(char* ident) {
     printf("objectIdent(%s)\n", ident);
     Object* result;
     Object* identifier = findByName(ident);
 
     if (!identifier) {
-        result = CreateObject(ident, ident, 0, Variable, Undefined);
+        char error[1024];
+        snprintf(error, 1024, "Unknown identifier %s\n", ident);
+        criticalError(ERROR_ParseError, error);
     } else {
         result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
         addParam(result, identifier->returnType);
@@ -1062,236 +1152,6 @@ Object* findFunctionByFullName(char* name) {
     return result;
 }
 
-void defineRSLSymbols(Object* root) {
-    Object *objBaseType, *temp2, *temp3, *temp4, *temp5, *rslFunc;
-
-    // ==============  Built-in Types ===============
-
-    objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
-    setFlags(objBaseType, FLAG_EXTERNAL);
-    addSymbol(root, objBaseType);
-    temp2 = CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", objBaseType, Type, "Boolean");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-    temp2 = CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", objBaseType, Type, "Ternary");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-    temp2 = CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", objBaseType, Type, "Stream");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-    temp2 = CreateObject("String", "String" COMPILER_SEP "BaseType", objBaseType, Type, "String");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-    temp2 = CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type, "Number *");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-    temp3 = CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
-    setFlags(temp3, FLAG_EXTERNAL);
-    addSymbol(root, temp3);
-    temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
-    setFlags(temp3, FLAG_EXTERNAL);
-    addSymbol(root, temp3);
-
-    temp4 = CreateObject("System", "System" COMPILER_SEP "BaseType", objBaseType, Type, "System");
-    setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp4);
-
-    // ==============  Exponent functions ===============
-
-    rslFunc = CreateObject("exponent", "Float" COMPILER_SEP "exponent" COMPILER_SEP "Integer", 0, Function, "Float");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("exponent", "Integer" COMPILER_SEP "exponent" COMPILER_SEP "Float", 0, Function, "Float");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("exponent", "Float" COMPILER_SEP "exponent" COMPILER_SEP "Float", 0, Function, "Float");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("exponent", "Integer" COMPILER_SEP "exponent" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-    // ============== Sqrt functions ==============
-    // ============== TODO sqrt(Integer) should be a float? ==============
-    rslFunc = CreateObject("sqrt", "Integer" COMPILER_SEP "sqrt", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-    // ==============  String Functions ===============
-
-    rslFunc = CreateObject("assign", "String" COMPILER_SEP "assign" COMPILER_SEP "String", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "String", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("plus", "Integer" COMPILER_SEP "plus" COMPILER_SEP "String", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "Integer", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("plus", "Float" COMPILER_SEP "plus" COMPILER_SEP "String", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "Float", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-
-    // ==============  Conditional Functions ===============
-
-    rslFunc = CreateObject("if", "Boolean" COMPILER_SEP "if", 0, Function, "Boolean");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("elif", "Boolean" COMPILER_SEP "elif" COMPILER_SEP "Boolean", 0, Function, "Boolean");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
-    addParam(rslFunc, "Boolean");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("else", "Boolean" COMPILER_SEP "else", 0, Function, "Boolean");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
-    addSymbol(root, rslFunc);
-
-    rslFunc = CreateObject("compare", "Integer" COMPILER_SEP "compare" COMPILER_SEP "Integer", 0, Function, "Ternary");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("pick", "Ternary" COMPILER_SEP "pick" COMPILER_SEP "String" COMPILER_SEP "String" COMPILER_SEP "String", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Ternary");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-
-    // ==============  Boolean true, false as Dummies ===============
-    // TODO: Introduce constants
-    rslFunc = CreateObject("false", "false", 0, Dummy, "Boolean");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addSymbol(root, rslFunc);
-
-    rslFunc = CreateObject("true", "true", 0, Dummy, "Boolean");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addSymbol(root, rslFunc);
-
-    // ==============  Looping Functions ===============
-
-    rslFunc = CreateObject("while", "Boolean" COMPILER_SEP "while", 0, Function, "void");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Boolean");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("for", "for" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("for", "for" COMPILER_SEP "Integer" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-    // ==============  Print Functions ===============
-
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "Float", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "Float", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "String", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "Float", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "loat", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Float");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "String", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-
-    // ==============  System Functions ===============
-
-    rslFunc = CreateObject("args", "args" COMPILER_SEP "Integer", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-
-    // ==============  Integer Functions ===============
-    rslFunc = CreateObject("Integer", "Integer" COMPILER_SEP "Integer" COMPILER_SEP "String", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-}
 
 int main(int argc,char **argv)
 {

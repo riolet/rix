@@ -26,15 +26,34 @@ typedef float Float;
 typedef enum { false, true } Boolean;
 typedef enum { lt=-1, eq=0, gt=1 } Ternary;
 typedef void * System;
+typedef void * Generic_$$;
 
-#define TRUE() true
-#define FALSE() false
 #define Boolean_$_if(A) if (A) {
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {
-#define Boolean_$_while(A) while (A) {
+
+#define Boolean_$_tf_$__$GP0_$__$GP1(T,A,B) (T) ? (A) : (B);
+#define Boolean_$_ft_$__$GP0_$__$GP1(T,A,B) (T) ? (B) : (A);
+
+#define Boolean_$_condreturn_$__$GP0(T,B) (T) ? return B;
+
+#define if_$_Boolean(A) if (A) {
+#define elif_$_Boolean(A) else if (A) {
+#define else_$_() else {
+
+#define Boolean_$_while_$_(A) while (A) {
+#define while_$_Boolean(A) while (A) {
+
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 #define for_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i<b;i+=c) {
+
+#define false_$_() false
+#define true_$_() true
+
+
+#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
+#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
+
 
 int Integer_$_Integer_$_String (String s) {
     return atoi(s.buffer);
@@ -56,7 +75,7 @@ float Float_$_exponent_$_Float (float f1, float f2) {
     return pow(f1,f2);
 }
 
-int Integer_$_sqrt (int i) {
+int Integer_$_sqrt_$_ (int i) {
     return (int) sqrt(i);
 }
 

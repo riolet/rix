@@ -65,12 +65,13 @@ string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
 
-funcDec       ":"
+colon         ":"
 paramComma    ","
 classDec      "::"
 classCtor     ":::"
 conditionLink "?"
 selfIdent     "$"
+hash          "#"
 
 mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
 assignment    "="
@@ -82,6 +83,8 @@ ternary       "<>"
 bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
+condReturn    "-->"
+implies       "==>"
 
 %%
         int indent_caller = normal;
@@ -181,15 +184,32 @@ booleanOp     "||"|"&&"
 
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
-"#"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
-{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ } 
+"`"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
+{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 {float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
 {mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+
+{hash}{identifier}  {   char* first = strtok(yytext, "#");
+                        Object* exists = findByName(first);
+                        if (!exists) {
+                          printf("lexer: new identifier %s\n",first);
+                          yylval->sval = strdup(first);
+                          return NEWIDENT;
+                        } else {
+                          char error[1024];
+                          snprintf(error, 1024, "Trying to recreate identifier %s\n", first);
+                          criticalError(ERROR_ParseError, error);
+                        }
+                      }
+
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
-                        if (!exists || exists->type == Variable) {
+                        if (!exists) {
+                          printf("lexer: unidentified identifier\n");
+                          return UNMARKEDNEWIDENT;
+                        } else if (exists->type == Variable) {
                           printf("lexer: identifier\n");
                           return IDENT;
                         } else if (exists->type == Function || exists->type == Constructor) {
@@ -203,8 +223,9 @@ booleanOp     "||"|"&&"
                           return IDENT;
                         }
                       }
-{identifier}\.{identifier} { 
-                      printf("lexer: field access\n"); 
+
+{identifier}\.{identifier} {
+                      printf("lexer: field access\n");
                       yylval->sval = strdup(yytext);
                       char* first = strtok(yytext, ".");
                       Object* exists = findByName(first);
@@ -215,7 +236,7 @@ booleanOp     "||"|"&&"
                       } else if (exists->type == Type) {
                         return STATICVERB;
                       } else {
-                        return FIELD; 
+                        return FIELD;
                       }
                       }
 
@@ -223,7 +244,7 @@ booleanOp     "||"|"&&"
 {conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
 {paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
-{funcDec}       { printf("lexer: FuncDec\n");    yylval->sval = strdup(yytext); return FUNCDEC; }
+{colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
 {return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
@@ -233,12 +254,15 @@ booleanOp     "||"|"&&"
 {booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
+{condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
 {mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
 "("           { printf("lexer: (\n"); return LPAREN; }
 ")"           { printf("lexer: )\n"); return RPAREN; }
+"["           { printf("lexer: (\n"); return LBRACKET; }
+"]"           { printf("lexer: )\n"); return RBRACKET; }
 .             { printf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
@@ -249,9 +273,9 @@ char* handleCodeInsert(void) {
 	 int index  = 0;
 	 char * ci = (char*)malloc(INSERT_BUFF_LEN);
 	 while ( c = input()) {
-	 	if ( c != '#' && index < INSERT_BUFF_LEN ) {
+	 	if ( c != '`' && index < INSERT_BUFF_LEN ) {
 	 		ci[index++] = c;
-	 	}else if ( c == '#' ) {
+	 	}else if ( c == '`' ) {
 	 		return ci;
 	 	}
 	 	if ( c == EOF ) {

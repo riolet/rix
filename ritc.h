@@ -7,6 +7,7 @@
 #include "ctype.h"
 
 #define COMPILER_SEP "_$_"
+#define GENERIC_PARAM "_$GP"
 
 extern int yylex();
 extern int yyparse();
@@ -46,11 +47,14 @@ Object* verbAssignment(char* verb);
 Object* verbMathOp(char* verb);
 Object* verbComparison(char* verb);
 Object* verbTernary();
+Object* verbCondReturn();
 Object* verbIdent(char* verb);
 Object* sVerbIdent(char* staticVerb);
 Object* verbCtor(char* type);
 Object* parenthesize(Object* expr);
 Object* objectIdent(char* ident);
+Object* objectNewIdent(char* ident);
+Object* objectUnmarkedNewIdent(char* ident);
 Object* objectSelfIdent(char* ident);
 Object* objectFloat(float f);
 Object* objectInt(int i);
