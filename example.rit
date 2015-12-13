@@ -6,8 +6,7 @@ Rectangle :: BaseType
     $.w = w
     $.h = h
 
-  area -> Integer :
-    -> w * h
+  area -> Integer: = w * h
 
 Square :: Rectangle
   ::: Integer edge
