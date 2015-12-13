@@ -99,6 +99,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //    given a compound expression,
 //    evaluate from right to left.
 %right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB CONDRETURN
+%right ENDOFLINE INDENT
 %right PARAMCOMMA
 %right BOOLEANOP
 %right COMPARISON TERNARY

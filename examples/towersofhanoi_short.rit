@@ -1,3 +1,8 @@
-hanoi -> Integer: Integer n, String s, String a, String e  =  (n == 1) tf (print s + " -> " + e), ((hanoi n - 1, s, e, a) + (print s + " -> " + e)+(hanoi n - 1, a, s, e))
+hanoi -> Integer: Integer n, String s, String a, String e  =  (n == 1) tf (print s + " -> " + e),
+                                                                          (
+                                                                            (hanoi n - 1, s, e, a) +
+                                                                            (print s + " -> " + e) +
+                                                                            (hanoi n - 1, a, s, e)
+                                                                          )
 
 hanoi (Integer (args 1)), "A", "B", "C"

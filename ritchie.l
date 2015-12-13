@@ -43,6 +43,7 @@ void set_yycolumn(int val) {
 }
 
 char* handleCodeInsert(void);
+void* handleComma(void);
 
 %}
 
@@ -243,7 +244,7 @@ implies       "==>"
 {assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); return PARAMCOMMA; }
+{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); handleComma(); return PARAMCOMMA; }
 {colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
@@ -282,6 +283,16 @@ char* handleCodeInsert(void) {
 		     criticalError(ERROR_ParseError, "unterminated code insert\n");
 		     return 0;
 		 }
+	 }
+}
+
+void* handleComma(void) {
+	 printf("lexer: eating spaces between commas\n");
+	 int c;
+	 while ( c = input()) {
+        if ( c !=  '\t' || c != ' ') {
+	 		return;
+	 	}
 	 }
 }
 
