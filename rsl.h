@@ -2,13 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "bstrlib.h"
+#include "errors.h"
 
 #define BUFFLEN 512
-typedef struct {
-    char *buffer;
-    size_t length;
-    size_t cap;
-} String;
+typedef bstring String;
 
 typedef struct {
   int object_$_id;
@@ -56,7 +54,7 @@ typedef void * Generic_$$;
 
 
 int Integer_$_Integer_$_String (String s) {
-    return atoi(s.buffer);
+    return atoi(s->data);
 }
 
 float Float_$_exponent_$_Integer (float f, int i) {
@@ -80,81 +78,46 @@ int Integer_$_sqrt_$_ (int i) {
 }
 
 String String_$_stringlit ( char * strlit) {
-    String s;
-    s.buffer = strlit;
-    s.cap = s.length = strlen(strlit);
-    return s;
+    return bfromcstr (strlit);
 }
+
 String String_$_assign_$_String (String left, String right) {
-    left.buffer=malloc(right.length+1);
-    memcpy(left.buffer,right.buffer,right.length);
-    return left;
+    if (bassign (left, right))
+        return left;
+    else
+        criticalError(0,"Unable to assign String %s\n");
 }
 
 String String_$_plus_$_String (String left, String right) {
-    String newString;
-    newString.buffer=malloc(left.length+right.length+1);
-    memcpy(newString.buffer,left.buffer,left.length);
-    memcpy(newString.buffer+left.length,right.buffer,right.length);
-    newString.length=left.length+right.length;
-    newString.buffer[newString.length]=0;
-    return newString;
+    String retval=bstrcpy(left);
+    if (bconcat(retval,right)) {
+        return retval;
+    } else {
+        criticalError(0,"String concatenation failure");
+    }
 }
 
 String String_$_plus_$_Integer (String left, int right) {
-    String newString;
-    char rightStr[BUFFLEN];
-    int right_length=snprintf(rightStr,BUFFLEN,"%i",right);
-    newString.buffer=malloc(left.length+right_length+1);
-    memcpy(newString.buffer,left.buffer,left.length);
-    memcpy(newString.buffer+left.length,rightStr,right_length);
-    newString.length=left.length+right_length;
-    newString.buffer[newString.length]=0;
-    return newString;
+    return bformat("%s%i",left->data,right);
 }
 
 String Integer_$_plus_$_String (int left, String right) {
-    String newString;
-    char leftStr[BUFFLEN];
-    int left_length=snprintf(leftStr,BUFFLEN,"%i",left);
-    newString.buffer=malloc(right.length+left_length+1);
-    memcpy(newString.buffer,leftStr,left_length);
-    memcpy(newString.buffer+left_length,right.buffer,right.length);
-    newString.length=right.length+left_length;
-    newString.buffer[newString.length]=0;
-    return newString;
+    return bformat("%i%s",left,right->data);
 }
 
 String String_$_plus_$_Float (String left, float right) {
-    String newString;
-    char rightStr[BUFFLEN];
-    int right_length=snprintf(rightStr,BUFFLEN,"%f",right);
-    newString.buffer=malloc(left.length+right_length+1);
-    memcpy(newString.buffer,left.buffer,left.length);
-    memcpy(newString.buffer+left.length,rightStr,right_length);
-    newString.length=left.length+right_length;
-    newString.buffer[newString.length]=0;
-    return newString;
+    return bformat("%s%f",left->data,right);
 }
 
 String Float_$_plus_$_String (float left, String right) {
-    String newString;
-    char leftStr[BUFFLEN];
-    int left_length=snprintf(leftStr,BUFFLEN,"%f",left);
-    newString.buffer=malloc(right.length+left_length+1);
-    memcpy(newString.buffer+left_length,right.buffer,right.length);
-    memcpy(newString.buffer,leftStr,left_length);
-
-    newString.length=right.length+left_length;
-    newString.buffer[newString.length]=0;
-    return newString;
+    return bformat("%f%s",left,right->data);
 }
 
 
 
 /* Print prints the param and a newline char */
 int Stream_$_print_$_String(Stream stream,String s) {
-    return fwrite(s.buffer,sizeof(char),s.length,stream)+fputc('\n',stream);
+    return fwrite(s->data,sizeof(char),s->slen,stream)+fputc('\n',stream);
 }
 
 int Stream_$_print_$_Integer(Stream stream, int i) {
@@ -166,7 +129,7 @@ int Stream_$_print_$_Float(Stream stream, float f) {
 }
 
 int print_$_String(String s) {
-    return fwrite(s.buffer,sizeof(char),s.length,stdout)+fputc('\n',stdout);
+    return Stream_$_print_$_String(stdout, s);
 }
 
 int print_$_Integer(int i) {
@@ -179,7 +142,7 @@ int print_$_Float(float f) {
 
 /* Echo omits the newline char */
 int Stream_$_echo_$_String(Stream stream,String s) {
-    return fwrite(s.buffer,sizeof(char),s.length,stream);
+    return fwrite(s->data,sizeof(char),s->slen,stream);
 }
 
 int Stream_$_echo_$_Integer(Stream stream, int i) {
@@ -191,7 +154,7 @@ int Stream_$_echo_$_Float(Stream stream, float f) {
 }
 
 int echo_$_String(String s) {
-    return fwrite(s.buffer,sizeof(char),s.length,stdout);
+    return Stream_$_echo_$_String(stdout,s);
 }
 
 int echo_$_Integer(int i) {
@@ -209,15 +172,6 @@ Ternary Integer_$_compare_$_Integer (Integer a, Integer b) {
         return eq;
     } else {
         return gt;
-    }
-}
-String Ternary_$_pick_$_String_$_String_$_String (Ternary ternary, String a, String b, String c) {
-    if (ternary==lt) {
-        return a;
-    } else if (ternary==eq) {
-        return b;
-    } else if (ternary==gt) {
-        return c;
     }
 }
 

@@ -16,8 +16,21 @@ int readFile(char name[], FILE *ofp, int* numline) {
     name++;
   }
   if ((fp = fopen(name, "r")) == 0) {
-    perror("open");
-    return 1;
+    printf("Cannot find import file %s in working directory. Trying RITCHIE_HOME\n",name);
+  	const char* RITCHIE_HOME = getenv("RITCHIE_HOME");
+  	char importPath[BUFFLEN];
+  	if (RITCHIE_HOME!=0) {
+        snprintf(importPath,BUFFLEN,"%s/%s",RITCHIE_HOME,name);
+        if ((fp = fopen(importPath, "r")) == 0) {
+            printf ("Cannot find import file %s in working directory or RITCHIE_HOME\n",importPath);
+            perror("open");
+            return 1;
+        }
+    } else {
+        criticalError (0,"RITCHIE_HOME not set.\n");
+        perror("open");
+        return 1;
+    }
   }
   while (fgets(line, LINESIZE, fp)) {
     if (sscanf(line, "%s%s", word, word2) == 2 && strcmp(word, "import") == 0) {

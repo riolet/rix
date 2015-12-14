@@ -1235,6 +1235,9 @@ int main(int argc,char **argv)
     	return 1;
   	}
   	printf("%s\n", ifile);
+  	//Read RSL
+  	readFile("rsl/rsl.rit", ritTempFile, &numline);
+  	//Read mainfile
   	readFile(ifile, ritTempFile, &numline);
   	fclose(ritTempFile);
 
