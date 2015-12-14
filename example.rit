@@ -1,17 +1,21 @@
 Rectangle :: BaseType
-  w = Integer
-  h = Integer
 
-  ::: Integer w, Integer h
-    $.w = w
-    $.h = h
+  width = Integer
+  height = Integer
 
-  area -> Integer: = w * h
+  ::: Integer width, Integer height
+    $.width = width
+    $.height = height
+
+  area -> Integer: = width * height
+
 
 Square :: Rectangle
+
   ::: Integer edge
-    w = edge
-    h = edge
+    width = edge
+    height = edge
+
 
 #r = Rectangle 5, 10
 #s = Square 16
