@@ -1,0 +1,6 @@
+BetterString::String
+    :::String s
+        parent = s
+
+#b = (BetterString "Hi")
+print (b.parent)

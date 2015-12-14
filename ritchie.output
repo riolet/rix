@@ -1,0 +1,1735 @@
+Terminals unused in grammar
+
+   LBRACKET
+   RBRACKET
+   BITWISEOP
+   SLCOMMENT
+
+
+Grammar
+
+    0 $accept: ritchie "end of file"
+
+    1 ritchie: statements
+    2        | "end of file"
+
+    3 statements: simple_statement
+    4           | statements simple_statement
+
+    5 simple_statement: ENDOFLINE
+    6                 | statement ENDOFLINE
+    7                 | statement ENDOFLINE codeblock
+    8                 | function_definition ASSIGNMENT statement ENDOFLINE
+    9                 | function_definition ENDOFLINE codeblock
+   10                 | CODE_INSERT ENDOFLINE
+   11                 | class_definition ENDOFLINE classblock
+
+   12 statement: expr
+   13          | RETURN expr
+   14          | RETURN
+
+   15 expr: object
+   16     | expr PARAMCOMMA expr
+   17     | expr PARAMCOMMA ENDOFLINE expr
+   18     | expr ASSIGNMENT expr
+   19     | expr MATHASSIGN expr
+   20     | expr COMPARISON expr
+   21     | expr BOOLEANOP expr
+   22     | expr TERNARY expr
+   23     | expr CONDRETURN expr
+   24     | expr MATH_OP expr
+   25     | expr VERB expr
+   26     | expr VERB
+   27     | VERB expr
+   28     | VERB
+   29     | STATICVERB expr
+   30     | STATICVERB
+   31     | TYPE expr
+   32     | TYPE
+   33     | LPAREN expr RPAREN
+
+   34 object: INT
+   35       | FLOAT
+   36       | IDENT
+   37       | NEWIDENT
+   38       | UNMARKEDNEWIDENT
+   39       | FIELD
+   40       | STRING
+   41       | SELFIDENT
+   42       | CONDITIONLINK
+
+   43 function_definition: UNMARKEDNEWIDENT RETURN TYPE COLON parameters
+   44                    | VERB RETURN TYPE COLON parameters
+   45                    | UNMARKEDNEWIDENT RETURN COLON parameters
+   46                    | VERB RETURN COLON parameters
+
+   47 parameters: %empty
+   48           | TYPE parameterIdent
+   49           | parameters PARAMCOMMA TYPE parameterIdent
+
+   50 parameterIdent: IDENT
+   51               | UNMARKEDNEWIDENT
+
+   52 codeblock: INDENT statements UNINDENT
+
+   53 class_definition: UNMARKEDNEWIDENT CLASSDEC TYPE
+
+   54 ctor_definition: CTORDEC parameters
+
+   55 classblock: INDENT class_statements UNINDENT
+
+   56 class_statements: class_statement
+   57                 | class_statements class_statement
+
+   58 class_statement: ENDOFLINE
+   59                | UNMARKEDNEWIDENT ASSIGNMENT TYPE ENDOFLINE
+   60                | function_definition ENDOFLINE codeblock
+   61                | function_definition ASSIGNMENT statement ENDOFLINE
+   62                | ctor_definition ENDOFLINE codeblock
+
+
+Terminals, with rules where they appear
+
+"end of file" (0) 0 2
+error (256)
+ENDOFLINE (258) 5 6 7 8 9 10 11 17 58 59 60 61 62
+INT (259) 34
+FLOAT (260) 35
+STRING (261) 40
+IDENT (262) 36 50
+NEWIDENT (263) 37
+UNMARKEDNEWIDENT (264) 38 43 45 51 53 59
+FIELD (265) 39
+VERB (266) 25 26 27 28 44 46
+STATICVERB (267) 29 30
+TYPE (268) 31 32 43 44 48 49 53 59
+MATH_OP (269) 24
+ASSIGNMENT (270) 8 18 59 61
+LPAREN (271) 33
+RPAREN (272) 33
+LBRACKET (273)
+RBRACKET (274)
+INDENT (275) 52 55
+UNINDENT (276) 52 55
+CONDITIONLINK (277) 42
+MATHASSIGN (278) 19
+BITWISEOP (279)
+BOOLEANOP (280) 21
+COLON (281) 43 44 45 46
+CLASSDEC (282) 53
+CTORDEC (283) 54
+PARAMCOMMA (284) 16 17 49
+RETURN (285) 13 14 43 44 45 46
+SELFIDENT (286) 41
+SLCOMMENT (287)
+COMPARISON (288) 20
+TERNARY (289) 22
+CODE_INSERT (290) 10
+CONDRETURN (291) 23
+
+
+Nonterminals, with rules where they appear
+
+$accept (37)
+    on left: 0
+ritchie (38)
+    on left: 1 2, on right: 0
+statements (39)
+    on left: 3 4, on right: 1 4 52
+simple_statement (40)
+    on left: 5 6 7 8 9 10 11, on right: 3 4
+statement (41)
+    on left: 12 13 14, on right: 6 7 8 61
+expr (42)
+    on left: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+    33, on right: 12 13 16 17 18 19 20 21 22 23 24 25 26 27 29 31 33
+object (43)
+    on left: 34 35 36 37 38 39 40 41 42, on right: 15
+function_definition (44)
+    on left: 43 44 45 46, on right: 8 9 60 61
+parameters (45)
+    on left: 47 48 49, on right: 43 44 45 46 49 54
+parameterIdent (46)
+    on left: 50 51, on right: 48 49
+codeblock (47)
+    on left: 52, on right: 7 9 60 62
+class_definition (48)
+    on left: 53, on right: 11
+ctor_definition (49)
+    on left: 54, on right: 62
+classblock (50)
+    on left: 55, on right: 11
+class_statements (51)
+    on left: 56 57, on right: 55 57
+class_statement (52)
+    on left: 58 59 60 61 62, on right: 56 57
+
+
+State 0
+
+    0 $accept: . ritchie "end of file"
+
+    "end of file"     shift, and go to state 1
+    ENDOFLINE         shift, and go to state 2
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 8
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 10
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+    CODE_INSERT       shift, and go to state 17
+
+    ritchie              go to state 18
+    statements           go to state 19
+    simple_statement     go to state 20
+    statement            go to state 21
+    expr                 go to state 22
+    object               go to state 23
+    function_definition  go to state 24
+    class_definition     go to state 25
+
+
+State 1
+
+    2 ritchie: "end of file" .
+
+    $default  reduce using rule 2 (ritchie)
+
+
+State 2
+
+    5 simple_statement: ENDOFLINE .
+
+    $default  reduce using rule 5 (simple_statement)
+
+
+State 3
+
+   34 object: INT .
+
+    $default  reduce using rule 34 (object)
+
+
+State 4
+
+   35 object: FLOAT .
+
+    $default  reduce using rule 35 (object)
+
+
+State 5
+
+   40 object: STRING .
+
+    $default  reduce using rule 40 (object)
+
+
+State 6
+
+   36 object: IDENT .
+
+    $default  reduce using rule 36 (object)
+
+
+State 7
+
+   37 object: NEWIDENT .
+
+    $default  reduce using rule 37 (object)
+
+
+State 8
+
+   38 object: UNMARKEDNEWIDENT .
+   43 function_definition: UNMARKEDNEWIDENT . RETURN TYPE COLON parameters
+   45                    | UNMARKEDNEWIDENT . RETURN COLON parameters
+   53 class_definition: UNMARKEDNEWIDENT . CLASSDEC TYPE
+
+    CLASSDEC  shift, and go to state 26
+    RETURN    shift, and go to state 27
+
+    $default  reduce using rule 38 (object)
+
+
+State 9
+
+   39 object: FIELD .
+
+    $default  reduce using rule 39 (object)
+
+
+State 10
+
+   27 expr: VERB . expr
+   28     | VERB .
+   44 function_definition: VERB . RETURN TYPE COLON parameters
+   46                    | VERB . RETURN COLON parameters
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 30
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 28 (expr)
+
+    expr    go to state 31
+    object  go to state 23
+
+
+State 11
+
+   29 expr: STATICVERB . expr
+   30     | STATICVERB .
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 30 (expr)
+
+    expr    go to state 32
+    object  go to state 23
+
+
+State 12
+
+   31 expr: TYPE . expr
+   32     | TYPE .
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 32 (expr)
+
+    expr    go to state 33
+    object  go to state 23
+
+
+State 13
+
+   33 expr: LPAREN . expr RPAREN
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 34
+    object  go to state 23
+
+
+State 14
+
+   42 object: CONDITIONLINK .
+
+    $default  reduce using rule 42 (object)
+
+
+State 15
+
+   13 statement: RETURN . expr
+   14          | RETURN .
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 14 (statement)
+
+    expr    go to state 35
+    object  go to state 23
+
+
+State 16
+
+   41 object: SELFIDENT .
+
+    $default  reduce using rule 41 (object)
+
+
+State 17
+
+   10 simple_statement: CODE_INSERT . ENDOFLINE
+
+    ENDOFLINE  shift, and go to state 36
+
+
+State 18
+
+    0 $accept: ritchie . "end of file"
+
+    "end of file"  shift, and go to state 37
+
+
+State 19
+
+    1 ritchie: statements .
+    4 statements: statements . simple_statement
+
+    ENDOFLINE         shift, and go to state 2
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 8
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 10
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+    CODE_INSERT       shift, and go to state 17
+
+    $default  reduce using rule 1 (ritchie)
+
+    simple_statement     go to state 38
+    statement            go to state 21
+    expr                 go to state 22
+    object               go to state 23
+    function_definition  go to state 24
+    class_definition     go to state 25
+
+
+State 20
+
+    3 statements: simple_statement .
+
+    $default  reduce using rule 3 (statements)
+
+
+State 21
+
+    6 simple_statement: statement . ENDOFLINE
+    7                 | statement . ENDOFLINE codeblock
+
+    ENDOFLINE  shift, and go to state 39
+
+
+State 22
+
+   12 statement: expr .
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 12 (statement)
+
+
+State 23
+
+   15 expr: object .
+
+    $default  reduce using rule 15 (expr)
+
+
+State 24
+
+    8 simple_statement: function_definition . ASSIGNMENT statement ENDOFLINE
+    9                 | function_definition . ENDOFLINE codeblock
+
+    ENDOFLINE   shift, and go to state 49
+    ASSIGNMENT  shift, and go to state 50
+
+
+State 25
+
+   11 simple_statement: class_definition . ENDOFLINE classblock
+
+    ENDOFLINE  shift, and go to state 51
+
+
+State 26
+
+   53 class_definition: UNMARKEDNEWIDENT CLASSDEC . TYPE
+
+    TYPE  shift, and go to state 52
+
+
+State 27
+
+   43 function_definition: UNMARKEDNEWIDENT RETURN . TYPE COLON parameters
+   45                    | UNMARKEDNEWIDENT RETURN . COLON parameters
+
+    TYPE   shift, and go to state 53
+    COLON  shift, and go to state 54
+
+
+State 28
+
+   38 object: UNMARKEDNEWIDENT .
+
+    $default  reduce using rule 38 (object)
+
+
+State 29
+
+   27 expr: VERB . expr
+   28     | VERB .
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 28 (expr)
+
+    expr    go to state 31
+    object  go to state 23
+
+
+State 30
+
+   44 function_definition: VERB RETURN . TYPE COLON parameters
+   46                    | VERB RETURN . COLON parameters
+
+    TYPE   shift, and go to state 55
+    COLON  shift, and go to state 56
+
+
+State 31
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+   27     | VERB expr .
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 27 (expr)
+
+
+State 32
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+   29     | STATICVERB expr .
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 29 (expr)
+
+
+State 33
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+   31     | TYPE expr .
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 31 (expr)
+
+
+State 34
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+   33     | LPAREN expr . RPAREN
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    RPAREN      shift, and go to state 57
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+
+State 35
+
+   13 statement: RETURN expr .
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 13 (statement)
+
+
+State 36
+
+   10 simple_statement: CODE_INSERT ENDOFLINE .
+
+    $default  reduce using rule 10 (simple_statement)
+
+
+State 37
+
+    0 $accept: ritchie "end of file" .
+
+    $default  accept
+
+
+State 38
+
+    4 statements: statements simple_statement .
+
+    $default  reduce using rule 4 (statements)
+
+
+State 39
+
+    6 simple_statement: statement ENDOFLINE .
+    7                 | statement ENDOFLINE . codeblock
+
+    INDENT  shift, and go to state 58
+
+    $default  reduce using rule 6 (simple_statement)
+
+    codeblock  go to state 59
+
+
+State 40
+
+   25 expr: expr VERB . expr
+   26     | expr VERB .
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    $default  reduce using rule 26 (expr)
+
+    expr    go to state 60
+    object  go to state 23
+
+
+State 41
+
+   24 expr: expr MATH_OP . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 61
+    object  go to state 23
+
+
+State 42
+
+   18 expr: expr ASSIGNMENT . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 62
+    object  go to state 23
+
+
+State 43
+
+   19 expr: expr MATHASSIGN . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 63
+    object  go to state 23
+
+
+State 44
+
+   21 expr: expr BOOLEANOP . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 64
+    object  go to state 23
+
+
+State 45
+
+   16 expr: expr PARAMCOMMA . expr
+   17     | expr PARAMCOMMA . ENDOFLINE expr
+
+    ENDOFLINE         shift, and go to state 65
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 66
+    object  go to state 23
+
+
+State 46
+
+   20 expr: expr COMPARISON . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 67
+    object  go to state 23
+
+
+State 47
+
+   22 expr: expr TERNARY . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 68
+    object  go to state 23
+
+
+State 48
+
+   23 expr: expr CONDRETURN . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 69
+    object  go to state 23
+
+
+State 49
+
+    9 simple_statement: function_definition ENDOFLINE . codeblock
+
+    INDENT  shift, and go to state 58
+
+    codeblock  go to state 70
+
+
+State 50
+
+    8 simple_statement: function_definition ASSIGNMENT . statement ENDOFLINE
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+
+    statement  go to state 71
+    expr       go to state 22
+    object     go to state 23
+
+
+State 51
+
+   11 simple_statement: class_definition ENDOFLINE . classblock
+
+    INDENT  shift, and go to state 72
+
+    classblock  go to state 73
+
+
+State 52
+
+   53 class_definition: UNMARKEDNEWIDENT CLASSDEC TYPE .
+
+    $default  reduce using rule 53 (class_definition)
+
+
+State 53
+
+   43 function_definition: UNMARKEDNEWIDENT RETURN TYPE . COLON parameters
+
+    COLON  shift, and go to state 74
+
+
+State 54
+
+   45 function_definition: UNMARKEDNEWIDENT RETURN COLON . parameters
+
+    TYPE  shift, and go to state 75
+
+    $default  reduce using rule 47 (parameters)
+
+    parameters  go to state 76
+
+
+State 55
+
+   44 function_definition: VERB RETURN TYPE . COLON parameters
+
+    COLON  shift, and go to state 77
+
+
+State 56
+
+   46 function_definition: VERB RETURN COLON . parameters
+
+    TYPE  shift, and go to state 75
+
+    $default  reduce using rule 47 (parameters)
+
+    parameters  go to state 78
+
+
+State 57
+
+   33 expr: LPAREN expr RPAREN .
+
+    $default  reduce using rule 33 (expr)
+
+
+State 58
+
+   52 codeblock: INDENT . statements UNINDENT
+
+    ENDOFLINE         shift, and go to state 2
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 8
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 10
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+    CODE_INSERT       shift, and go to state 17
+
+    statements           go to state 79
+    simple_statement     go to state 20
+    statement            go to state 21
+    expr                 go to state 22
+    object               go to state 23
+    function_definition  go to state 24
+    class_definition     go to state 25
+
+
+State 59
+
+    7 simple_statement: statement ENDOFLINE codeblock .
+
+    $default  reduce using rule 7 (simple_statement)
+
+
+State 60
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   25     | expr VERB expr .
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 25 (expr)
+
+
+State 61
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   24     | expr MATH_OP expr .
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP  shift, and go to state 41
+
+    $default  reduce using rule 24 (expr)
+
+
+State 62
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   18     | expr ASSIGNMENT expr .
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 18 (expr)
+
+
+State 63
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   19     | expr MATHASSIGN expr .
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 19 (expr)
+
+
+State 64
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   21     | expr BOOLEANOP expr .
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP     shift, and go to state 41
+    BOOLEANOP   shift, and go to state 44
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+
+    $default  reduce using rule 21 (expr)
+
+
+State 65
+
+   17 expr: expr PARAMCOMMA ENDOFLINE . expr
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    SELFIDENT         shift, and go to state 16
+
+    expr    go to state 80
+    object  go to state 23
+
+
+State 66
+
+   16 expr: expr . PARAMCOMMA expr
+   16     | expr PARAMCOMMA expr .
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP     shift, and go to state 41
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+
+    $default  reduce using rule 16 (expr)
+
+
+State 67
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   20     | expr COMPARISON expr .
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP     shift, and go to state 41
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+
+    $default  reduce using rule 20 (expr)
+
+
+State 68
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   22     | expr TERNARY expr .
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP     shift, and go to state 41
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+
+    $default  reduce using rule 22 (expr)
+
+
+State 69
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   23     | expr CONDRETURN expr .
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    VERB        shift, and go to state 40
+    MATH_OP     shift, and go to state 41
+    ASSIGNMENT  shift, and go to state 42
+    MATHASSIGN  shift, and go to state 43
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+    CONDRETURN  shift, and go to state 48
+
+    $default  reduce using rule 23 (expr)
+
+
+State 70
+
+    9 simple_statement: function_definition ENDOFLINE codeblock .
+
+    $default  reduce using rule 9 (simple_statement)
+
+
+State 71
+
+    8 simple_statement: function_definition ASSIGNMENT statement . ENDOFLINE
+
+    ENDOFLINE  shift, and go to state 81
+
+
+State 72
+
+   55 classblock: INDENT . class_statements UNINDENT
+
+    ENDOFLINE         shift, and go to state 82
+    UNMARKEDNEWIDENT  shift, and go to state 83
+    VERB              shift, and go to state 84
+    CTORDEC           shift, and go to state 85
+
+    function_definition  go to state 86
+    ctor_definition      go to state 87
+    class_statements     go to state 88
+    class_statement      go to state 89
+
+
+State 73
+
+   11 simple_statement: class_definition ENDOFLINE classblock .
+
+    $default  reduce using rule 11 (simple_statement)
+
+
+State 74
+
+   43 function_definition: UNMARKEDNEWIDENT RETURN TYPE COLON . parameters
+
+    TYPE  shift, and go to state 75
+
+    $default  reduce using rule 47 (parameters)
+
+    parameters  go to state 90
+
+
+State 75
+
+   48 parameters: TYPE . parameterIdent
+
+    IDENT             shift, and go to state 91
+    UNMARKEDNEWIDENT  shift, and go to state 92
+
+    parameterIdent  go to state 93
+
+
+State 76
+
+   45 function_definition: UNMARKEDNEWIDENT RETURN COLON parameters .
+   49 parameters: parameters . PARAMCOMMA TYPE parameterIdent
+
+    PARAMCOMMA  shift, and go to state 94
+
+    $default  reduce using rule 45 (function_definition)
+
+
+State 77
+
+   44 function_definition: VERB RETURN TYPE COLON . parameters
+
+    TYPE  shift, and go to state 75
+
+    $default  reduce using rule 47 (parameters)
+
+    parameters  go to state 95
+
+
+State 78
+
+   46 function_definition: VERB RETURN COLON parameters .
+   49 parameters: parameters . PARAMCOMMA TYPE parameterIdent
+
+    PARAMCOMMA  shift, and go to state 94
+
+    $default  reduce using rule 46 (function_definition)
+
+
+State 79
+
+    4 statements: statements . simple_statement
+   52 codeblock: INDENT statements . UNINDENT
+
+    ENDOFLINE         shift, and go to state 2
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 8
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 10
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    UNINDENT          shift, and go to state 96
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+    CODE_INSERT       shift, and go to state 17
+
+    simple_statement     go to state 38
+    statement            go to state 21
+    expr                 go to state 22
+    object               go to state 23
+    function_definition  go to state 24
+    class_definition     go to state 25
+
+
+State 80
+
+   16 expr: expr . PARAMCOMMA expr
+   17     | expr . PARAMCOMMA ENDOFLINE expr
+   17     | expr PARAMCOMMA ENDOFLINE expr .
+   18     | expr . ASSIGNMENT expr
+   19     | expr . MATHASSIGN expr
+   20     | expr . COMPARISON expr
+   21     | expr . BOOLEANOP expr
+   22     | expr . TERNARY expr
+   23     | expr . CONDRETURN expr
+   24     | expr . MATH_OP expr
+   25     | expr . VERB expr
+   26     | expr . VERB
+
+    MATH_OP     shift, and go to state 41
+    BOOLEANOP   shift, and go to state 44
+    PARAMCOMMA  shift, and go to state 45
+    COMPARISON  shift, and go to state 46
+    TERNARY     shift, and go to state 47
+
+    $default  reduce using rule 17 (expr)
+
+
+State 81
+
+    8 simple_statement: function_definition ASSIGNMENT statement ENDOFLINE .
+
+    $default  reduce using rule 8 (simple_statement)
+
+
+State 82
+
+   58 class_statement: ENDOFLINE .
+
+    $default  reduce using rule 58 (class_statement)
+
+
+State 83
+
+   43 function_definition: UNMARKEDNEWIDENT . RETURN TYPE COLON parameters
+   45                    | UNMARKEDNEWIDENT . RETURN COLON parameters
+   59 class_statement: UNMARKEDNEWIDENT . ASSIGNMENT TYPE ENDOFLINE
+
+    ASSIGNMENT  shift, and go to state 97
+    RETURN      shift, and go to state 27
+
+
+State 84
+
+   44 function_definition: VERB . RETURN TYPE COLON parameters
+   46                    | VERB . RETURN COLON parameters
+
+    RETURN  shift, and go to state 30
+
+
+State 85
+
+   54 ctor_definition: CTORDEC . parameters
+
+    TYPE  shift, and go to state 75
+
+    $default  reduce using rule 47 (parameters)
+
+    parameters  go to state 98
+
+
+State 86
+
+   60 class_statement: function_definition . ENDOFLINE codeblock
+   61                | function_definition . ASSIGNMENT statement ENDOFLINE
+
+    ENDOFLINE   shift, and go to state 99
+    ASSIGNMENT  shift, and go to state 100
+
+
+State 87
+
+   62 class_statement: ctor_definition . ENDOFLINE codeblock
+
+    ENDOFLINE  shift, and go to state 101
+
+
+State 88
+
+   55 classblock: INDENT class_statements . UNINDENT
+   57 class_statements: class_statements . class_statement
+
+    ENDOFLINE         shift, and go to state 82
+    UNMARKEDNEWIDENT  shift, and go to state 83
+    VERB              shift, and go to state 84
+    UNINDENT          shift, and go to state 102
+    CTORDEC           shift, and go to state 85
+
+    function_definition  go to state 86
+    ctor_definition      go to state 87
+    class_statement      go to state 103
+
+
+State 89
+
+   56 class_statements: class_statement .
+
+    $default  reduce using rule 56 (class_statements)
+
+
+State 90
+
+   43 function_definition: UNMARKEDNEWIDENT RETURN TYPE COLON parameters .
+   49 parameters: parameters . PARAMCOMMA TYPE parameterIdent
+
+    PARAMCOMMA  shift, and go to state 94
+
+    $default  reduce using rule 43 (function_definition)
+
+
+State 91
+
+   50 parameterIdent: IDENT .
+
+    $default  reduce using rule 50 (parameterIdent)
+
+
+State 92
+
+   51 parameterIdent: UNMARKEDNEWIDENT .
+
+    $default  reduce using rule 51 (parameterIdent)
+
+
+State 93
+
+   48 parameters: TYPE parameterIdent .
+
+    $default  reduce using rule 48 (parameters)
+
+
+State 94
+
+   49 parameters: parameters PARAMCOMMA . TYPE parameterIdent
+
+    TYPE  shift, and go to state 104
+
+
+State 95
+
+   44 function_definition: VERB RETURN TYPE COLON parameters .
+   49 parameters: parameters . PARAMCOMMA TYPE parameterIdent
+
+    PARAMCOMMA  shift, and go to state 94
+
+    $default  reduce using rule 44 (function_definition)
+
+
+State 96
+
+   52 codeblock: INDENT statements UNINDENT .
+
+    $default  reduce using rule 52 (codeblock)
+
+
+State 97
+
+   59 class_statement: UNMARKEDNEWIDENT ASSIGNMENT . TYPE ENDOFLINE
+
+    TYPE  shift, and go to state 105
+
+
+State 98
+
+   49 parameters: parameters . PARAMCOMMA TYPE parameterIdent
+   54 ctor_definition: CTORDEC parameters .
+
+    PARAMCOMMA  shift, and go to state 94
+
+    $default  reduce using rule 54 (ctor_definition)
+
+
+State 99
+
+   60 class_statement: function_definition ENDOFLINE . codeblock
+
+    INDENT  shift, and go to state 58
+
+    codeblock  go to state 106
+
+
+State 100
+
+   61 class_statement: function_definition ASSIGNMENT . statement ENDOFLINE
+
+    INT               shift, and go to state 3
+    FLOAT             shift, and go to state 4
+    STRING            shift, and go to state 5
+    IDENT             shift, and go to state 6
+    NEWIDENT          shift, and go to state 7
+    UNMARKEDNEWIDENT  shift, and go to state 28
+    FIELD             shift, and go to state 9
+    VERB              shift, and go to state 29
+    STATICVERB        shift, and go to state 11
+    TYPE              shift, and go to state 12
+    LPAREN            shift, and go to state 13
+    CONDITIONLINK     shift, and go to state 14
+    RETURN            shift, and go to state 15
+    SELFIDENT         shift, and go to state 16
+
+    statement  go to state 107
+    expr       go to state 22
+    object     go to state 23
+
+
+State 101
+
+   62 class_statement: ctor_definition ENDOFLINE . codeblock
+
+    INDENT  shift, and go to state 58
+
+    codeblock  go to state 108
+
+
+State 102
+
+   55 classblock: INDENT class_statements UNINDENT .
+
+    $default  reduce using rule 55 (classblock)
+
+
+State 103
+
+   57 class_statements: class_statements class_statement .
+
+    $default  reduce using rule 57 (class_statements)
+
+
+State 104
+
+   49 parameters: parameters PARAMCOMMA TYPE . parameterIdent
+
+    IDENT             shift, and go to state 91
+    UNMARKEDNEWIDENT  shift, and go to state 92
+
+    parameterIdent  go to state 109
+
+
+State 105
+
+   59 class_statement: UNMARKEDNEWIDENT ASSIGNMENT TYPE . ENDOFLINE
+
+    ENDOFLINE  shift, and go to state 110
+
+
+State 106
+
+   60 class_statement: function_definition ENDOFLINE codeblock .
+
+    $default  reduce using rule 60 (class_statement)
+
+
+State 107
+
+   61 class_statement: function_definition ASSIGNMENT statement . ENDOFLINE
+
+    ENDOFLINE  shift, and go to state 111
+
+
+State 108
+
+   62 class_statement: ctor_definition ENDOFLINE codeblock .
+
+    $default  reduce using rule 62 (class_statement)
+
+
+State 109
+
+   49 parameters: parameters PARAMCOMMA TYPE parameterIdent .
+
+    $default  reduce using rule 49 (parameters)
+
+
+State 110
+
+   59 class_statement: UNMARKEDNEWIDENT ASSIGNMENT TYPE ENDOFLINE .
+
+    $default  reduce using rule 59 (class_statement)
+
+
+State 111
+
+   61 class_statement: function_definition ASSIGNMENT statement ENDOFLINE .
+
+    $default  reduce using rule 61 (class_statement)
