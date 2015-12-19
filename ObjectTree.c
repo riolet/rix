@@ -725,6 +725,8 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile) {
             if (!strcmp(oIter->value->returnType,"String")) {
                 fprintf(outFile, "\t%s __attribute__ ((__cleanup__(String_cleanUp_GCC)))  %s;\n", oIter->value->returnType,
                     oIter->value->fullname);
+//                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
+//                    oIter->value->fullname);
             } else {
                 fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
                     oIter->value->fullname);

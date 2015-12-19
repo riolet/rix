@@ -430,6 +430,18 @@ Object *makeReturn(Object * expression)
     //TODO: this violates encapsulation
     free(line->value);
     line->value = strdup(newCode);
+
+    printf("Expression type %d code %s\n",expression->type,expression->code->value);
+    if (expression->type == Variable) {
+        char tempBuffer[BUFFLEN];
+        sprintf(tempBuffer,"String_return_GCC(&%s)",expression->name);
+        Object * returnObj = CreateObject(0, 0, 0, Expression, "String");
+        addCode(returnObj, tempBuffer);
+        addCode(returnObj, expression->code->value);
+        addParam(returnObj, "String");
+        return returnObj;
+
+    }
     return expression;
 }
 
@@ -1380,7 +1392,8 @@ int main(int argc, char **argv)
 
     if (ifile == NULL) {
         errorMsg("No file to compile\n");
-        file = fopen("helloworld.rit", "r");
+//      file = fopen("helloworld.rit", "r");
+        criticalError(0, "No file to compile specified");
     } else {
         file = fopen(ifile, "r");
     }

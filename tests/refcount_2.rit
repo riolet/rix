@@ -1,7 +1,13 @@
+u -> String: String n
+    -> n
+
+t -> String: String n
+    -> u n
+
 s -> String:
     #a = "Hi"
     #b = a
-    -> b
+    -> t a
 
 print s
 

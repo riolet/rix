@@ -15,12 +15,19 @@ typedef struct {
     int isLiteral;
 } String;
 
+void String_return_GCC(String *s)
+{
+    s->isStored=2;
+}
+
 void String_cleanUp_GCC(String *s)
 {
     //printf("\nGCC Cleaning up String %s refCount %d\n", s->buffer, s->isStored);
     if (!s->isLiteral) {
         //printf("\nFreeing %s refCount %d\n", s->buffer, s->isStored);
-        free(s->buffer);
+        if (s->isStored!=2) {
+            free(s->buffer);
+        }
     } else {
         //printf("\nString %s is a literal\n", s->buffer);
     }
