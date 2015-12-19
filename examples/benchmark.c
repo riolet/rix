@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 
-int isPrime(int n) {
+int isPrime(int n)
+{
     if (n < 2)
         return 0;
     else if (n == 2)
@@ -19,11 +20,12 @@ int isPrime(int n) {
     return 1;
 }
 
-int main() {
+int main()
+{
     int noPrimes = 0, limit = 2000000, n;
     for (n = 0; n <= limit; n++) {
         if (isPrime(n))
-            noPrimes ++;
+            noPrimes++;
     }
     printf("pi(%d) = %d\n", limit, noPrimes);
     return 0;

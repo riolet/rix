@@ -60,7 +60,7 @@ alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
-decimal       {numeral}*+"."{numeral}*
+decimal       "."{numeral}+|{numeral}+"."{numeral}+
 float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 identifier    {alphabetic}{alphanumeric}*
@@ -86,6 +86,8 @@ booleanOp     "||"|"&&"
 
 condReturn    "-->"
 implies       "==>"
+accessor      "."
+
 
 %%
         int indent_caller = normal;
@@ -225,22 +227,6 @@ implies       "==>"
                         }
                       }
 
-{identifier}\.{identifier} {
-                      printf("lexer: field access\n");
-                      yylval->sval = strdup(yytext);
-                      char* first = strtok(yytext, ".");
-                      Object* exists = findByName(first);
-                      if (!exists) {
-                        char error[1024];
-                        snprintf(error, 1024, "Cannot find static verb %s.%s\n", first, strtok(0, "."));
-                        criticalError(ERROR_ParseError, error);
-                      } else if (exists->type == Type) {
-                        return STATICVERB;
-                      } else {
-                        return FIELD;
-                      }
-                      }
-
 {assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
@@ -257,6 +243,7 @@ implies       "==>"
 {ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
 {condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
 {mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{accessor}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */

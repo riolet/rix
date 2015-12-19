@@ -1,35 +1,35 @@
 #include "errors.h"
 
-
-int warningMsg(const char * format, ...) {
-    int ret;
-    //fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
-    fprintf(stderr,ANSI_COLOR_YELLOW);
-    va_list arg;
-    va_start(arg,format);
-    ret = vfprintf(stderr, format, arg);
-    va_end(arg);
-    fprintf(stderr,ANSI_COLOR_RESET);
-    return ret;
-}
-
-int errorMsg(const char * format,...)
+int warningMsg(const char *format, ...)
 {
     int ret;
-    fprintf(stderr,ANSI_COLOR_RED);
-    fprintf(stderr,"Line %d: Column:%d - ",g_lineNum, g_lineCol);
+    //fprintf(stderr,"Line %d: Column:%d - ",lineNum,linePos);
+    fprintf(stderr, ANSI_COLOR_YELLOW);
     va_list arg;
-    va_start(arg,format);
+    va_start(arg, format);
     ret = vfprintf(stderr, format, arg);
-    fprintf(stderr,ANSI_COLOR_RESET);
+    va_end(arg);
+    fprintf(stderr, ANSI_COLOR_RESET);
+    return ret;
+}
+
+int errorMsg(const char *format, ...)
+{
+    int ret;
+    fprintf(stderr, ANSI_COLOR_RED);
+    fprintf(stderr, "Line %d: Column:%d - ", g_lineNum, g_lineCol);
+    va_list arg;
+    va_start(arg, format);
+    ret = vfprintf(stderr, format, arg);
+    fprintf(stderr, ANSI_COLOR_RESET);
     va_end(arg);
     return ret;
 }
 
-void criticalError(ErrorCode code, char* message) {
+void criticalError(ErrorCode code, char *message)
+{
     fprintf(stderr, "\t");
-    switch (code)
-    {
+    switch (code) {
     case ERROR_EndlessString:
         errorMsg("Error parsing string. No closing quote.\n");
         break;

@@ -7,7 +7,7 @@
 #include "ritc.h"
 #include "crsl.h"
 
-typedef enum {false, true} bool;
+typedef enum { false, true } bool;
 
 #define BUFFLEN 1024
 #define LABELMAX 8096
@@ -21,35 +21,44 @@ FILE *outHeaderFile;
 
 bool hitEOF;
 
-Object* root;
-Object* scopeStack[MAXSCOPE];
+Object *root;
+Object *scopeStack[MAXSCOPE];
 int scope_idx = 0;
-Object* current;
-char* previous[MAXSCOPE];
-char* prevType[MAXSCOPE];
-char  prevExists[MAXSCOPE];
-ListString* prevNode[MAXSCOPE];
+Object *current;
+char *previous[MAXSCOPE];
+char *prevType[MAXSCOPE];
+char prevExists[MAXSCOPE];
+ListString *prevNode[MAXSCOPE];
 int prev_idx = 0;
 
-Object*  scope_pop() { current = scopeStack[--scope_idx];  return scopeStack[scope_idx+1]; }
-void scope_push(Object* val) { current = scopeStack[++scope_idx] = val; }
+Object *scope_pop()
+{
+    current = scopeStack[--scope_idx];
+    return scopeStack[scope_idx + 1];
+}
 
-void handleEOF() {
+void scope_push(Object * val)
+{
+    current = scopeStack[++scope_idx] = val;
+}
+
+void handleEOF()
+{
     hitEOF = true;
 }
 
-Object* beginClass(char* className, char* parentName) {
+Object *beginClass(char *className, char *parentName)
+{
     if (!className || !parentName) {
         criticalError(ERROR_ParseError, "Class name mustn't be null.\n");
     }
-
     //build full name of class:  <ClassName><sep><ParentClassName>
     char fullname[BUFFLEN];
     char codename[BUFFLEN];
     snprintf(fullname, BUFFLEN, "%s" COMPILER_SEP "%s", className, parentName);
 
     //get link to parent class definition
-    Object* parent = findByName(parentName);
+    Object *parent = findByName(parentName);
     if (parent == 0) {
         char error[BUFFLEN];
         snprintf(error, BUFFLEN, "Cannot find definition for '%s'\n", parentName);
@@ -58,8 +67,8 @@ Object* beginClass(char* className, char* parentName) {
 
     snprintf(codename, BUFFLEN, "%s *", className);
 
-    Object* parentReference = CreateObject("parent", "parent", 0, Variable, parent->name);
-    Object* result = CreateObject(className, fullname, current, Type, codename);
+    Object *parentReference = CreateObject("$super", "$super", 0, Variable, parent->name);
+    Object *result = CreateObject(className, fullname, current, Type, codename);
     setParentClass(result, parent);
     //addSymbol(result, selfReference);
     addSymbol(result, parentReference);
@@ -67,116 +76,135 @@ Object* beginClass(char* className, char* parentName) {
     scope_push(result);
 }
 
-void doneClass(Object* tree) {
+void doneClass(Object * tree)
+{
     //check for 0-arg constructor.
     //if no 0-arg ctor exists, add one.
     char ctorName[BUFFLEN];
     snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
 
-    Object* ctor = findByNameInScope(current, ctorName, true);
-    if (!ctor){
+    Object *ctor = findByNameInScope(current, ctorName, true);
+    if (!ctor) {
         beginConstructor(CreateObject(0, 0, 0, Expression, 0));
         doneConstructor(0);
     }
     scope_pop();
 }
 
-Object* beginFunction(char* returnType, char* funcName, Object* parameters) {
-  if (returnType == 0) {
-    criticalError(ERROR_ParseError, "Return type mustn't be null.\n");
-  }
-  ListString* types = parameters->paramTypes;
-  ListString* names = parameters->code;
-  //TODO: check funcName is undefined or function type
-  //TODO: check returnType is a valid Type
-
-  char funcFullName[BUFFLEN];
-  int funcFullName_pos = 0;
-
-  //Build full name.
-  // full name starts with parent class, if available
-  if (current->type == Type) {
-    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP, current->name);
-  }
-
-  funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s", funcName);
-
-  //add each of the parameters to the fullname
-  if (types !=0) {
-      while(types != 0) {
-        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
-        while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
-            funcFullName_pos--;
-        }
-        funcFullName[funcFullName_pos] = '\0';
-        types = types->next;
-      }
-  } else {
-        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP);
-        funcFullName[funcFullName_pos] = '\0';
-  }
-
-  Object* parentScope;
-  int i = scope_idx;
-  while (i >= 0) {
-    if (scopeStack[i]->type != Type) {
-        break;
+Object *beginFunction(char *returnType, char *funcName, Object * parameters)
+{
+    if (returnType == 0) {
+        criticalError(ERROR_ParseError, "Return type mustn't be null.\n");
     }
-    i--;
-  }
-  parentScope = scopeStack[i];
-
-  Object* result = CreateObject(funcName, funcFullName, parentScope, Function, returnType);
-
-  if (current->type == Type) {
-    result->parentClass = current;
-    char pointer[BUFFLEN];
-    snprintf(pointer, BUFFLEN, "%s *", current->name);
-    addParam(result, pointer);
-    addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
-    //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
-  }
-
-  //add parameters to the function
-  types = parameters->paramTypes;
-  //assuming for every type there is a name
-  while(types != 0) {
-    addSymbol(result, CreateObject(names->value, names->value, 0, Variable, types->value));
-    addParam(result, types->value);
-    names = names->next;
-    types = types->next;
-  }
-
-  addSymbol(parentScope, result);
-  scope_push(result);
-  return result;
-}
-
-void doneFunction(Object* tree) {
-    scope_pop();
-}
-
-Object* beginConstructor(Object* parameters) {
-    if (current->type != Type) {
-        criticalError(ERROR_ParseError, "Constructor can only exist inside a class.\n");
-    }
-    ListString* types = parameters->paramTypes;
-    ListString* names = parameters->code;
+    ListString *types = parameters->paramTypes;
+    ListString *names = parameters->code;
+    //TODO: check funcName is undefined or function type
+    //TODO: check returnType is a valid Type
 
     char funcFullName[BUFFLEN];
     int funcFullName_pos = 0;
 
-    funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s" COMPILER_SEP "%s", current->name, current->name);
+    //Build full name.
+    // full name starts with parent class, if available
+    if (current->type == Type) {
+        funcFullName_pos +=
+            snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                     "%s" COMPILER_SEP, current->name);
+    }
 
-    while(types != 0) {
-        funcFullName_pos += snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, COMPILER_SEP "%s", types->value);
-        while (funcFullName[funcFullName_pos-1] == ' ' || funcFullName[funcFullName_pos-1] == '*' ) {
+    funcFullName_pos +=
+        snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos, "%s",
+                 funcName);
+
+    //add each of the parameters to the fullname
+    if (types != 0) {
+        while (types != 0) {
+            funcFullName_pos +=
+                snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                         COMPILER_SEP "%s", types->value);
+            while (funcFullName[funcFullName_pos - 1] == ' '
+                   || funcFullName[funcFullName_pos - 1] == '*') {
+                funcFullName_pos--;
+            }
+            funcFullName[funcFullName_pos] = '\0';
+            types = types->next;
+        }
+    } else {
+        funcFullName_pos +=
+            snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                     COMPILER_SEP);
+        funcFullName[funcFullName_pos] = '\0';
+    }
+
+    Object *parentScope;
+    int i = scope_idx;
+    while (i >= 0) {
+        if (scopeStack[i]->type != Type) {
+            break;
+        }
+        i--;
+    }
+    parentScope = scopeStack[i];
+
+    Object *result =
+        CreateObject(funcName, funcFullName, parentScope, Function, returnType);
+
+    if (current->type == Type) {
+        result->parentClass = current;
+        char pointer[BUFFLEN];
+        snprintf(pointer, BUFFLEN, "%s *", current->name);
+        addParam(result, pointer);
+        addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+        //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+    }
+    //add parameters to the function
+    types = parameters->paramTypes;
+    //assuming for every type there is a name
+    while (types != 0) {
+        addSymbol(result,
+                  CreateObject(names->value, names->value, 0, Variable, types->value));
+        addParam(result, types->value);
+        names = names->next;
+        types = types->next;
+    }
+
+    addSymbol(parentScope, result);
+    scope_push(result);
+    return result;
+}
+
+void doneFunction(Object * tree)
+{
+    scope_pop();
+}
+
+Object *beginConstructor(Object * parameters)
+{
+    if (current->type != Type) {
+        criticalError(ERROR_ParseError, "Constructor can only exist inside a class.\n");
+    }
+    ListString *types = parameters->paramTypes;
+    ListString *names = parameters->code;
+
+    char funcFullName[BUFFLEN];
+    int funcFullName_pos = 0;
+
+    funcFullName_pos +=
+        snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                 "%s" COMPILER_SEP "%s", current->name, current->name);
+
+    while (types != 0) {
+        funcFullName_pos +=
+            snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                     COMPILER_SEP "%s", types->value);
+        while (funcFullName[funcFullName_pos - 1] == ' '
+               || funcFullName[funcFullName_pos - 1] == '*') {
             funcFullName_pos--;
         }
         funcFullName[funcFullName_pos] = '\0';
         types = types->next;
     }
-    Object* parentScope;
+    Object *parentScope;
     int i = scope_idx;
     while (i >= 0) {
         if (scopeStack[i]->type != Type) {
@@ -189,16 +217,16 @@ Object* beginConstructor(Object* parameters) {
     char returnType[BUFFLEN];
     snprintf(returnType, BUFFLEN, "%s *", current->name);
 
-    Object* result = CreateObject(current->name, funcFullName, parentScope, Constructor, returnType);
+    Object *result =
+        CreateObject(current->name, funcFullName, parentScope, Constructor, returnType);
     result->parentClass = current;
-
-
 
     //add parameters to the function
     types = parameters->paramTypes;
     //assuming for every type there is a name
-    while(types != 0) {
-        addSymbol(result, CreateObject(names->value, names->value, 0, Variable, types->value));
+    while (types != 0) {
+        addSymbol(result,
+                  CreateObject(names->value, names->value, 0, Variable, types->value));
         addParam(result, types->value);
         names = names->next;
         types = types->next;
@@ -206,7 +234,8 @@ Object* beginConstructor(Object* parameters) {
 
     //Add allocation code
     char allocator[BUFFLEN];
-    snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType, current->name);
+    snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType,
+             current->name);
     addCode(result, allocator);
 
     addSymbol(parentScope, result);
@@ -214,22 +243,24 @@ Object* beginConstructor(Object* parameters) {
     return result;
 }
 
-void doneConstructor(Object* tree) {
+void doneConstructor(Object * tree)
+{
     addCode(current, "return self;");
     scope_pop();
 }
 
-Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
+Object *funcParameters(Object * paramList, char *paramType, char *paramName)
+{
     //TODO: check if type is actually a defined type
     //TODO: check paramType is a valid Type
-    Object* type = findByName(paramType);
+    Object *type = findByName(paramType);
     if (!type || type->type != Type) {
         char error[BUFFLEN];
         snprintf(error, BUFFLEN, "Cannot find type '%s'\n", paramType);
         criticalError(ERROR_UndefinedType, error);
     }
 
-    Object* result;
+    Object *result;
     if (paramList == 0) {
         result = CreateObject(0, 0, 0, Undefined, 0);
     } else {
@@ -241,23 +272,23 @@ Object* funcParameters(Object* paramList, char* paramType, char* paramName) {
     return result;
 }
 
-Object* concatParams(Object* existing, Object* newParam) {
-    Object* result = CreateObject(0, 0, 0, Expression, 0);
-    ListString* paramIter;
-    ListString* codeIter;
+Object *concatParams(Object * existing, Object * newParam)
+{
+    Object *result = CreateObject(0, 0, 0, Expression, 0);
+    ListString *paramIter;
+    ListString *codeIter;
     int paramLen;
     int codeLen;
-    char* lastCode;
-    char* lastParam;
+    char *lastCode;
+    char *lastParam;
     char newCode[BUFFLEN];
-
 
     //insert any declarations from the old objects
     paramIter = existing->paramTypes;
     codeIter = existing->code;
     paramLen = listlen(paramIter);
     codeLen = listlen(codeIter);
-    while(codeLen > 0 && codeLen > paramLen) {
+    while (codeLen > 0 && codeLen > paramLen) {
         addCode(result, codeIter->value);
         codeLen--;
         codeIter = codeIter->next;
@@ -268,7 +299,7 @@ Object* concatParams(Object* existing, Object* newParam) {
     codeIter = newParam->code;
     paramLen = listlen(paramIter);
     codeLen = listlen(codeIter);
-    while(codeLen > 0 && codeLen > paramLen) {
+    while (codeLen > 0 && codeLen > paramLen) {
         addCode(result, codeIter->value);
         codeLen--;
         codeIter = codeIter->next;
@@ -279,7 +310,7 @@ Object* concatParams(Object* existing, Object* newParam) {
     codeIter = existing->code;
     paramLen = listlen(paramIter);
     codeLen = listlen(codeIter);
-    while(codeLen > 0) {
+    while (codeLen > 0) {
         if (codeLen > paramLen) {
             codeLen--;
             codeIter = codeIter->next;
@@ -297,7 +328,7 @@ Object* concatParams(Object* existing, Object* newParam) {
     codeIter = newParam->code;
     paramLen = listlen(paramIter);
     codeLen = listlen(codeIter);
-    while(codeLen > 0) {
+    while (codeLen > 0) {
         if (codeLen > paramLen) {
             codeLen--;
             codeIter = codeIter->next;
@@ -313,21 +344,23 @@ Object* concatParams(Object* existing, Object* newParam) {
     return result;
 }
 
-Object* declareVariable(char* name, char* type) {
-    Object* oType = findByName(type);
-    Object* var = CreateObject(name, name, 0, Variable, oType->returnType);
+Object *declareVariable(char *name, char *type)
+{
+    Object *oType = findByName(type);
+    Object *var = CreateObject(name, name, 0, Variable, oType->returnType);
     addSymbol(current, var);
     return var;
 }
 
-Object* completeExpression(Object* expression) {
+Object *completeExpression(Object * expression)
+{
     if (expression == 0) {
         warningMsg("expression was null\n");
         return 0;
     }
 
     char buffer[BUFFLEN];
-    ListString* code = expression->code;
+    ListString *code = expression->code;
     while (code != 0) {
         snprintf(buffer, BUFFLEN, "%s;", code->value);
         prevNode[prev_idx] = addCode(current, buffer);
@@ -336,19 +369,22 @@ Object* completeExpression(Object* expression) {
     return current;
 }
 
-Object* finalize(Object* expression) {
+Object *finalize(Object * expression)
+{
     char prevName[BUFFLEN];
-    int length = snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
+    int length =
+        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
     while (prevName[length] == ' ' || prevName[length] == '*' || prevName[length] == '\0') {
         length--;
     }
-    prevName[length+1] = '\0'; //drop the " *" off the end if it's there
+    prevName[length + 1] = '\0';        //drop the " *" off the end if it's there
     previous[prev_idx] = strdup(prevName);
     prevType[prev_idx] = strdup(expression->returnType);
     return expression;
 }
 
-int prependPrev() {
+int prependPrev()
+{
     //ensure variable is declared
     checkPrevExists();
 
@@ -368,26 +404,27 @@ int prependPrev() {
     return 0;
 }
 
-
-void closeBrace() {
+void closeBrace()
+{
     addCode(current, "}");
 }
 
-Object* makeReturn(Object* expression) {
+Object *makeReturn(Object * expression)
+{
     if (expression == 0) {
-        Object* result = CreateObject(0, 0, 0, Expression, "void");
+        Object *result = CreateObject(0, 0, 0, Expression, "void");
         addCode(result, "return");
         return result;
     }
     //add "return" to the last expression
-    ListString* line = expression->code;
+    ListString *line = expression->code;
     if (line == 0) {
         warningMsg("makeReturn: Nothing to add a return to\n");
     }
     while (line->next != 0) {
         line = line->next;
     }
-    char* oldCode = line->value;
+    char *oldCode = line->value;
     char newCode[BUFFLEN];
     snprintf(newCode, BUFFLEN, "return %s", oldCode);
     //TODO: this violates encapsulation
@@ -396,9 +433,10 @@ Object* makeReturn(Object* expression) {
     return expression;
 }
 
-void checkPrevExists() {
-    ListString * oldNode;
-    ListString * oldNext;
+void checkPrevExists()
+{
+    ListString *oldNode;
+    ListString *oldNext;
     if (!prevExists[prev_idx]) {
         char code[BUFFLEN];
         snprintf(code, BUFFLEN, COMPILER_SEP "Last " COMPILER_SEP "prev;");
@@ -406,7 +444,7 @@ void checkPrevExists() {
         if (prevNode[prev_idx]) {
             oldNode = prevNode[prev_idx];
             oldNext = prevNode[prev_idx]->next;
-            ListString * node = malloc(sizeof(ListString));
+            ListString *node = malloc(sizeof(ListString));
             oldNode->next = node;
             node->next = oldNext;
             node->value = oldNode->value;
@@ -420,71 +458,82 @@ void checkPrevExists() {
     }
 }
 
-void incPrev() {
+void incPrev()
+{
     prev_idx++;
     //addCode(current, COMPILER_SEP "Last " COMPILER_SEP "prev;");
 }
 
-void decPrev() {
+void decPrev()
+{
     prevExists[prev_idx] = 0;
     prevNode[prev_idx] = 0;
     prevType[prev_idx] = 0;
     prev_idx--;
     if (prev_idx < 0) {
-        criticalError(ERROR_ParseError, "previous result tracker went below 0. (decPrev, ritc.c)\n");
+        criticalError(ERROR_ParseError,
+                      "previous result tracker went below 0. (decPrev, ritc.c)\n");
     }
 }
 
-Object* injectC(char* code) {
+Object *injectC(char *code)
+{
     addCode(current, code);
     return 0;
 }
 
-
-
-Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
+Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
+{
     if (subject == 0) {
         criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
     }
-    ListString* paramIter;
-    Object* realVerb = 0;
-    Object* result = 0;
+    ListString *paramIter;
+    Object *realVerb = 0;
+    Object *result = 0;
     char verbname[BUFFLEN];
+    char tempBuffer[BUFFLEN];
     int verbname_pos = 0;
 
     if (verb->type == Type) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP, verb->name);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
+                     verb->name);
     }
-
     //build base name of verb (e.g. "+" becomes "plus")
     if (!strcmp(verb->name, "=")) {
         //handling straight up assignment.
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign");
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "assign");
     } else if (!isalpha(verb->name[0])) {
         //handle augmented assigment operators recursively.
         char op[4];
-        Object* augment;
+        Object *augment;
         strcpy(op, verb->name);
-        if (op[2] == '=') { op[2] = '\0'; }
-        if (op[1] == '=') { op[1] = '\0'; }
-
+        if (op[2] == '=') {
+            op[2] = '\0';
+        }
+        if (op[1] == '=') {
+            op[1] = '\0';
+        }
 
         augment = conjugate(subject, verbMathOp(op), objects);
         return conjugateAssign(subject, verbAssignment("="), augment);
     } else {
         //handle assignment verbs
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
     }
 
     //build final name for verb given object
     if (objects) {
         paramIter = objects->paramTypes;
         while (paramIter != 0) {
-            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP "%s", paramIter->value);
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos,
+                         COMPILER_SEP "%s", paramIter->value);
             paramIter = paramIter->next;
         }
     }
-
     //search for the definition of that object
     printf("ConjugateAssign: fullVerbName: %s\n", verbname);
     realVerb = findFunctionByFullName(verbname);
@@ -499,14 +548,15 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         }
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         addParam(result, objects->paramTypes->value);
-        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value, objects->code->value);
 
 
         if (!subject->returnType) {
             if (subject->type == NewMarkedIdent) {
-                Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, objects->paramTypes->value);
-                addSymbol(current, variable);
-            }  else {
+                Object *variable =
+                    CreateObject(subject->name, subject->fullname, 0, Variable,
+                                 objects->paramTypes->value);
+                    addSymbol(current, variable);
+            } else {
                 char error[1024];
                 snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
                 criticalError(ERROR_ParseError, error);
@@ -514,41 +564,78 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
-                if (!(
-                    ( strcmp(subject->returnType, "Integer")
-                      || strcmp(subject->returnType, "Float")
-                    ) &&
-                    ( strcmp(objects->paramTypes->value, "Integer")
-                      || strcmp(objects->paramTypes->value, "Float")
-                    )))
-                {
+                if (!((strcmp(subject->returnType, "Integer")
+                       || strcmp(subject->returnType, "Float")
+                      ) && (strcmp(objects->paramTypes->value, "Integer")
+                            || strcmp(objects->paramTypes->value, "Float")
+                      ))) {
                     char error[BUFFLEN];
-                    snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n", subject->name, subject->returnType, objects->paramTypes->value);
+                    snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n",
+                             subject->name, subject->returnType,
+                             objects->paramTypes->value);
                     criticalError(ERROR_IncompatibleTypes, error);
                 }
             }
+        }
+
+
+        //Check if it has an assign verb
+        Object * processedSubject = findByName(subject->name);
+        snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "assign" COMPILER_SEP "%s", processedSubject->returnType,
+                 objects->paramTypes->value);
+        Object * processedVerb = findFunctionByFullName(verbname);
+
+        printf("Looking for %s\n",verbname);
+        if (!processedVerb) {
+            printf("Not found %s\n",verbname);
+            snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
+                 objects->code->value);
+        } else {
+            if (!strcmp(objects->paramTypes->value,"String")){
+                processedSubject->code = subject->code;
+                char pscv[BUFFLEN];
+                snprintf(pscv, BUFFLEN, "&%s",processedSubject->code->value);
+                processedSubject->code->value = pscv;
+
+                sprintf(tempBuffer,"%s.refCount = 0",subject->name);
+                CreateObject(0, 0, 0, Expression, "String");
+                addCode(result, tempBuffer);
+                addParam(result, "String");
+            } else {
+                processedSubject->code = subject->code;
+            }
+            return conjugate(processedSubject,processedVerb,objects);
         }
 
         addCode(result, verbname);
         printf("\tConjugated: %s\n", verbname);
         return result;
     }
-
     //build code line statement invoking that verb.
     verbname_pos = 0;
-    verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(", realVerb->fullname);
+    verbname_pos +=
+        snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s(",
+                 realVerb->fullname);
     if (subject && objects) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", subject->code->value);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,",
+                     subject->code->value);
     } else if (subject) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", subject->code->value);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
+                     subject->code->value);
     }
     if (objects) {
         paramIter = objects->code;
         while (paramIter != 0) {
             if (paramIter->next == 0) {
-                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", paramIter->value);
+                verbname_pos +=
+                    snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
+                             paramIter->value);
             } else {
-                verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,", paramIter->value);
+                verbname_pos +=
+                    snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,",
+                             paramIter->value);
             }
             paramIter = paramIter->next;
         }
@@ -556,10 +643,11 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
     if (subject && subject->returnType == 0) {
         if (subject->type == NewMarkedIdent) {
-            printf("NewMarkedIdent %s",subject->name);
-            Object* variable = CreateObject(subject->name, subject->fullname, 0, Variable, verb->returnType);
+            printf("NewMarkedIdent %s", subject->name);
+            Object *variable = CreateObject(subject->name, subject->fullname, 0, Variable,
+                                            verb->returnType);
             addSymbol(current, variable);
-        }  else {
+        } else {
             char error[1024];
             snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
             criticalError(ERROR_ParseError, error);
@@ -577,11 +665,12 @@ Object* conjugateAssign(Object* subject, Object* verb, Object* objects) {
 
 }
 
-Object* conjugate(Object* subject, Object* verb, Object* objects) {
-    ListString* paramIter = 0;
-    ListString* codeIter = 0;
-    Object* realVerb = 0;
-    Object* result = 0;
+Object *conjugate(Object * subject, Object * verb, Object * objects)
+{
+    ListString *paramIter = 0;
+    ListString *codeIter = 0;
+    Object *realVerb = 0;
+    Object *result = 0;
     char verbname[BUFFLEN];
     char genericVerbName[BUFFLEN];
     char invocation[BUFFLEN];
@@ -593,61 +682,100 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     if (getFlag(verb, FLAG_ASSIGNMENT)) {
         return conjugateAssign(subject, verb, objects);
     }
-
-
     //== Build the fullname for the verb ==
     if (subject) {
         if (subject->returnType == 0) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n", subject->code->value);
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n",
+                     subject->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", subject->returnType);
-        while (verbname[verbname_pos-1] == '*' || verbname[verbname_pos-1] == ' ') {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
+                     subject->returnType);
+        while (verbname[verbname_pos - 1] == '*' || verbname[verbname_pos - 1] == ' ') {
             verbname_pos--;
         }
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
     } else if (verb->type == Type) {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP, verb->name);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
+                     verb->name);
     }
-
     //erase the " *" if it's there from the name
 
     //build base name of verb (e.g. "+" becomes "plus")
-    if (!strcmp(verb->name, "+"))       { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus");    }
-    else if (!strcmp(verb->name, "-"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus");   }
-    else if (!strcmp(verb->name, "*"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times");   }
-    else if (!strcmp(verb->name, "/"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash");   }
-    else if (!strcmp(verb->name, "%"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "modulus"); }
-    else if (!strcmp(verb->name, "^^")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent");}
-    else if (!strcmp(verb->name, "<"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt");   }
-    else if (!strcmp(verb->name, ">"))  { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt");   }
-    else if (!strcmp(verb->name, "<=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq"); }
-    else if (!strcmp(verb->name, ">=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq"); }
-    else if (!strcmp(verb->name, "==")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");   }
-    else if (!strcmp(verb->name, "!=")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");  }
-    else if (!strcmp(verb->name, "<>")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare"); }
-    else if (!strcmp(verb->name, "-->")) { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn"); }
-    else                                { verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name); }
+    if (!strcmp(verb->name, "+")) {
+        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus");
+    } else if (!strcmp(verb->name, "-")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus");
+    } else if (!strcmp(verb->name, "*")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times");
+    } else if (!strcmp(verb->name, "/")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash");
+    } else if (!strcmp(verb->name, "%")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "modulus");
+    } else if (!strcmp(verb->name, "^^")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent");
+    } else if (!strcmp(verb->name, "<")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt");
+    } else if (!strcmp(verb->name, ">")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt");
+    } else if (!strcmp(verb->name, "<=")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq");
+    } else if (!strcmp(verb->name, ">=")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq");
+    } else if (!strcmp(verb->name, "==")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");
+    } else if (!strcmp(verb->name, "!=")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");
+    } else if (!strcmp(verb->name, "<>")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare");
+    } else if (!strcmp(verb->name, "-->")) {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn");
+    } else {
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
+    }
 
     //verify objects exists and is a known variable or is an expression composed of known variables
     verbname[verbname_pos] = '\0';
-    strncpy(genericVerbName,verbname, (verbname_pos<BUFFLEN) ? verbname_pos:BUFFLEN);
+    strncpy(genericVerbName, verbname, (verbname_pos < BUFFLEN) ? verbname_pos : BUFFLEN);
     genericVerbName[verbname_pos] = '\0';
-    genericVerbNamePos=verbname_pos;
+    genericVerbNamePos = verbname_pos;
 
     int paramNumber = 0;
     if (objects) {
         if (!objects->paramTypes) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n", objects->code->value);
+            snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n",
+                     objects->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
         paramIter = objects->paramTypes;
         while (paramIter) {
-            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP "%s", paramIter->value);
-            genericVerbNamePos += snprintf(&genericVerbName[genericVerbNamePos], BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s%d", GENERIC_PARAM,paramNumber);
-            while (verbname[verbname_pos-1] == '*' || verbname[verbname_pos-1] == ' ') {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos,
+                         COMPILER_SEP "%s", paramIter->value);
+            genericVerbNamePos +=
+                snprintf(&genericVerbName[genericVerbNamePos],
+                         BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s%d", GENERIC_PARAM,
+                         paramNumber);
+            while (verbname[verbname_pos - 1] == '*' || verbname[verbname_pos - 1] == ' ') {
                 verbname_pos--;
             }
             verbname[verbname_pos] = '\0';
@@ -658,7 +786,8 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         }
     } else {
         //To stop getting verb names getting confused with keywords
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
+        verbname_pos +=
+            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
         verbname[verbname_pos] = '\0';
     }
 
@@ -672,7 +801,6 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     if (!realVerb) {
         realVerb = findFunctionByFullName(verbname);
     }
-
     //Is this a generic function
     if (!realVerb) {
         realVerb = findFunctionByFullName(genericVerbName);
@@ -686,11 +814,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         char paramTypes[BUFFLEN][BUFFLEN];
         int subject_idx = snprintf(newSubject, BUFFLEN, "&%s->", subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
-        while (newName[offset-1] == '*' || newName[offset-1] == ' ') {
+        while (newName[offset - 1] == '*' || newName[offset - 1] == ' ') {
             offset--;
         }
         newName[offset] = '\0';
-        Object* parent = findByName(newName);
+        Object *parent = findByName(newName);
         if (parent && parent->parentClass) {
             //skip first level (already checked there)
             parent = parent->parentClass;
@@ -700,10 +828,11 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
             printf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
-            subject_idx += snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "parent.");
+            subject_idx +=
+                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "parent.");
             parent = parent->parentClass;
         }
-        newSubject[subject_idx-1] = '\0';
+        newSubject[subject_idx - 1] = '\0';
         if (realVerb) {
             //TODO: violates encapsulation. (just this once!)
             free(subject->code->value);
@@ -714,24 +843,30 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     if (!realVerb && isalpha(verb->name[0])) {
         char error[BUFFLEN];
         if (subject)
-            snprintf(error, BUFFLEN, "Type \"%s\" doesn't have member function \"%s\".\n", subject->returnType, &verbname[strlen(subject->returnType)+1]);
+            snprintf(error, BUFFLEN, "Type \"%s\" doesn't have member function \"%s\".\n",
+                     subject->returnType, &verbname[strlen(subject->returnType) + 1]);
         else
             snprintf(error, BUFFLEN, "Cannot find function named \"%s\".\n", verbname);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (!realVerb) {
-        warningMsg("Cannot find verb \"%s\". Assuming \"%s\" is infix operator in C.\n", verbname, verb->name);
+        warningMsg("Cannot find verb \"%s\". Assuming \"%s\" is infix operator in C.\n",
+                   verbname, verb->name);
         //must be + or / or such...
         if (!objects) {
             char error[BUFFLEN];
-            ListString* code = subject->code;
-            while (code!=0 && code->next!=0) { code = code->next; }
-            snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n", subject->code->value, verb->fullname);
+            ListString *code = subject->code;
+            while (code != 0 && code->next != 0) {
+                code = code->next;
+            }
+            snprintf(error, BUFFLEN, "Did you forget an operand? %s %s ???\n",
+                     subject->code->value, verb->fullname);
             criticalError(ERROR_InvalidArguments, error);
         }
         if (verb->returnType) {
             result = CreateObject(0, 0, 0, Expression, verb->returnType);
             addParam(result, verb->returnType);
-        } else if (!strcmp(subject->returnType, "Float") || !strcmp(objects->paramTypes->value, "Float")) {
+        } else if (!strcmp(subject->returnType, "Float")
+                   || !strcmp(objects->paramTypes->value, "Float")) {
             result = CreateObject(0, 0, 0, Expression, "Float");
             addParam(result, "Float");
         } else {
@@ -739,32 +874,37 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
             addParam(result, subject->returnType);
         }
 
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN-invoke_pos, "%s %s %s", subject->code->value, verb->fullname, objects->code->value);
+        invoke_pos +=
+            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s %s %s",
+                     subject->code->value, verb->fullname, objects->code->value);
         addCode(result, invocation);
 
         printf("\tConjugated: \"%s\"\n", invocation);
         return result;
     }
-
     //Hack to allow if statements without codeblocks working yet.
     //TODO: remove this.
-    if (realVerb
-     && !strcmp(realVerb->fullname, "Boolean_$_if")
-     || !strcmp(realVerb->fullname, "Boolean_$_else")
-     || !strcmp(realVerb->fullname, "Boolean_$_elif_$_Boolean")) {
+    if (realVerb && !strcmp(realVerb->fullname, "Boolean_$_if")
+        || !strcmp(realVerb->fullname, "Boolean_$_else")
+        || !strcmp(realVerb->fullname, "Boolean_$_elif_$_Boolean")) {
         return conjugateConditional(subject, realVerb, objects);
-     }
-
+    }
     //build code line statement invoking that verb.
     invoke_pos = 0;
-    invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(", realVerb->fullname);
+    invoke_pos +=
+        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(",
+                 realVerb->fullname);
     result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
 
     if (subject) {
         if (objects)
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,", subject->code->value);
+            invoke_pos +=
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,",
+                         subject->code->value);
         else
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", subject->code->value);
+            invoke_pos +=
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s",
+                         subject->code->value);
     } else if (strstr(verb->name, COMPILER_SEP)) {
         //This is assumed to be a static verb of some class. Inject a 0 as first argument.
         if (objects) {
@@ -778,23 +918,27 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
         codeIter = objects->code;
         while (codeIter) {
             if (codeIter->next) {
-                invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,", codeIter->value);
+                invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,",
+                             codeIter->value);
             } else {
                 //this is the last entry
-                invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", codeIter->value);
+                invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s",
+                             codeIter->value);
             }
             codeIter = codeIter->next;
         }
     }
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
 
-    if (strcmp(realVerb->returnType,"Generic_$$")) {
+    if (strcmp(realVerb->returnType, "Generic_$$")) {
         addParam(result, realVerb->returnType);
     } else {
         if (realVerb->genericType)
             addParam(result, realVerb->genericType);
         else
-            addParam(result, paramTypes[realVerb->genericTypeArgPos-1]);
+            addParam(result, paramTypes[realVerb->genericTypeArgPos - 1]);
     }
 
     if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
@@ -808,7 +952,8 @@ Object* conjugate(Object* subject, Object* verb, Object* objects) {
     return result;
 }
 
-Object* conjugateConditional(Object* subject, Object* realverb, Object* objects) {
+Object *conjugateConditional(Object * subject, Object * realverb, Object * objects)
+{
     //do the stuff.
     char code[BUFFLEN];
 
@@ -819,68 +964,77 @@ Object* conjugateConditional(Object* subject, Object* realverb, Object* objects)
     // becomes
     // _$_prev = A; Boolean_if(_$_prev)
     if (!strcmp(realverb->fullname, "Boolean_$_if")) {
-        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; if(" COMPILER_SEP "prev.pBoolean) {", subject->code->value);
+        snprintf(code, BUFFLEN,
+                 COMPILER_SEP "prev.pBoolean = %s; if(" COMPILER_SEP "prev.pBoolean) {",
+                 subject->code->value);
     }
-
     //elif statement:
     // A elif B
     // becomes
     // _$_prev = A; Boolean_elif_Boolean(!_$_prev && B)
     else if (!strcmp(realverb->fullname, "Boolean_$_elif_$_Boolean")) {
 
-        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean && %s)", subject->code->value, realverb->fullname, objects->code->value);
+        snprintf(code, BUFFLEN,
+                 COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP
+                 "prev.pBoolean && %s)", subject->code->value, realverb->fullname,
+                 objects->code->value);
     }
-
     //else statement:
     // A else
     // becomes
     // _$_prev = A; Boolean_else(!_$_prev)
     else {
-        snprintf(code, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean)", subject->code->value, realverb->fullname);
+        snprintf(code, BUFFLEN,
+                 COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean)",
+                 subject->code->value, realverb->fullname);
     }
 
-    Object* result = CreateObject(0, 0, 0, Expression, realverb->returnType);
+    Object *result = CreateObject(0, 0, 0, Expression, realverb->returnType);
     addCode(result, code);
     addParam(result, realverb->returnType);
     return result;
 }
 
-
-
-Object* verbMathOp(char* verb) {
+Object *verbMathOp(char *verb)
+{
     printf("verbMathOp(%s)\n", verb);
-    Object* result = CreateObject(verb, verb, 0, Function, 0);
+    Object *result = CreateObject(verb, verb, 0, Function, 0);
     return result;
 }
 
-Object* verbComparison(char* verb) {
+Object *verbComparison(char *verb)
+{
     printf("verbComparison(%s)\n", verb);
-    Object* result = CreateObject(verb, verb, 0, Function, "Boolean");
+    Object *result = CreateObject(verb, verb, 0, Function, "Boolean");
     return result;
 }
 
-Object* verbTernary() {
+Object *verbTernary()
+{
     printf("verbTernary(<>)\n");
-    Object* result = CreateObject("<>", "<>", 0, Function, "Boolean");
+    Object *result = CreateObject("<>", "<>", 0, Function, "Boolean");
     return result;
 }
 
-Object* verbCondReturn() {
+Object *verbCondReturn()
+{
     printf("verbCondReturn(-->)\n");
-    Object* result = CreateObject("-->", "-->", 0, Function, "Boolean");
+    Object *result = CreateObject("-->", "-->", 0, Function, "Boolean");
     return result;
 }
 
-Object* verbAssignment(char* verb) {
+Object *verbAssignment(char *verb)
+{
     printf("verbAssignment(%s)\n", verb);
-    Object* result = CreateObject(verb, verb, 0, Function, 0);
+    Object *result = CreateObject(verb, verb, 0, Function, 0);
     setFlags(result, FLAG_ASSIGNMENT);
     return result;
 }
 
-Object* verbIdent(char* verb) {
+Object *verbIdent(char *verb)
+{
     printf("verbIdent(%s)\n", verb);
-    Object* result = findByName(verb);
+    Object *result = findByName(verb);
     if (result == 0) {
         char error[BUFFLEN];
         sprintf(error, "Function \"%s(..)\" used before declaration.\n", verb);
@@ -889,31 +1043,32 @@ Object* verbIdent(char* verb) {
     return result;
 }
 
-Object* sVerbIdent(char* staticVerb) {
-    char* type;
-    char* field;
+Object *sVerbIdent(char *staticVerb)
+{
+    char *type;
+    char *field;
     type = strtok(staticVerb, ".");
     field = strtok(0, ".");
 
     //verify type exists
-    Object* oType = findByName(type);
+    Object *oType = findByName(type);
     if (!oType) {
         char error[BUFFLEN];
         snprintf(error, BUFFLEN, "Cannot find type %s\n", type);
         criticalError(ERROR_UndefinedVariable, error);
     }
-
     //build verb name
     char verbname[BUFFLEN];
     snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", oType->name, field);
 
-    Object* result = CreateObject(verbname, verbname, 0, Function, 0);
+    Object *result = CreateObject(verbname, verbname, 0, Function, 0);
     return result;
 }
 
-Object* verbCtor(char* type) {
+Object *verbCtor(char *type)
+{
     printf("verbCtor(%s)\n", type);
-    Object* result = findByName(type);
+    Object *result = findByName(type);
     if (result == 0) {
         char error[BUFFLEN];
         sprintf(error, "Cannot find Class \"%s\".\n", type);
@@ -922,17 +1077,22 @@ Object* verbCtor(char* type) {
     return result;
 }
 
-Object* parenthesize(Object* expr) {
+Object *parenthesize(Object * expr)
+{
     printf("parenthesize(%s)\n", expr->code->value);
     char line[BUFFLEN];
-    if (expr==0) {
-        criticalError(ERROR_ParseError, "Object* expr was void in parenthesize. (ritc.c)\n");
+    if (expr == 0) {
+        criticalError(ERROR_ParseError,
+                      "Object* expr was void in parenthesize. (ritc.c)\n");
     }
 
-    Object* parenthesized = CreateObject(expr->name, expr->fullname, expr->parentScope, Expression, expr->returnType);
+    Object *parenthesized =
+        CreateObject(expr->name, expr->fullname, expr->parentScope, Expression,
+                     expr->returnType);
 
     if (expr->code == 0) {
-        criticalError(ERROR_ParseError, "Cannot put parentheses around nothing. (ritc.c)\n");
+        criticalError(ERROR_ParseError,
+                      "Cannot put parentheses around nothing. (ritc.c)\n");
     }
 
     snprintf(line, BUFFLEN, "(%s)", expr->code->value);
@@ -942,10 +1102,11 @@ Object* parenthesize(Object* expr) {
     return parenthesized;
 }
 
-Object* objectNewIdent(char* ident) {
+Object *objectNewIdent(char *ident)
+{
     printf("objectNewIdent(%s)\n", ident);
-    Object* result;
-    Object* identifier = findByName(ident);
+    Object *result;
+    Object *identifier = findByName(ident);
 
     if (!identifier) {
         result = CreateObject(ident, ident, 0, NewMarkedIdent, Undefined);
@@ -954,60 +1115,69 @@ Object* objectNewIdent(char* ident) {
         snprintf(error, 1024, "Using an existing identifier as new %s\n", ident);
         criticalError(ERROR_ParseError, error);
     }
-    addCode(result, identifier? identifier->fullname : ident);
+    addCode(result, identifier ? identifier->fullname : ident);
     return result;
 }
 
-Object* objectUnmarkedNewIdent(char* ident) {
+Object *objectUnmarkedNewIdent(char *ident)
+{
     printf("objectNewIdent(%s)\n", ident);
-    Object* result;
-    Object* identifier = findByName(ident);
+    Object *result;
+    Object *identifier = findByName(ident);
 
     if (!identifier) {
         result = CreateObject(ident, ident, 0, NewUnmarkedIdent, Undefined);
     } else {
-        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
+        result =
+            CreateObject(identifier->name, identifier->fullname, 0, identifier->type,
+                         identifier->returnType);
         addParam(result, identifier->returnType);
     }
-    addCode(result, identifier? identifier->fullname : ident);
+    addCode(result, identifier ? identifier->fullname : ident);
     return result;
 }
 
-Object* objectIdent(char* ident) {
+Object *objectIdent(char *ident)
+{
     printf("objectIdent(%s)\n", ident);
-    Object* result;
-    Object* identifier = findByName(ident);
+    Object *result;
+    Object *identifier = findByName(ident);
 
     if (!identifier) {
         char error[1024];
         snprintf(error, 1024, "Unknown identifier %s\n", ident);
         criticalError(ERROR_ParseError, error);
     } else {
-        result = CreateObject(identifier->name, identifier->fullname, 0, identifier->type, identifier->returnType);
+        result =
+            CreateObject(identifier->name, identifier->fullname, 0, identifier->type,
+                         identifier->returnType);
         addParam(result, identifier->returnType);
     }
-    addCode(result, identifier? identifier->fullname : ident);
+    addCode(result, identifier ? identifier->fullname : ident);
     return result;
 }
 
-Object* objectSelfIdent(char* ident) {
+Object *objectSelfIdent(char *ident)
+{
     printf("objectSelfIdent(%s)\n", ident);
     //must be Function or Constructor and be inside a class
-    if ((current->type != Function && current->type != Constructor) || scope_idx == 0 || scopeStack[scope_idx-1]->type != Type) {
-        criticalError(ERROR_ParseError, "Cannot use self identifier ($) outside of class verbs.\n");
+    if ((current->type != Function && current->type != Constructor) || scope_idx == 0
+        || scopeStack[scope_idx - 1]->type != Type) {
+        criticalError(ERROR_ParseError,
+                      "Cannot use self identifier ($) outside of class verbs.\n");
     }
 
-    Object* result;
-    Object* identifier;
+    Object *result;
+    Object *identifier;
 
     if (strlen(ident) == 1) {
         //must be $ by itself.
-        result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx-1]->returnType);
-        addParam(result, scopeStack[scope_idx-1]->returnType);
+        result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx - 1]->returnType);
+        addParam(result, scopeStack[scope_idx - 1]->returnType);
         addCode(result, "self");
     } else {
-        ident += 2; // bypass the "$."
-        identifier = findByNameInScope(scopeStack[scope_idx-1], ident, false);
+        ident += 2;             // bypass the "$."
+        identifier = findByNameInScope(scopeStack[scope_idx - 1], ident, false);
 
         result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
         addParam(result, identifier->returnType);
@@ -1018,39 +1188,43 @@ Object* objectSelfIdent(char* ident) {
     return result;
 }
 
-Object* objectFloat(float f) {
+Object *objectFloat(float f)
+{
     printf("objectFloat(%f)\n", f);
     char buffer[128];
     snprintf(buffer, BUFFLEN, "%f", f);
-    Object* result = CreateObject(0, 0, 0, Expression, "Float");
+    Object *result = CreateObject(0, 0, 0, Expression, "Float");
     addCode(result, buffer);
     addParam(result, "Float");
     return result;
 }
 
-Object* objectInt(int d) {
+Object *objectInt(int d)
+{
     printf("objectInt(%d)\n", d);
-    char buffer[32]; // 20 = (log10(2^64))
+    char buffer[32];            // 20 = (log10(2^64))
     snprintf(buffer, 32, "%d", d);
-    Object* result = CreateObject(0, 0, 0, Expression, "Integer");
+    Object *result = CreateObject(0, 0, 0, Expression, "Integer");
     addCode(result, buffer);
     addParam(result, "Integer");
     return result;
 }
 
-Object* objectString(char* string) {
+Object *objectString(char *string)
+{
     printf("objectString(%s)\n", string);
-	char buffer[BUFFLEN];
-	snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s)", string);
-    Object* result = CreateObject(0,0,0, Expression, "String");
-	addCode(result, buffer);
-	addParam(result, "String");
-	return result;
+    char buffer[BUFFLEN];
+    snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s)", string);
+    Object *result = CreateObject(0, 0, 0, Expression, "String");
+    addCode(result, buffer);
+    addParam(result, "String");
+    return result;
 }
 
-Object* objectPrev() {
+Object *objectPrev()
+{
     printf("objectPrev(%s)\n", previous[prev_idx]);
-    Object* result = CreateObject(0, 0, 0, Expression, prevType[prev_idx]);
+    Object *result = CreateObject(0, 0, 0, Expression, prevType[prev_idx]);
     addCode(result, previous[prev_idx]);
     addParam(result, prevType[prev_idx]);
 
@@ -1060,124 +1234,134 @@ Object* objectPrev() {
 
     //brute force search of text lines in current scope
     /*
-    char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
-    char buffer[BUFFLEN];
-    strncpy(buffer, pattern, BUFFLEN);
-    int lenPattern = strlen(pattern);
-    ListString* codeIter = current->code;
-    char* line;
-    while (codeIter != 0) {
-        if (!strncmp(codeIter->value, pattern, lenPattern)) {
-          line = codeIter->value;
-        }
-        codeIter = codeIter->next;
-    }
-    int lenToken = 0;
-    while( !isspace(line[lenPattern]) ) {
-        buffer[lenPattern] = line[lenPattern];
-        lenPattern++;
-    }
-    buffer[lenPattern] = 0; //null-terminate the string
-    printf("objectPrev found object '%s'\n", buffer);
-    exit(0);
-    return objectIdent(buffer);
-    */
+       char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
+       char buffer[BUFFLEN];
+       strncpy(buffer, pattern, BUFFLEN);
+       int lenPattern = strlen(pattern);
+       ListString* codeIter = current->code;
+       char* line;
+       while (codeIter != 0) {
+       if (!strncmp(codeIter->value, pattern, lenPattern)) {
+       line = codeIter->value;
+       }
+       codeIter = codeIter->next;
+       }
+       int lenToken = 0;
+       while( !isspace(line[lenPattern]) ) {
+       buffer[lenPattern] = line[lenPattern];
+       lenPattern++;
+       }
+       buffer[lenPattern] = 0; //null-terminate the string
+       printf("objectPrev found object '%s'\n", buffer);
+       exit(0);
+       return objectIdent(buffer);
+     */
 }
 
-Object* objectField(char* fullname) {
-    char* parent;
-    char* field;
-    parent = strtok(fullname, ".");
-    field = strtok(0, ".");
-
-    //verify parent is defined
-    Object* oParent = findByName(parent);
-    if (!oParent) {
-        char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "Cannot find object named %s\n", parent);
-        criticalError(ERROR_UndefinedVariable, error);
-    }
-
-    char parentType[BUFFLEN];
-    strcpy(parentType, oParent->returnType);
-    //remove " *" from the end if present.
-    int length = 0;
-    while(parentType[length] != '\0' && parentType[length] != ' ' && parentType[length] != '*') {
-        length++;
-    }
-    parentType[length] = '\0';
-
-
-    Object* oParentType = findByName(parentType);
-    if (!oParentType) {
-        char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "Cannot find \"%s\" class description for object %s\n", parentType, parent);
-        criticalError(ERROR_UndefinedVariable, error);
-    }
-
-
-    Object* oField = 0;
-    //verify the type of parent has defined a variable named field
-    ListObject* oIter = oParentType->definedSymbols;
-    while (oIter) {
-        if (!strcmp(oIter->value->name, field)) {
-            oField = oIter->value;
-            break;
-        }
-        oIter = oIter->next;
-    }
-
-    if (!oField) {
-        char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "%s %s has no member named %s.\n", parentType, parent, field);
-        criticalError(ERROR_UndefinedVariable, error);
-    }
-
-    Object* result = CreateObject(field, field, 0, Expression, oField->returnType);
-    char accessCode[BUFFLEN];
-    snprintf(accessCode, BUFFLEN, "%s->%s", oParent->fullname, field);
-    addParam(result, oField->returnType);
-    addCode(result, accessCode);
-    return result;
-}
-
-
-Object* findByName(char* name) {
-    Object* result = findByNameInScope(current, name, false);
-    return result;
-}
-
-Object* findFunctionByFullName(char* name) {
-    Object* result = findByNameInScope(current, name, true);
-    return result;
-}
-
-
-int main(int argc,char **argv)
+Object *conjugateAccessor(Object * subject, char *field)
 {
-    int c,i,fd,old_stdout;
-    int errflg=0;
-	int  printTreeBool = 0;
-	int numline = 0;
+
+    if (subject->type == Type) {
+        //build verb name
+        char verbname[BUFFLEN];
+        snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", subject->name, field);
+        Object *result = CreateObject(verbname, verbname, 0, Function, 0);
+        return result;
+
+    } else {
+
+        //verify parent is defined
+        char *parent = subject->code->value;
+        printf("Parent %s\n", parent);
+
+        Object *oParent = subject;
+        if (!oParent) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Cannot find object named %s\n", parent);
+            criticalError(ERROR_UndefinedVariable, error);
+        }
+
+        char *parentType = oParent->returnType;
+        //remove " *" from the end if present.
+        int length = 0;
+        while (parentType[length] != '\0' && parentType[length] != ' '
+               && parentType[length] != '*') {
+            length++;
+        }
+        parentType[length] = '\0';
+
+        Object *oParentType = findByName(parentType);
+        if (!oParentType) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN,
+                     "Cannot find \"%s\" class description for object %s\n", parentType,
+                     parent);
+            criticalError(ERROR_UndefinedVariable, error);
+        }
+
+        Object *oField = 0;
+        //verify the type of parent has defined a variable named field
+        ListObject *oIter = oParentType->definedSymbols;
+        while (oIter) {
+            if (!strcmp(oIter->value->name, field)) {
+                oField = oIter->value;
+                break;
+            }
+            oIter = oIter->next;
+        }
+
+        if (!oField) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "%s %s has no member named %s.\n", parentType,
+                     parent, field);
+            criticalError(ERROR_UndefinedVariable, error);
+        }
+
+        Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
+        char accessCode[BUFFLEN];
+        snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
+        addParam(result, oField->returnType);
+        addCode(result, accessCode);
+        return result;
+    }
+}
+
+Object *findByName(char *name)
+{
+    Object *result = findByNameInScope(current, name, false);
+    return result;
+}
+
+Object *findFunctionByFullName(char *name)
+{
+    Object *result = findByNameInScope(current, name, true);
+    return result;
+}
+
+int main(int argc, char **argv)
+{
+    int c, i, fd, old_stdout;
+    int errflg = 0;
+    int printTreeBool = 0;
+    int numline = 0;
     char *ifile = NULL;
     char *ofile = NULL;
     extern char *optarg;
     extern int optind, optopt;
-    FILE* ritTempFile;
+    FILE *ritTempFile;
 
     while ((c = getopt(argc, argv, "o:t")) != -1) {
         switch (c) {
         case 't':
-        	printf("hit -t arg\n");
-        	printTreeBool = 1;
-        break;
+            printf("hit -t arg\n");
+            printTreeBool = 1;
+            break;
 
         case 'o':
             ofile = optarg;
             break;
-        case ':':       /* -f or -o without operand */
-            fprintf(stderr,
-                    "Option -%c requires an operand\n", optopt);
+        case ':':              /* -f or -o without operand */
+            fprintf(stderr, "Option -%c requires an operand\n", optopt);
             errflg++;
             break;
         };
@@ -1188,40 +1372,35 @@ int main(int argc,char **argv)
         exit(2);
     }
 
-
-    for (i=0; optind < argc; optind++,i++) {
-        if (i==0) {
-            ifile=argv[optind];
+    for (i = 0; optind < argc; optind++, i++) {
+        if (i == 0) {
+            ifile = argv[optind];
         }
     }
 
-
-    if (ifile==NULL) {
+    if (ifile == NULL) {
         errorMsg("No file to compile\n");
-        file=fopen("helloworld.rit","r");
+        file = fopen("helloworld.rit", "r");
     } else {
-        file=fopen(ifile,"r");
+        file = fopen(ifile, "r");
     }
 
     char oMainFileName[BUFFLEN];
     char oHeaderFileName[BUFFLEN];
 
-    if (ofile==NULL) {
-        strcpy(oMainFileName,"out.c");
-        strcpy(oHeaderFileName,"out.h");
+    if (ofile == NULL) {
+        strcpy(oMainFileName, "out.c");
+        strcpy(oHeaderFileName, "out.h");
     } else {
-        snprintf(oMainFileName,BUFFLEN,"%s.c",ofile);
-        snprintf(oHeaderFileName,BUFFLEN,"%s.h",ofile);
+        snprintf(oMainFileName, BUFFLEN, "%s.c", ofile);
+        snprintf(oHeaderFileName, BUFFLEN, "%s.h", ofile);
     }
 
-
-
-
     errorMsg(ANSI_COLOR_MAGENTA "\n"
-    "**********************************\n"
-    "**********************************\n"
-    "**********************************\n"
-    "**********************************\n" ANSI_COLOR_RESET);
+             "**********************************\n"
+             "**********************************\n"
+             "**********************************\n"
+             "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
     //addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
@@ -1229,19 +1408,21 @@ int main(int argc,char **argv)
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
-	ritTempFile = fopen("ritchie_temp_file.rit", "w");
- 	if (ritTempFile == 0) {
-    	perror("fopen");
-    	return 1;
-  	}
-  	printf("%s\n", ifile);
-  	//Read RSL
-  	readFile("rsl/rsl.rit", ritTempFile, &numline);
-  	//Read mainfile
-  	readFile(ifile, ritTempFile, &numline);
-  	fclose(ritTempFile);
+    ritTempFile = fopen("ritchie_temp_file.rit", "w");
+    if (ritTempFile == 0) {
+        perror("fopen");
+        return 1;
+    }
+    printf("%s\n", ifile);
+    //Read RSL
+    readFile("rsl/rsl.rit", ritTempFile, &numline);
 
-	file = fopen("ritchie_temp_file.rit", "r+");
+    //printf("Lines read %d\n",numline);
+    //Read mainfile
+    readFile(ifile, ritTempFile, &numline);
+    fclose(ritTempFile);
+
+    file = fopen("ritchie_temp_file.rit", "r+");
 
     yyin = file;
 
@@ -1252,30 +1433,28 @@ int main(int argc,char **argv)
     }
     printf("=============  Compiling Complete!  ==============\n");
 
-    outMainFile=fopen(oMainFileName,"w");
-    outHeaderFile=fopen(oHeaderFileName,"w");
+    outMainFile = fopen(oMainFileName, "w");
+    outHeaderFile = fopen(oHeaderFileName, "w");
 
-    fprintf(outMainFile,"#include \"rsl.h\"\n");
-    fprintf(outMainFile,"#include \"%s\"\n",oHeaderFileName);
+    fprintf(outMainFile, "#include \"rsl.h\"\n");
+    fprintf(outMainFile, "#include \"%s\"\n", oHeaderFileName);
     //fprintf(outMainFile,"int _$$_argc;\n");
     //fprintf(outMainFile,"char **_$$_argv;\n");
-    fprintf(outMainFile,"int main(int _$$_argc_, char **_$$_argv_) {\n");
-    fprintf(outMainFile,"    _$$_argc=_$$_argc_;\n");
-    fprintf(outMainFile,"    _$$_argv=_$$_argv_;\n");
+    fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n");
+    fprintf(outMainFile, "    _$$_argc=_$$_argc_;\n");
+    fprintf(outMainFile, "    _$$_argv=_$$_argv_;\n");
 
     writeTree(outMainFile, outHeaderFile, root);
-	if ( printTreeBool == 1 ) {
+    if (printTreeBool == 1) {
 
-		printTreeToFile(root, 0, "./treeOutput.txt");
-	}
+        printTreeToFile(root, 0, "./treeOutput.txt");
+    }
 
-
-    fprintf(outMainFile,"  return 0;\n}\n");
+    fprintf(outMainFile, "  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(file);
     remove("ritchie_temp_file.rit");
-
 
     //printf("\n%s compiled successfully.\n", ifile);
 

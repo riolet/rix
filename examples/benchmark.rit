@@ -1,4 +1,5 @@
 isPrime -> Boolean:  Integer n
+
     (n < 2)       --> false
     (n == 2)      --> true
     (n % 2 == 0)  --> false

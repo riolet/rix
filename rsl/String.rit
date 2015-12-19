@@ -1,7 +1,0 @@
-/*
-BetterString :: String
-    ::: String s
-
-    plus->String: String right
-        ->$+right+"Cake"
-*/

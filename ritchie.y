@@ -67,6 +67,7 @@
 %token <sval> CODE_INSERT
 
 %token <sval> CONDRETURN
+%token <sval> ACCESSOR
 
 %type <oval> ritchie;
 %type <oval> statements;
@@ -83,7 +84,8 @@
 %type <oval> expr;
 %type <oval> object;
 
-%type <sval> parameterIdent
+%type <sval> parameterIdent;
+%type <sval> anyIndent;
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
@@ -104,7 +106,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %right BOOLEANOP
 %right COMPARISON TERNARY
 %right MATH_OP
-
+%right ACCESSOR
 
 %%
 %start ritchie;
@@ -156,6 +158,7 @@ expr:
   |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
+  | expr ACCESSOR anyIndent    { printf("parser: expr- X \n");   $$ = conjugateAccessor( $1, $3); }
   ;
 object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
@@ -163,13 +166,16 @@ object:
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | NEWIDENT   { printf("parser: object-new-identifer\n"); $$ = objectNewIdent($1); }
   | UNMARKEDNEWIDENT { printf("parser: object-unmarked-new-identifer\n"); $$ = objectUnmarkedNewIdent($1); }
-  | FIELD   { printf("parser: object-field\n");     $$ = objectField($1);  }
   | STRING  { printf("parser: object-string\n");    $$ = objectString($1);  }
   | SELFIDENT { printf("parser: object-self\n");    $$ = objectSelfIdent($1);}
   | CONDITIONLINK { printf("parser: object-previous\n"); $$ = objectPrev();   }
   ;
 
-
+anyIndent:
+  IDENT   { printf("parser: IDENT\n"); $$ = $1; }
+  | NEWIDENT   { printf("parser: NEWIDENT\n"); $$ = $1; }
+  | UNMARKEDNEWIDENT { printf("parser: UNMARKEDNEWIDENT\n"); $$ = $1; }
+  ;
 
 function_definition:
   UNMARKEDNEWIDENT RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
@@ -177,6 +183,7 @@ function_definition:
   | UNMARKEDNEWIDENT RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   | VERB RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   ;
+
 parameters:
   %empty                                { printf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
   | TYPE parameterIdent                       { printf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }

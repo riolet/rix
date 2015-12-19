@@ -14,79 +14,80 @@
 #define COMPILER_SEP "_$_"
 
 typedef enum {
-  Undefined,
-  Variable,
-  Type,
-  Constructor,
-  Function,
-  CodeBlock,
-  Expression,
-  Dummy,
-  NewMarkedIdent,
-  NewUnmarkedIdent,
+    Undefined,
+    Variable,
+    Type,
+    Constructor,
+    Function,
+    CodeBlock,
+    Expression,
+    Dummy,
+    NewMarkedIdent,
+    NewUnmarkedIdent,
 } OBJ_TYPE;
 
-typedef struct _Object      Object;
-typedef struct _ListObject  ListObject;
-typedef struct _ListString  ListString;
+typedef struct _Object Object;
+typedef struct _ListObject ListObject;
+typedef struct _ListString ListString;
 
 struct _ListString {
-  char*  value;
-  ListString*  next;
+    char *value;
+    ListString *next;
 };
-struct _ListObject{
-  Object*      value;
-  ListObject*  next;
+struct _ListObject {
+    Object *value;
+    ListObject *next;
 };
 
-struct _Object{
-  char*        name;           //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
-  char*        fullname;       //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
-  Object*      parentClass;
-  Object*      parentScope;    //parent scope    (global scope, global scope, BaseType)
-  OBJ_TYPE     type;           //What is this?   (Variable, Function, Class)
-  char*        returnType;     //What value type?(Integer,  Integer,  NULL)
-  char*        genericType;    //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
-  int          genericTypeArgPos;    //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
-  ListString*  paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
-  ListObject*  definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
-  ListString*  code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
-  int          flags;
+struct _Object {
+    char *name;                 //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
+    char *fullname;             //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
+    Object *parentClass;
+    Object *parentScope;        //parent scope    (global scope, global scope, BaseType)
+    OBJ_TYPE type;              //What is this?   (Variable, Function, Class)
+    char *returnType;           //What value type?(Integer,  Integer,  NULL)
+    char *genericType;          //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
+    int genericTypeArgPos;      //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
+    ListString *paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
+    ListObject *definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
+    ListString *code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
+    int flags;
 };
 
 //mallocs memory and returns a pointer to a new Object
-Object * CreateObject(char* name, char* fullname, Object* parentScope, OBJ_TYPE type, char* returnType);
+Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE type,
+                     char *returnType);
 
 //append item to end of linked list
-int addParam(Object* tree, char* type);
-int addGenericType(Object* tree, char* genericType, int genericTypeArgPos);
-int addSymbol(Object* tree, Object* leaf);
-ListString* addCode(Object* tree, char* line);
-int setFlags(Object* tree, int flags);
-int getFlag(Object* tree, int flag);
-int setParentClass(Object* tree, Object* parentClass);
-int listlen(ListString* head);
+int addParam(Object * tree, char *type);
+int addGenericType(Object * tree, char *genericType, int genericTypeArgPos);
+int addSymbol(Object * tree, Object * leaf);
+ListString *addCode(Object * tree, char *line);
+int setFlags(Object * tree, int flags);
+int getFlag(Object * tree, int flag);
+int setParentClass(Object * tree, Object * parentClass);
+int listlen(ListString * head);
 
 //writes the code of root first, then children in order
-void writeTree(FILE* outc, FILE* outh, Object* tree);
-void writeTreeHelper(FILE* outc, FILE* outh, Object* tree, int indent);
-void writeTypeDefs(FILE* outh, Object* tree);
-void writeFunction(FILE* outh, Object* tree, int indent);
-void writeOther(FILE* outc, FILE* outh, Object* tree, int indent);
-void writeClass(FILE* outc, FILE* outh, Object* tree, int indent);
-void printTree(Object* tree, int indent);
-void printTreeToFile(Object* tree, int indent, char* fname);
+void writeTree(FILE * outc, FILE * outh, Object * tree);
+void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent);
+void writeTypeDefs(FILE * outh, Object * tree);
+void writeFunction(FILE * outh, Object * tree, int indent);
+void writeOther(FILE * outc, FILE * outh, Object * tree, int indent);
+void writeClass(FILE * outc, FILE * outh, Object * tree, int indent);
+void printTree(Object * tree, int indent);
+void printTreeToFile(Object * tree, int indent, char *fname);
 
 //searches for identifier in current, and parent scope.
 //returns Undefined if identifier isn't found.
-OBJ_TYPE getIdentType(Object* scope, char* identifier);
+OBJ_TYPE getIdentType(Object * scope, char *identifier);
 //return null if name not found
-Object* searchFunction(Object* scope, char* name, int bUseFullName);
-Object* searchConstructor(Object* scope, char* name, int bUseFullName);
-Object* searchType(Object* scope, char* name, int bUseFullName);
-Object* searchCodeBlock(Object* scope, char* name, int bUseFullName);
-Object* findByNameInScope(Object* scope, char* name, int bUseFullName);
+Object *searchFunction(Object * scope, char *name, int bUseFullName);
+Object *searchConstructor(Object * scope, char *name, int bUseFullName);
+Object *searchType(Object * scope, char *name, int bUseFullName);
+Object *searchCodeBlock(Object * scope, char *name, int bUseFullName);
+Object *findByNameInScope(Object * scope, char *name, int bUseFullName);
 
-Object* findFunctionMatch(Object* scope, char* name, int paramc, char** params);
+Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params);
 
 #endif

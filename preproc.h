@@ -11,5 +11,5 @@
 #define FLAG_EXTERNAL   4
 #define BUFFLEN 1024
 
-int readFile(char name[], FILE *ofp, int* numline);
+int readFile(char name[], FILE * ofp, int *numline);
 #endif

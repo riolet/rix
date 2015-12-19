@@ -1,6 +1,5 @@
-BetterString::String
-    :::String s
-        parent = s
+import "ext/BetterString/BetterString.rit"
 
-#b = (BetterString "Hi")
-print (b.parent)
+#string = "Hi"
+#betterString = BetterString string
+print (betterString getString)
