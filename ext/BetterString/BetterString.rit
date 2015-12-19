@@ -1,0 +1,12 @@
+`
+#include "ext/BetterString/BetterString.h"
+`
+
+BetterString::String
+    :::String string
+        //virtual
+
+    getString->String:
+        //virtual
+
+

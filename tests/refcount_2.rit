@@ -1,0 +1,8 @@
+s -> String:
+    #a = "Hi"
+    #b = a
+    -> b
+
+print s
+
+
