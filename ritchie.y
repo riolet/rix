@@ -69,6 +69,9 @@
 %token <sval> CONDRETURN
 %token <sval> ACCESSOR
 
+%token <sval> DTV_EXTERNAL
+%token <sval> DTV_ADDSOURCE
+
 %type <oval> ritchie;
 %type <oval> statements;
 %type <oval> statement;
@@ -118,8 +121,11 @@ statements:
   simple_statement              { printf("parser: stmts-s_s\n"); $$ = $1; }
   | statements simple_statement { printf("parser: stmts-stmt,s_s\n"); $$ = $1; }
   ;
+
 simple_statement:
   ENDOFLINE             { printf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
+  | DTV_EXTERNAL STRING ENDOFLINE { printf("parser: dtv\n"); directive($1,$2);  }
+  | DTV_ADDSOURCE STRING ENDOFLINE { printf("parser: dtv\n"); directive($1,$2);  }
   | statement ENDOFLINE { printf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
   | statement ENDOFLINE codeblock { printf("parser: s_s-stCB\nstatement EOL\n"); closeBrace(); $$ = $1; }
   | function_definition ASSIGNMENT statement ENDOFLINE {
@@ -133,6 +139,7 @@ simple_statement:
           printf("parser: s_s-class - Class Defined! %s\n", $1->fullname);
           doneClass($1); }
   ;
+
 statement:
   expr              { printf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
   | RETURN expr     { printf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }

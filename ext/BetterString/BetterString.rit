@@ -1,12 +1,11 @@
-`
-#include "ext/BetterString/BetterString.h"
-`
-
+##external "ext/BetterString/BetterString.h"
+##addsource "ext/BetterString/BetterString.c"
+##addsource "ext/BetterString/bstrlib.c"
 BetterString::String
     :::String string
         //virtual
 
-    getString->String:
+    toString->String:
         //virtual
-
+##external ""
 

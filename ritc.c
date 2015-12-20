@@ -18,6 +18,7 @@ typedef enum { false, true } bool;
 FILE *file;
 FILE *outMainFile;
 FILE *outHeaderFile;
+FILE *outMakeFile;
 
 bool hitEOF;
 
@@ -30,6 +31,7 @@ char *prevType[MAXSCOPE];
 char prevExists[MAXSCOPE];
 ListString *prevNode[MAXSCOPE];
 int prev_idx = 0;
+bool external = false;
 
 Object *scope_pop()
 {
@@ -69,24 +71,32 @@ Object *beginClass(char *className, char *parentName)
 
     Object *parentReference = CreateObject("$super", "$super", 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
-    setParentClass(result, parent);
-    //addSymbol(result, selfReference);
-    addSymbol(result, parentReference);
+    printf("External class %d\n",external);
+    if (external) {
+        setFlags(result, FLAG_EXTERNAL);
+    } else {
+        setParentClass(result, parent);
+        //addSymbol(result, selfReference);
+        addSymbol(result, parentReference);
+    }
     addSymbol(current, result);
     scope_push(result);
+    return result;
 }
 
 void doneClass(Object * tree)
 {
     //check for 0-arg constructor.
     //if no 0-arg ctor exists, add one.
-    char ctorName[BUFFLEN];
-    snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
+    if (!external) {
+        char ctorName[BUFFLEN];
+        snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
 
-    Object *ctor = findByNameInScope(current, ctorName, true);
-    if (!ctor) {
-        beginConstructor(CreateObject(0, 0, 0, Expression, 0));
-        doneConstructor(0);
+        Object *ctor = findByNameInScope(current, ctorName, true);
+        if (!ctor) {
+            beginConstructor(CreateObject(0, 0, 0, Expression, 0));
+            doneConstructor(0);
+        }
     }
     scope_pop();
 }
@@ -149,13 +159,18 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     Object *result =
         CreateObject(funcName, funcFullName, parentScope, Function, returnType);
 
-    if (current->type == Type) {
-        result->parentClass = current;
-        char pointer[BUFFLEN];
-        snprintf(pointer, BUFFLEN, "%s *", current->name);
-        addParam(result, pointer);
-        addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
-        //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+    printf("External func %d\n",external);
+    if (external) {
+        setFlags(result, FLAG_EXTERNAL);
+    } else {
+        if (current->type == Type) {
+            result->parentClass = current;
+            char pointer[BUFFLEN];
+            snprintf(pointer, BUFFLEN, "%s *", current->name);
+            addParam(result, pointer);
+            addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+            //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+        }
     }
     //add parameters to the function
     types = parameters->paramTypes;
@@ -168,8 +183,10 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
         types = types->next;
     }
 
+
     addSymbol(parentScope, result);
     scope_push(result);
+
     return result;
 }
 
@@ -232,20 +249,27 @@ Object *beginConstructor(Object * parameters)
         types = types->next;
     }
 
-    //Add allocation code
-    char allocator[BUFFLEN];
-    snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType,
-             current->name);
-    addCode(result, allocator);
-
+    printf("External ctor %d\n",external);
+    if (external) {
+        setFlags(result, FLAG_EXTERNAL);
+    } else {
+        //Add allocation code
+        char allocator[BUFFLEN];
+        snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType,
+                 current->name);
+        addCode(result, allocator);
+    }
     addSymbol(parentScope, result);
     scope_push(result);
+
     return result;
 }
 
 void doneConstructor(Object * tree)
 {
-    addCode(current, "return self;");
+    if (!external) {
+        addCode(current, "return self;");
+    }
     scope_pop();
 }
 
@@ -564,6 +588,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
         if (!subject->returnType) {
             if (subject->type == NewMarkedIdent) {
+                printf ("Creating new variable %s\n",subject->name);
                 Object *variable =
                     CreateObject(subject->name, subject->fullname, 0, Variable,
                                  objects->paramTypes->value);
@@ -609,10 +634,10 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
                 snprintf(pscv, BUFFLEN, "&%s",processedSubject->code->value);
                 processedSubject->code->value = pscv;
 
-                sprintf(tempBuffer,"%s.refCount = 0",subject->name);
-                CreateObject(0, 0, 0, Expression, "String");
-                addCode(result, tempBuffer);
-                addParam(result, "String");
+//                sprintf(tempBuffer,"%s.refCount = 0",subject->name);
+//                CreateObject(0, 0, 0, Expression, "String");
+//                addCode(result, tempBuffer);
+//                addParam(result, "String");
             } else {
                 processedSubject->code = subject->code;
             }
@@ -1244,30 +1269,6 @@ Object *objectPrev()
 
     return result;
 
-    //brute force search of text lines in current scope
-    /*
-       char* pattern = COMPILER_SEP "prev" COMPILER_SEP;
-       char buffer[BUFFLEN];
-       strncpy(buffer, pattern, BUFFLEN);
-       int lenPattern = strlen(pattern);
-       ListString* codeIter = current->code;
-       char* line;
-       while (codeIter != 0) {
-       if (!strncmp(codeIter->value, pattern, lenPattern)) {
-       line = codeIter->value;
-       }
-       codeIter = codeIter->next;
-       }
-       int lenToken = 0;
-       while( !isspace(line[lenPattern]) ) {
-       buffer[lenPattern] = line[lenPattern];
-       lenPattern++;
-       }
-       buffer[lenPattern] = 0; //null-terminate the string
-       printf("objectPrev found object '%s'\n", buffer);
-       exit(0);
-       return objectIdent(buffer);
-     */
 }
 
 Object *conjugateAccessor(Object * subject, char *field)
@@ -1350,6 +1351,25 @@ Object *findFunctionByFullName(char *name)
     return result;
 }
 
+Object * directive(char *key, char *value) {
+    printf ("Directive value %s\n",value);
+    if (!strcmp(key,"##external")) {
+        if (!strcmp(value,"\"\"")) {
+            external = false;
+        } else {
+            external = true;
+            fprintf(outMainFile, "#include %s\n",value);
+        }
+    }
+    if (!strcmp(key,"##addsource")) {
+        //No error checking
+        external = true;
+        fprintf(outMakeFile, "${RITCHIE_HOME}/%s ",value);
+    }
+    Object *result = CreateObject(0, 0, 0, Expression, "void");
+    return result;
+}
+
 int main(int argc, char **argv)
 {
     int c, i, fd, old_stdout;
@@ -1400,13 +1420,17 @@ int main(int argc, char **argv)
 
     char oMainFileName[BUFFLEN];
     char oHeaderFileName[BUFFLEN];
+    char oMakeFileName[BUFFLEN];
+
 
     if (ofile == NULL) {
         strcpy(oMainFileName, "out.c");
         strcpy(oHeaderFileName, "out.h");
+        strcpy(oMakeFileName, "out.sh");
     } else {
         snprintf(oMainFileName, BUFFLEN, "%s.c", ofile);
         snprintf(oHeaderFileName, BUFFLEN, "%s.h", ofile);
+        snprintf(oMakeFileName, BUFFLEN, "%s.sh", ofile);
     }
 
     errorMsg(ANSI_COLOR_MAGENTA "\n"
@@ -1439,15 +1463,21 @@ int main(int argc, char **argv)
 
     yyin = file;
 
+    outMainFile = fopen(oMainFileName, "w");
+    outHeaderFile = fopen(oHeaderFileName, "w");
+    outMakeFile = fopen(oMakeFileName, "w");
+
+    fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/ritchie -ggdb -o %s.out "
+            "%s.c /home/rohana/Projects/ritchie/errors.c /home/rohana/Projects/ritchie/rsl/RSL_String.c ", ofile, ofile);
     //getln();
     hitEOF = false;
     while (!hitEOF) {
         yyparse();
     }
+    fprintf(outMakeFile, " -lm");
     printf("=============  Compiling Complete!  ==============\n");
 
-    outMainFile = fopen(oMainFileName, "w");
-    outHeaderFile = fopen(oHeaderFileName, "w");
+
 
     fprintf(outMainFile, "#include \"rsl.h\"\n");
     fprintf(outMainFile, "#include \"%s\"\n", oHeaderFileName);
@@ -1466,6 +1496,7 @@ int main(int argc, char **argv)
     fprintf(outMainFile, "  return 0;\n}\n");
     fclose(outHeaderFile);
     fclose(outMainFile);
+    fclose(outMakeFile);
     fclose(file);
     remove("ritchie_temp_file.rit");
 

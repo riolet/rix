@@ -1,8 +1,11 @@
 isPrime -> Boolean:  Integer n
 
-    (n < 2)       --> false
-    (n == 2)      --> true
-    (n % 2 == 0)  --> false
+    if (n < 2)
+        -> false
+    if (n == 2)
+        -> true
+    if (n % 2 == 0)
+        -> false
 
     #upperLimit = (n sqrt) + 1
     #i for 3, upperLimit, 2

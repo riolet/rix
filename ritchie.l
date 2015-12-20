@@ -88,7 +88,8 @@ condReturn    "-->"
 implies       "==>"
 accessor      "."
 
-
+dtvExternal  "##external"
+dtvAddsource "##addsource"
 %%
         int indent_caller = normal;
 
@@ -244,6 +245,9 @@ accessor      "."
 {condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
 {mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 {accessor}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
+
+{dtvExternal}   { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
+{dtvAddsource}  { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */

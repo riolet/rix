@@ -11,9 +11,7 @@ Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE 
     Object *result = (Object *) malloc(sizeof(Object));
 
     if (result == 0) {
-
         warningMsg("%s", "CreateObject couldn't allocate a new object. (ObjectTree.c)\n");
-
         return 0;               //malloc failed.
     }
 
@@ -86,43 +84,30 @@ int addParam(Object * tree, char *type)
     ListString *node = malloc(sizeof(ListString));
 
     if (node == 0) {
-
         warningMsg("Allocation failed in addParam. (ObjectTree.c)\n");
-
         return 1;
-
     }
 
     node->value = strdup(type);
-
     node->next = 0;
 
     if (node->value == 0) {
-
         warningMsg("strdup failed in addParam. (ObjectTree.c)\n");
-
         return 2;
-
     }
 
     if (tree->paramTypes == 0) {
-
         tree->paramTypes = node;
-
         return 0;
-
     }
 
     ListString *tail = tree->paramTypes;
 
     while (tail->next != 0) {
-
         tail = tail->next;
-
     }
 
     tail->next = node;
-
     return 0;
 
 }
@@ -835,8 +820,8 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
 
         if (oIter->value->type == Variable) {
-            //declare all local variables
-            writeDeclareVariable (oIter, outh);
+            fprintf(outh, "\t%s %s;\n", oIter->value->returnType,
+                    oIter->value->fullname);
 
         } else {
             oIter = oIter->next;
