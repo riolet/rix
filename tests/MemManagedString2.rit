@@ -1,0 +1,14 @@
+u -> String: String n
+    -> n +"World"
+
+t -> String: String n
+    -> u n +", "
+
+s -> String:
+    #a = "Hello"
+    #b = a
+    -> t a
+
+print s
+
+

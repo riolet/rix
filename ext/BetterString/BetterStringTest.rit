@@ -1,0 +1,4 @@
+import "ext/BetterString/BetterString.rit"
+#bs = BetterString "Hi"
+#s = bs toString
+print s
