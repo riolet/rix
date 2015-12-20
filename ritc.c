@@ -1053,6 +1053,13 @@ Object *verbTernary()
     return result;
 }
 
+Object *verbDestructor()
+{
+    printf("verbDestructor(#)\n");
+    Object *result = CreateObject("destructor", "destructor", 0, Function, 0);
+    return result;
+}
+
 Object *verbCondReturn()
 {
     printf("verbCondReturn(-->)\n");

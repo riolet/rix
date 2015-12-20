@@ -49,6 +49,7 @@ Object *verbComparison(char *verb);
 Object *verbTernary();
 Object *verbCondReturn();
 Object *verbIdent(char *verb);
+Object *verbDestructor();
 Object *sVerbIdent(char *staticVerb);
 Object *verbCtor(char *type);
 Object *parenthesize(Object * expr);

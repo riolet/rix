@@ -110,6 +110,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %right COMPARISON TERNARY
 %right MATH_OP
 %right ACCESSOR
+%right DESTRUCTOR
 
 %%
 %start ritchie;
@@ -166,7 +167,9 @@ expr:
   |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr ACCESSOR anyIndent    { printf("parser: expr- X \n");   $$ = conjugateAccessor( $1, $3); }
+  | IDENT DESTRUCTOR      { printf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
   ;
+
 object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}

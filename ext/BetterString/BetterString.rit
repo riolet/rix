@@ -7,5 +7,16 @@ BetterString::String
 
     toString->String:
         //virtual
+
+    toLower->BetterString:
+        //virtual
+
+    toUpper->BetterString:
+        //virtual
+
+    destructor->:
+        //virtual
+
+
 ##external ""
 

@@ -54,3 +54,33 @@ String BetterString_$_toString_$_(BetterString * b)
     s.isStored = StringStatusDelete;
     return s;
 }
+
+BetterString * BetterString_$_toLower_$_(BetterString * b)
+{
+    int result = btolower(b);
+    if (result==BSTR_OK) {
+        return (BetterString *) b;
+    } else {
+        criticalError(ERROR_RuntimeError,"Error in BetterString_$_toLower_$_");
+    }
+}
+
+BetterString * BetterString_$_toUpper_$_(BetterString * b)
+{
+    int result = btoupper(b);
+    if (result==BSTR_OK) {
+        return (BetterString *) b;
+    } else {
+        criticalError(ERROR_RuntimeError,"Error in BetterString_$_toUpper_$_");
+    }
+}
+
+void BetterString_$_destructor_$_(BetterString * b)
+{
+    int result = bdestroy((BetterString *)b);
+    if (result==BSTR_OK) {
+        //Do nothing?
+    } else {
+        criticalError(ERROR_RuntimeError,"Error in BetterString_$_destructor_$_");
+    }
+}

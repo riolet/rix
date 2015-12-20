@@ -1,4 +1,5 @@
 import "ext/BetterString/BetterString.rit"
-#bs = BetterString "Hi"
-#s = bs toString
+#bs = BetterString "hello world"
+#s = ((bs toUpper) toString)
 print s
+bs#

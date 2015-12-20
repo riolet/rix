@@ -246,6 +246,8 @@ dtvAddsource "##addsource"
 {mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 {accessor}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
+{hash}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }
+
 {dtvExternal}   { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
 {dtvAddsource}  { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
 

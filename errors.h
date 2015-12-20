@@ -25,7 +25,8 @@ typedef enum {
     ERROR_UndefinedType,
     ERROR_CannotAllocateMemory,
     ERROR_InvalidArguments,
-    ERROR_ParseError
+    ERROR_ParseError,
+    ERROR_RuntimeError
 } ErrorCode;
 
 int g_lineNum;
