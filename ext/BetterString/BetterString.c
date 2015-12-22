@@ -104,3 +104,8 @@ void BetterStringList_$_destructor_$_(BetterStringList bList)
         criticalError(ERROR_RuntimeError,"Error in BetterStringList_$_destructor_$_");
     }
 }
+
+int BetterStringList_$_length_$_(BetterStringList bList)
+{
+    return bList->qty;
+}

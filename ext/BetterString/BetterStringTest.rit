@@ -3,8 +3,7 @@ import "ext/BetterString/BetterString.rit"
 #s = ((bs toUpper) toString)
 print s
 #blist = bs split (' ')
-#t = blist[0]
-print t.toString
+#i for 0, blist.length
+    print blist[i].toString
 bs#
-t#
 blist#

@@ -30,9 +30,11 @@ BetterString BetterString_$_toUpper_$_(BetterString b);
 void BetterString_$_destructor_$_(BetterString b);
 
 //Better String List Functions
-BetterStringList BetterString_$_split_$_Char(BetterString b,char c);
+BetterStringList BetterString_$_split_$_Char(BetterString b, char c);
 
 BetterString BetterStringList_$_getObjectAtIndex_$_Integer(BetterStringList bList, Integer i);
 
 void BetterStringList_$_destructor_$_(BetterStringList bList);
+
+int BetterStringList_$_length_$_(BetterStringList bList);
 #endif

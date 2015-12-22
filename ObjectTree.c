@@ -292,33 +292,23 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
     }
 
     if (!result && scope->parentClass) {
-
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
-
         if (result && result->type == Variable) {
-
             //Prepend "self->" to fullName
             char newFullName[BUFFLEN];
-
-            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
-
+            snprintf(newFullName, BUFFLEN, "self.%s", result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->type,
                              result->returnType);
-
             result = temp;
-
         }
 
         if (result) {
-
             //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
         } else {
-
             //printf("\t  searched %s's superclass(%s) and found (null)\n", scope->fullname, scope->parentClass->fullname);
         }
-
     }
 
     if (!result && scope->parentScope != 0) {
@@ -381,18 +371,13 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
             result = 0;
 
         } else if (result && result->type == Variable) {
-
             char newFullName[BUFFLEN];
-
-            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
-
+            snprintf(newFullName, BUFFLEN, "self.%s", result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->type,
                              result->returnType);
-
             result = temp;
-
             //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result ? result->fullname : "(null)");
         }
 
@@ -458,10 +443,10 @@ Object *searchType(Object * scope, char *name, int bUseFullName)
 
             if (result && result->type == Variable) {
 
-                //Prepend "parent." to fullName
+                //Prepend "$super." to fullName
                 char newFullName[BUFFLEN];
 
-                snprintf(newFullName, BUFFLEN, "parent.%s", result->fullname);
+                snprintf(newFullName, BUFFLEN, "$super.%s", result->fullname);
 
                 //TODO: memory leak. (allocating space that will never be freed)
                 Object *temp =
@@ -633,6 +618,7 @@ void writeTree(FILE * outc, FILE * outh, Object * tree)
 
     //create the output union
     writeTypeDefs(outh, tree);
+    /*
     fprintf(outh, "union " COMPILER_SEP COMPILER_SEP "Last {\n");
     for (iter = tree->definedSymbols; iter != 0; iter = iter->next) {
         if (iter->value->type == Type) {
@@ -640,7 +626,7 @@ void writeTree(FILE * outc, FILE * outh, Object * tree)
         }
     }
     fprintf(outh, "};\n");
-
+    */
     writeTreeHelper(outc, outh, tree, 0);
 
 }

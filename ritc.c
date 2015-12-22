@@ -255,8 +255,7 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s self = calloc(1, sizeof(%s));", returnType,
-                 current->name);
+        snprintf(allocator, BUFFLEN, "%s self;", returnType);
         addCode(result, allocator);
     }
     addSymbol(parentScope, result);
@@ -849,7 +848,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
         char paramTypes[BUFFLEN][BUFFLEN];
-        int subject_idx = snprintf(newSubject, BUFFLEN, "&%s->", subject->code->value);
+        int subject_idx = snprintf(newSubject, BUFFLEN, "%s.", subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset - 1] == '*' || newName[offset - 1] == ' ') {
             offset--;
@@ -866,7 +865,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             printf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
             subject_idx +=
-                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "parent.");
+                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "$super.");
             parent = parent->parentClass;
         }
         newSubject[subject_idx - 1] = '\0';
@@ -1233,7 +1232,7 @@ Object *objectSelfIdent(char *ident)
         result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
         addParam(result, identifier->returnType);
         char code[BUFFLEN];
-        snprintf(code, BUFFLEN, "self->%s", ident);
+        snprintf(code, BUFFLEN, "self.%s", ident);
         addCode(result, code);
     }
     return result;
@@ -1356,7 +1355,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
 
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
-        snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
+        snprintf(accessCode, BUFFLEN, "%s.%s", parent, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
         return result;

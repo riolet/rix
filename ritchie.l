@@ -64,7 +64,7 @@ decimal       "."{numeral}+|{numeral}+"."{numeral}+
 float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 char          \'(\\.|[^\\'])+\'
-identifier    {alphabetic}{alphanumeric}*
+identifier    ({alphabetic}|"_")({alphanumeric}|"_")*
 comment       \/\/.*
 
 colon         ":"
