@@ -198,9 +198,7 @@ int listlen(ListString * head)
 
 int setFlags(Object * tree, int flags)
 {
-
     tree->flags |= flags;
-
 }
 
 int getFlag(Object * tree, int flag)
@@ -649,45 +647,31 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 {
 
     ListObject *oIter;
-
     ListString *sIter;
-
+    
     if (tree == 0) {
-
         warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
-
         return;
-
     }
 
     if (outc == 0 || outh == 0) {
-
         warningMsg("output file was null in writeTree. (ObjectTree.c)\n");
-
         return;
-
     }
 
     oIter = tree->definedSymbols;
-
     sIter = tree->paramTypes;
 
     //construct and print function header
     if ((tree->type == Function || tree->type == Constructor)
         && !getFlag(tree, FLAG_EXTERNAL)) {
-
         writeFunction(outh, tree, indent);
-
     } else if (tree->type == Type && !getFlag(tree, FLAG_EXTERNAL)) {
-
         writeClass(outc, outh, tree, indent);
-
     } else if (tree->type == Dummy) {
         //Dummy
     } else {
-
         writeOther(outc, outh, tree, indent);
-
     }
 
 }
@@ -970,22 +954,16 @@ void printTree(Object * tree, int indent)
 {
 
     if (getFlag(tree, FLAG_EXTERNAL)) {
-
         return;
-
     }
 
     int i;
-
     if (tree == 0) {
-
         for (i = 0; i < indent; i++) {
             printf("  ");
         }
         printf("Object: (null)\n");
-
         return;
-
     }
 
     for (i = 0; i < indent; i++) {
@@ -994,7 +972,6 @@ void printTree(Object * tree, int indent)
     printf("Object: name: \"%s\"\n", tree->name);
 
     indent += 1;
-
     for (i = 0; i < indent; i++) {
         printf("  ");
     }
@@ -1122,38 +1099,23 @@ int testmain()
 {
 
     Object *root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
-
     Object *basetype = CreateObject("BaseType", "BaseType", 0, Type, 0);
-
     Object *rect = CreateObject("Rectangle", "BaseType_Rectangle", basetype, Type, 0);
-
     Object *rectConst =
         CreateObject("Rectangle", "Rectangle_Rectangle_Rectangle_Integer_Integer", 0,
                      Constructor, "Rectangle");
-
     Object *subexpr = CreateObject(0, 0, 0, Expression, "Float");
-
     addCode(subexpr, "3.14159");
-
     addParam(rectConst, "Integer");
-
     addParam(rectConst, "Integer");
-
     addSymbol(rectConst, CreateObject("width", "width", 0, Variable, "Integer"));
-
     addSymbol(rectConst, CreateObject("height", "height", 0, Variable, "Integer"));
-
     addSymbol(rectConst, CreateObject("self", "self", 0, Variable, "Rectangle*"));
-
     addCode(rectConst,
             "Rectangle * Rectangle_Rectangle_Rectangle_Integer_Integer(Integer width, Integer height) {");
-
     addCode(rectConst, "    Rectangle * self = (Rectangle*)malloc(sizeof(Rectangle));");
-
     addCode(rectConst, "    self->w = width;");
-
     addCode(rectConst, "    self->h = height;");
-
     addCode(rectConst, "    return self;");
 
     addCode(rectConst, "}");

@@ -69,7 +69,7 @@ Object *beginClass(char *className, char *parentName)
 
     snprintf(codename, BUFFLEN, "%s", className);
 
-    Object *parentReference = CreateObject("$super", "$super", 0, Variable, parent->name);
+    Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
     printf("External class %d\n",external);
     if (external) {
@@ -627,16 +627,16 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                  objects->code->value);
         } else {
-            if (!strcmp(objects->paramTypes->value,"String")){
+            if (!getFlag(objects, FLAG_POINTERTYPE)){
                 processedSubject->code = subject->code;
                 char pscv[BUFFLEN];
                 snprintf(pscv, BUFFLEN, "&%s",processedSubject->code->value);
                 processedSubject->code->value = pscv;
-
-//                sprintf(tempBuffer,"%s.refCount = 0",subject->name);
-//                CreateObject(0, 0, 0, Expression, "String");
-//                addCode(result, tempBuffer);
-//                addParam(result, "String");
+                
+//              sprintf(tempBuffer,"%s.refCount = 0",subject->name);
+//              CreateObject(0, 0, 0, Expression, "String");
+//              addCode(result, tempBuffer);
+//              addParam(result, "String");
             } else {
                 processedSubject->code = subject->code;
             }
@@ -865,7 +865,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             printf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
             subject_idx +=
-                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "$super.");
+                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER ".");
             parent = parent->parentClass;
         }
         newSubject[subject_idx - 1] = '\0';
