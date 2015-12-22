@@ -33,11 +33,12 @@ void defineRSLSymbols(Object * root)
                      "Stream");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-    temp2 =
-        CreateObject("String", "String" COMPILER_SEP "BaseType", objBaseType, Type,
-                     "String");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
+//    temp2 =
+//        CreateObject("String", "String" COMPILER_SEP "BaseType", objBaseType, Type,
+//                     "String");
+//    setFlags(temp2, FLAG_EXTERNAL);
+//    addSymbol(root, temp2);
+
     temp2 =
         CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type,
                      "Number *");
@@ -48,6 +49,9 @@ void defineRSLSymbols(Object * root)
     setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
     temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
+    setFlags(temp3, FLAG_EXTERNAL);
+    addSymbol(root, temp3);
+    temp3 = CreateObject("Char", "Char" COMPILER_SEP "Number", temp2, Type, "Char");
     setFlags(temp3, FLAG_EXTERNAL);
     addSymbol(root, temp3);
 
@@ -141,6 +145,13 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "Float");
+    addSymbol(root, rslFunc);
+    rslFunc =
+            CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "Integer", 0,
+                         Function, "Char");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
 
     // ==============  Conditional Functions ===============
@@ -265,7 +276,11 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
 
     // ==============  Print Functions ===============
-
+    rslFunc =
+            CreateObject("print", "print" COMPILER_SEP "Char", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("print", "print" COMPILER_SEP "Integer", 0, Function, "Integer");
     setFlags(rslFunc, FLAG_EXTERNAL);

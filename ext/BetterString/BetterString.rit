@@ -17,6 +17,13 @@ BetterString::String
     destructor->:
         //virtual
 
+    split->#BetterStringList:Char c
+        //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
+
+BetterStringList::BaseType
+    getObjectAtIndex->BetterString:Integer i
+        //virtual
+    destructor->:
+        //virtual
 
 ##external ""
-

@@ -117,3 +117,13 @@ String Float_$_plus_$_String(float left, String right)
     String_cleanUp(&right);
     return newString;
 }
+
+char String_$_getObjectAtIndex_$_Integer(String right, int left)
+{
+    return right.buffer[left];
+}
+
+int String_$_length_$_(String right)
+{
+    return right.length-1;
+}

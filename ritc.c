@@ -67,7 +67,7 @@ Object *beginClass(char *className, char *parentName)
         criticalError(ERROR_ParseError, error);
     }
 
-    snprintf(codename, BUFFLEN, "%s *", className);
+    snprintf(codename, BUFFLEN, "%s", className);
 
     Object *parentReference = CreateObject("$super", "$super", 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
@@ -166,7 +166,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
         if (current->type == Type) {
             result->parentClass = current;
             char pointer[BUFFLEN];
-            snprintf(pointer, BUFFLEN, "%s *", current->name);
+            snprintf(pointer, BUFFLEN, "%s", current->name);
             addParam(result, pointer);
             addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
             //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
@@ -232,7 +232,7 @@ Object *beginConstructor(Object * parameters)
     parentScope = scopeStack[i];
 
     char returnType[BUFFLEN];
-    snprintf(returnType, BUFFLEN, "%s *", current->name);
+    snprintf(returnType, BUFFLEN, "%s", current->name);
 
     Object *result =
         CreateObject(current->name, funcFullName, parentScope, Constructor, returnType);
@@ -575,7 +575,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     realVerb = findFunctionByFullName(verbname);
     if (realVerb == 0 && isalpha(verb->name[0])) {
         char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "Cannot find function named %s.\n", verbname);
+        snprintf(error, BUFFLEN, "Cannot find function named %s %d.\n", verbname,__LINE__);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
         //must be literal = or similar.
@@ -883,7 +883,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             snprintf(error, BUFFLEN, "Type \"%s\" doesn't have member function \"%s\".\n",
                      subject->returnType, &verbname[strlen(subject->returnType) + 1]);
         else
-            snprintf(error, BUFFLEN, "Cannot find function named \"%s\".\n", verbname);
+            snprintf(error, BUFFLEN, "Cannot find function named %s %d.\n", verbname,__LINE__);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (!realVerb) {
         warningMsg("Cannot find verb \"%s\". Assuming \"%s\" is infix operator in C.\n",
@@ -1057,6 +1057,13 @@ Object *verbDestructor()
 {
     printf("verbDestructor(#)\n");
     Object *result = CreateObject("destructor", "destructor", 0, Function, 0);
+    return result;
+}
+
+Object *verbObjAtIdx()
+{
+    printf("verbObjAtIdx(#)\n");
+    Object *result = CreateObject("getObjectAtIndex", "getObjectAtIndex", 0, Function, 0);
     return result;
 }
 
@@ -1254,6 +1261,17 @@ Object *objectInt(int d)
     return result;
 }
 
+Object *objectChar(char *c)
+{
+    printf("objectInt(%c)\n", c[1]);
+    char buffer[4];            // 20 = (log10(2^64))
+    snprintf(buffer, 4, "%s", c);
+    Object *result = CreateObject(0, 0, 0, Expression, "Char");
+    addCode(result, buffer);
+    addParam(result, "Char");
+    return result;
+}
+
 Object *objectString(char *string)
 {
     printf("objectString(%s)\n", string);
@@ -1278,7 +1296,7 @@ Object *objectPrev()
 
 }
 
-Object *conjugateAccessor(Object * subject, char *field)
+Object *conjugateAccessorIdent(Object *subject, char *field)
 {
 
     if (subject->type == Type) {
@@ -1287,7 +1305,6 @@ Object *conjugateAccessor(Object * subject, char *field)
         snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", subject->name, field);
         Object *result = CreateObject(verbname, verbname, 0, Function, 0);
         return result;
-
     } else {
 
         //verify parent is defined
@@ -1475,7 +1492,7 @@ int main(int argc, char **argv)
     outMakeFile = fopen(oMakeFileName, "w");
 
     fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/ritchie -ggdb -o %s.out "
-            "%s.c /home/rohana/Projects/ritchie/errors.c /home/rohana/Projects/ritchie/rsl/RSL_String.c ", ofile, ofile);
+            "%s.c ${RITCHIE_HOME}/rsl/rsl.c ${RITCHIE_HOME}/errors.c ${RITCHIE_HOME}/rsl/RSL_String.c ", ofile, ofile);
     //getln();
     hitEOF = false;
     while (!hitEOF) {
@@ -1486,7 +1503,7 @@ int main(int argc, char **argv)
 
 
 
-    fprintf(outMainFile, "#include \"rsl.h\"\n");
+    fprintf(outMainFile, "#include \"rsl/rsl.h\"\n");
     fprintf(outMainFile, "#include \"%s\"\n", oHeaderFileName);
     //fprintf(outMainFile,"int _$$_argc;\n");
     //fprintf(outMainFile,"char **_$$_argv;\n");

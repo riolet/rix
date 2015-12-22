@@ -2,4 +2,9 @@ import "ext/BetterString/BetterString.rit"
 #bs = BetterString "hello world"
 #s = ((bs toUpper) toString)
 print s
+#blist = bs split (' ')
+#t = blist[0]
+print t.toString
 bs#
+t#
+blist#

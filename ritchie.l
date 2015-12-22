@@ -63,6 +63,7 @@ integer       {numeral}+
 decimal       "."{numeral}+|{numeral}+"."{numeral}+
 float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
+char          \'(\\.|[^\\'])+\'
 identifier    {alphabetic}{alphanumeric}*
 comment       \/\/.*
 
@@ -192,6 +193,7 @@ dtvAddsource "##addsource"
 {comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
+{char}     { printf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
 {float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
 {mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 
@@ -231,7 +233,7 @@ dtvAddsource "##addsource"
 {assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); handleComma(); return PARAMCOMMA; }
+{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
 {colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
@@ -243,7 +245,7 @@ dtvAddsource "##addsource"
 {comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
 {condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
-{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{mathAssign}    { printf("leFloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 {accessor}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
 {hash}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }

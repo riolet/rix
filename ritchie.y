@@ -34,6 +34,7 @@
 // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
 %token <ival> INT
+%token <sval> CHAR
 %token <fval> FLOAT
 %token <sval> STRING
 %token <sval> IDENT
@@ -89,6 +90,7 @@
 
 %type <sval> parameterIdent;
 %type <sval> anyIndent;
+%type <sval> function_type_entry;
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
@@ -111,6 +113,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %right MATH_OP
 %right ACCESSOR
 %right DESTRUCTOR
+%right LBRACKET RBRACKET
 
 %%
 %start ritchie;
@@ -166,12 +169,16 @@ expr:
   |        TYPE     expr  { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   |        TYPE           { printf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { printf("parser: expr-prn\n");   $$ = parenthesize($2); }
-  | expr ACCESSOR anyIndent    { printf("parser: expr- X \n");   $$ = conjugateAccessor( $1, $3); }
+  | expr LBRACKET expr RBRACKET  { printf("parser: expr-prn\n");   $$ = conjugate($1,  verbObjAtIdx(), $3); }
+  | expr ACCESSOR anyIndent { printf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
+  | expr ACCESSOR VERB { printf("parser: expr-.v\n");   $$ = conjugate( $1, verbIdent($3), 0); }
+  | expr ACCESSOR VERB expr { printf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
   | IDENT DESTRUCTOR      { printf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
   ;
 
 object:
   INT       { printf("parser: object-int\n");       $$ = objectInt($1); }
+  | CHAR       { printf("parser: object-int\n");       $$ = objectChar($1); }
   | FLOAT   { printf("parser: object-float\n");     $$ = objectFloat($1);}
   | IDENT   { printf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | NEWIDENT   { printf("parser: object-new-identifer\n"); $$ = objectNewIdent($1); }
@@ -188,10 +195,15 @@ anyIndent:
   ;
 
 function_definition:
-  UNMARKEDNEWIDENT RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
-  | VERB RETURN TYPE COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
+  UNMARKEDNEWIDENT RETURN function_type_entry COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
+  | VERB RETURN function_type_entry COLON parameters { printf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
   | UNMARKEDNEWIDENT RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   | VERB RETURN COLON parameters { printf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
+  ;
+
+function_type_entry:
+  TYPE                                  { printf("parser: TYPE\n"); $$ = $1; }
+  |NEWIDENT                             { printf("parser: NEWIDENT\n"); $$ = $1; }
   ;
 
 parameters:
