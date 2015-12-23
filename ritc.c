@@ -76,7 +76,6 @@ Object *beginClass(char *className, char *parentName)
         setFlags(result, FLAG_EXTERNAL);
     } else {
         setParentClass(result, parent);
-        //addSymbol(result, selfReference);
         addSymbol(result, parentReference);
     }
     addSymbol(current, result);
@@ -91,7 +90,6 @@ void doneClass(Object * tree)
     if (!external) {
         char ctorName[BUFFLEN];
         snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
-
         Object *ctor = findByNameInScope(current, ctorName, true);
         if (!ctor) {
             beginConstructor(CreateObject(0, 0, 0, Expression, 0));
@@ -255,7 +253,11 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s self;", returnType);
+        snprintf(allocator, BUFFLEN, "%s * self = calloc(1, sizeof(%s));", returnType,
+                 current->name);
+        addCode(result, allocator);
+        snprintf(allocator, BUFFLEN, "self->" IDENT_SUPER "= %s" COMPILER_SEP "%s" "();",
+                 current->parentClass->name, current->parentClass->name);
         addCode(result, allocator);
     }
     addSymbol(parentScope, result);
@@ -454,16 +456,9 @@ Object *makeReturn(Object * expression)
     free(line->value);
     line->value = strdup(newCode);
 
-    printf("Expression type %d code %s\n",expression->type,expression->code->value);
     if (expression->type == Variable) {
-        char tempBuffer[BUFFLEN];
-        sprintf(tempBuffer,"String_return_GCC(&%s)",expression->name);
-        Object * returnObj = CreateObject(0, 0, 0, Expression, "String");
-        addCode(returnObj, tempBuffer);
-        addCode(returnObj, expression->code->value);
-        addParam(returnObj, "String");
-        return returnObj;
-
+        printf("Expression type %d code %s\n",expression->type,expression->code->value);
+        setFlags(expression, FLAG_RETURNS);
     }
     return expression;
 }
@@ -615,36 +610,12 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         }
 
 
-        //Check if it has an assign verb
-        Object * processedSubject = findByName(subject->name);
-        snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "assign" COMPILER_SEP "%s", processedSubject->returnType,
-                 objects->paramTypes->value);
-        Object * processedVerb = findFunctionByFullName(verbname);
+        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
+             objects->code->value);
 
-        printf("Looking for %s\n",verbname);
-        if (!processedVerb) {
-            printf("Not found %s\n",verbname);
-            snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
-                 objects->code->value);
-        } else {
-            if (!getFlag(objects, FLAG_POINTERTYPE)){
-                processedSubject->code = subject->code;
-                char pscv[BUFFLEN];
-                snprintf(pscv, BUFFLEN, "&%s",processedSubject->code->value);
-                processedSubject->code->value = pscv;
-                
-//              sprintf(tempBuffer,"%s.refCount = 0",subject->name);
-//              CreateObject(0, 0, 0, Expression, "String");
-//              addCode(result, tempBuffer);
-//              addParam(result, "String");
-            } else {
-                processedSubject->code = subject->code;
-            }
-            return conjugate(processedSubject,processedVerb,objects);
-        }
 
         addCode(result, verbname);
-        printf("\tConjugated: %s\n", verbname);
+        printf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
         return result;
     }
     //build code line statement invoking that verb.
@@ -691,7 +662,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     }
 
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
-    printf("\tConjugated: %s\n", verbname);
+    printf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
 
     result = CreateObject(0, 0, 0, Expression, "void");
 
@@ -848,7 +819,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
         char paramTypes[BUFFLEN][BUFFLEN];
-        int subject_idx = snprintf(newSubject, BUFFLEN, "%s.", subject->code->value);
+        int subject_idx = snprintf(newSubject, BUFFLEN, "%s->", subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset - 1] == '*' || newName[offset - 1] == ' ') {
             offset--;
@@ -865,10 +836,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             printf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
             subject_idx +=
-                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER ".");
+                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER "->");
             parent = parent->parentClass;
         }
-        newSubject[subject_idx - 1] = '\0';
+        newSubject[subject_idx-2] = '\0';
         if (realVerb) {
             //TODO: violates encapsulation. (just this once!)
             free(subject->code->value);
@@ -915,7 +886,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                      subject->code->value, verb->fullname, objects->code->value);
         addCode(result, invocation);
 
-        printf("\tConjugated: \"%s\"\n", invocation);
+        printf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
         return result;
     }
     //Hack to allow if statements without codeblocks working yet.
@@ -984,7 +955,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     } else {
         addCode(result, invocation);
     }
-    printf("\tConjugated: %s\n", invocation);
+    printf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
     return result;
 }
 
@@ -1203,6 +1174,7 @@ Object *objectIdent(char *ident)
                          identifier->returnType);
         addParam(result, identifier->returnType);
     }
+    printf("Ident full name %s\n",identifier->fullname);
     addCode(result, identifier ? identifier->fullname : ident);
     return result;
 }
@@ -1232,7 +1204,7 @@ Object *objectSelfIdent(char *ident)
         result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
         addParam(result, identifier->returnType);
         char code[BUFFLEN];
-        snprintf(code, BUFFLEN, "self.%s", ident);
+        snprintf(code, BUFFLEN, "self->%s", ident);
         addCode(result, code);
     }
     return result;
@@ -1348,14 +1320,15 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
 
         if (!oField) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "%s %s has no member named %s.\n", parentType,
+            snprintf(error, BUFFLEN, "%s %s has no member named %s->\n", parentType,
                      parent, field);
             criticalError(ERROR_UndefinedVariable, error);
         }
 
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
-        snprintf(accessCode, BUFFLEN, "%s.%s", parent, field);
+        printf ("Parent field %s %s\n",parent, field);
+        snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
         return result;

@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "ObjectTree.h"
 
 #include "stdlib.h"
@@ -181,19 +182,12 @@ ListString *addCode(Object * tree, char *line)
 
 int listlen(ListString * head)
 {
-
     int count = 0;
-
     while (head != 0) {
-
         count++;
-
         head = head->next;
-
     }
-
     return count;
-
 }
 
 int setFlags(Object * tree, int flags)
@@ -203,16 +197,12 @@ int setFlags(Object * tree, int flags)
 
 int getFlag(Object * tree, int flag)
 {
-
     return ((tree->flags & flag) == flag);
-
 }
 
 int setParentClass(Object * tree, Object * parentClass)
 {
-
     tree->parentClass = parentClass;
-
 }
 
 /* In a CodeBlock,
@@ -276,17 +266,11 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
     ListObject *iter = scope->definedSymbols;
 
     while (iter != 0) {
-
         if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
-
             result = iter->value;
-
             break;
-
         }
-
         iter = iter->next;
-
     }
 
     if (!result && scope->parentClass) {
@@ -294,7 +278,7 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
         if (result && result->type == Variable) {
             //Prepend "self->" to fullName
             char newFullName[BUFFLEN];
-            snprintf(newFullName, BUFFLEN, "self.%s", result->fullname);
+            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->type,
@@ -359,18 +343,15 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
     }
 
     if (!result && scope->parentClass) {
-
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
-
         if (result && result->type != Variable && result->type != Type
             && result->type != Constructor) {
-
             //printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
             result = 0;
 
         } else if (result && result->type == Variable) {
             char newFullName[BUFFLEN];
-            snprintf(newFullName, BUFFLEN, "self.%s", result->fullname);
+            snprintf(newFullName, BUFFLEN, "self->%s", result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->type,
@@ -382,23 +363,17 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
     }
 
     if (!result && scope->parentScope != 0) {
-
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
-
         if (result && result->type != Type && result->type != Function) {
-
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
-
         } else {
-
             //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
 
     }
     //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
-
 }
 
 /*In a Type
@@ -444,7 +419,7 @@ Object *searchType(Object * scope, char *name, int bUseFullName)
                 //Prepend "$super." to fullName
                 char newFullName[BUFFLEN];
 
-                snprintf(newFullName, BUFFLEN, "$super.%s", result->fullname);
+                snprintf(newFullName, BUFFLEN, IDENT_SUPER "->%s", result->fullname);
 
                 //TODO: memory leak. (allocating space that will never be freed)
                 Object *temp =
@@ -494,33 +469,23 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName)
     switch (scope->type) {
 
     case CodeBlock:
-
         result = searchCodeBlock(scope, name, bUseFullName);
-
         break;
 
     case Function:
-
         result = searchFunction(scope, name, bUseFullName);
-
         break;
 
     case Constructor:
-
         result = searchConstructor(scope, name, bUseFullName);
-
         break;
 
     case Type:
-
         result = searchType(scope, name, bUseFullName);
-
         break;
 
     default:
-
         warningMsg("cannot search within type %d\n", scope->type);
-
         break;
 
     }
@@ -648,7 +613,7 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 
     ListObject *oIter;
     ListString *sIter;
-    
+
     if (tree == 0) {
         warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
         return;
@@ -676,15 +641,14 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 
 }
 
-void writeDeclareVariable (ListObject *oIter, FILE * outFile) {
-            if (!strcmp(oIter->value->returnType,"String")) {
-                fprintf(outFile, "\t%s __attribute__ ((__cleanup__(String_cleanUp_GCC)))  %s;\n", oIter->value->returnType,
-                    oIter->value->fullname);
-//                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
-//                    oIter->value->fullname);
-            } else {
+void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
+            Object * rType = findByNameInScope(tree,oIter->value->returnType,false);
+            if (getFlag(rType,FLAG_PRIMITIVE)) {
                 fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
-                    oIter->value->fullname);
+                        oIter->value->fullname);
+            } else {
+                fprintf(outFile, "\t%s __attribute__ ((__cleanup__(%s" COMPILER_SEP "destructor))) * %s;\n",
+                        oIter->value->returnType, oIter->value->returnType, oIter->value->fullname);
             }
 }
 
@@ -692,25 +656,26 @@ void writeFunction(FILE * outh, Object * tree, int indent)
 {
 
     ListObject *oIter;
-
     ListString *sIter;
 
     oIter = tree->definedSymbols;
-
     sIter = tree->paramTypes;
 
-    if (tree->type == Constructor) {
-        fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
-    } else {
-        fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
-    }
+    Object * rType = findByNameInScope(tree,tree->returnType,false);
+
+    //printf ("Looking up type %s %u\n",tree->returnType,rType);
+
+    char *asterisk = getFlag(rType,FLAG_PRIMITIVE) ? "" : " * ";
+    fprintf(outh, "%s %s %s(", tree->returnType, asterisk, tree->fullname);
 
     //add each param
     while (sIter != 0) {
+        rType = findByNameInScope(tree,sIter->value,false);
+        asterisk = getFlag(rType,FLAG_PRIMITIVE) ? "" : " * ";
         if (sIter->next == 0) {
-            fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
+            fprintf(outh, "%s %s %s", sIter->value, asterisk, oIter->value->fullname);
         } else {
-            fprintf(outh, "%s %s, ", sIter->value, oIter->value->fullname);
+            fprintf(outh, "%s %s %s, ", sIter->value, asterisk, oIter->value->fullname);
         }
         sIter = sIter->next;
         oIter = oIter->next;
@@ -722,24 +687,18 @@ void writeFunction(FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
             //declare all class variables
-            writeDeclareVariable (oIter, outh);
+            writeDeclareVariable (oIter, outh, tree);
         }
         oIter = oIter->next;
     }
 
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
-
         sIter = tree->code;
-
         while (sIter != 0) {
-
             fprintf(outh, "    %s\n", sIter->value);
-
             sIter = sIter->next;
-
         }
-
     }
 
     fprintf(outh, "}\n");
@@ -758,7 +717,7 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
             //declare all local variables
-            writeDeclareVariable (oIter, outc);
+            writeDeclareVariable (oIter, outc, tree);
         } else {
             writeTreeHelper(outc, outh, oIter->value, indent + 1);
         }
@@ -790,13 +749,10 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
 
         if (oIter->value->type == Variable) {
-            fprintf(outh, "\t%s %s;\n", oIter->value->returnType,
-                    oIter->value->fullname);
-
+            writeDeclareVariable (oIter, outh, tree);
         } else {
             oIter = oIter->next;
             break;
-
         }
 
         oIter = oIter->next;
@@ -878,51 +834,35 @@ void printType(OBJ_TYPE type)
     switch (type) {
 
     case Undefined:
-
         printf("Undefined");
-
         break;
 
     case Variable:
-
         printf("Variable");
-
         break;
 
     case Type:
-
         printf("Type");
-
         break;
 
     case Constructor:
-
         printf("Constructor");
-
         break;
 
     case Function:
-
         printf("Function");
-
         break;
 
     case CodeBlock:
-
         printf("CodeBlock");
-
         break;
 
     case Expression:
-
         printf("Expression");
-
         break;
 
     default:
-
         printf("(missing from printType in ObjectTree.c)");
-
         break;
 
     }

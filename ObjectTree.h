@@ -10,7 +10,8 @@
 #define FLAG_SUBJECT    2
 #define FLAG_EXTERNAL   4
 #define FLAG_SAVERESULT     8
-#define FLAG_POINTERTYPE     8
+#define FLAG_RETURNS     16
+#define FLAG_PRIMITIVE     32
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
 #define IDENT_SELF "$"

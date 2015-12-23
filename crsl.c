@@ -22,11 +22,13 @@ void defineRSLSymbols(Object * root)
         CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", objBaseType, Type,
                      "Boolean");
     setFlags(temp2, FLAG_EXTERNAL);
+    setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
     temp2 =
         CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", objBaseType, Type,
                      "Ternary");
     setFlags(temp2, FLAG_EXTERNAL);
+    setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
     temp2 =
         CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", objBaseType, Type,
@@ -47,12 +49,15 @@ void defineRSLSymbols(Object * root)
     temp3 =
         CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
     setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
     temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
     setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
     temp3 = CreateObject("Char", "Char" COMPILER_SEP "Number", temp2, Type, "Char");
     setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
 
     temp4 =
@@ -61,6 +66,14 @@ void defineRSLSymbols(Object * root)
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
+    // ==============  Basetype constructor ===============
+
+    rslFunc =
+            CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType",
+                         0, Function, "BaseType");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "BaseType");
+    addSymbol(root, rslFunc);
     // ==============  Exponent functions ===============
 
     rslFunc =

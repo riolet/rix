@@ -51,7 +51,7 @@ typedef void *Generic_$$;
 #define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
 #define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
 
-int Integer_$_Integer_$_String(String s);
+int Integer_$_Integer_$_String(String * s);
 
 
 float Float_$_exponent_$_Integer(float f, int i);
@@ -65,13 +65,13 @@ float Float_$_exponent_$_Float(float f1, float f2);
 int Integer_$_sqrt_$_(int i);
 
 /* Print prints the param and a newline char */
-int Stream_$_print_$_String(Stream stream, String s);
+int Stream_$_print_$_String(Stream stream, String * s);
 
 int Stream_$_print_$_Integer(Stream stream, int i);
 
 int Stream_$_print_$_Float(Stream stream, float f);
 
-int print_$_String(String s);
+int print_$_String(String * s);
 
 int print_$_Char(char c);
 
@@ -81,13 +81,13 @@ int print_$_Integer(int i);
 int print_$_Float(float f);
 
 /* Echo omits the newline char */
-int Stream_$_echo_$_String(Stream stream, String s);
+int Stream_$_echo_$_String(Stream stream, String * s);
 
 int Stream_$_echo_$_Integer(Stream stream, int i);
 
 int Stream_$_echo_$_Float(Stream stream, float f);
 
-int echo_$_String(String s);
+int echo_$_String(String * s);
 
 int echo_$_Integer(int i);
 
@@ -101,6 +101,8 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-String args_$_Integer(Integer i);
+String * args_$_Integer(Integer i);
 
+BaseType * BaseType_$_BaseType ();
+#define __cleanup__(x)
 #endif
