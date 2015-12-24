@@ -577,28 +577,13 @@ OBJ_TYPE getIdentType(Object * scope, char *identifier)
 
 void writeTree(FILE * outc, FILE * outh, Object * tree)
 {
-    ListObject *iter;
-
-    //create the output union
     writeTypeDefs(outh, tree);
-    /*
-    fprintf(outh, "union " COMPILER_SEP COMPILER_SEP "Last {\n");
-    for (iter = tree->definedSymbols; iter != 0; iter = iter->next) {
-        if (iter->value->type == Type) {
-            fprintf(outh, "    %s p%s;\n", iter->value->returnType, iter->value->name);
-        }
-    }
-    fprintf(outh, "};\n");
-    */
     writeTreeHelper(outc, outh, tree, 0);
-
 }
 
 void writeTypeDefs(FILE * outh, Object * tree)
 {
     ListObject *iter = tree->definedSymbols;
-    fprintf(outh,
-            "typedef union " COMPILER_SEP COMPILER_SEP "Last " COMPILER_SEP "Last;\n");
     while (iter) {
         if (iter->value->type == Type && !getFlag(iter->value, FLAG_EXTERNAL)) {
             fprintf(outh, "typedef struct " COMPILER_SEP "%s %s;\n", iter->value->name,
@@ -647,8 +632,24 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                 fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
                         oIter->value->fullname);
             } else {
-                fprintf(outFile, "\t%s __attribute__ ((__cleanup__(%s" COMPILER_SEP "destructor))) * %s;\n",
-                        oIter->value->returnType, oIter->value->returnType, oIter->value->fullname);
+//                if (!strcmp(oIter->value->returnType,IDENT_RETVAR)){
+//                    fprintf(outFile, "\t%s __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) * %s;%s.ptr=0;\n",
+//                            oIter->value->returnType, oIter->value->fullname, oIter->value->fullname);
+//                } else {
+//                    fprintf(outFile, "\t%s __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) %s;\n",
+//                            oIter->value->returnType, oIter->value->fullname);
+//                }
+
+                if (!strcmp(oIter->value->returnType,IDENT_RETVAR)) {
+                    fprintf(outFile,
+                            "\t" IDENT_RETVAR " __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) %s;\n\t" IDENT_RETVAR_INITIALIZE "(&%s);\n",
+                            oIter->value->fullname, oIter->value->fullname);
+                } else {
+                    fprintf(outFile,
+                            "\t" IDENT_RETVAR " __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup_var))) * %s = alloca(sizeof(" IDENT_RETVAR "));\n",
+                            oIter->value->fullname);
+                }
+
             }
 }
 
@@ -665,20 +666,33 @@ void writeFunction(FILE * outh, Object * tree, int indent)
 
     //printf ("Looking up type %s %u\n",tree->returnType,rType);
 
-    char *asterisk = getFlag(rType,FLAG_PRIMITIVE) ? "" : " * ";
-    fprintf(outh, "%s %s %s(", tree->returnType, asterisk, tree->fullname);
+    if (getFlag(rType,FLAG_PRIMITIVE))
+    {
+        fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
+    } else {
+        fprintf(outh, IDENT_RETVAR "* %s(", tree->fullname);
+    }
 
     //add each param
+    Object *pType;
+    char printComma = ' ';
     while (sIter != 0) {
-        rType = findByNameInScope(tree,sIter->value,false);
-        asterisk = getFlag(rType,FLAG_PRIMITIVE) ? "" : " * ";
-        if (sIter->next == 0) {
-            fprintf(outh, "%s %s %s", sIter->value, asterisk, oIter->value->fullname);
+        printComma = ',';
+        pType = findByNameInScope(tree,sIter->value,false);
+
+        if (getFlag(pType,FLAG_PRIMITIVE)) {
+            fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
         } else {
-            fprintf(outh, "%s %s %s, ", sIter->value, asterisk, oIter->value->fullname);
+            fprintf(outh, IDENT_RETVAR " * %s, ",  oIter->value->fullname);
         }
+
         sIter = sIter->next;
         oIter = oIter->next;
+    }
+
+
+    if (!getFlag(rType,FLAG_PRIMITIVE)) {
+        fprintf(outh, "%c " IDENT_RETVAR " * " IDENT_RETVAR "_in",printComma);
     }
 
     //finish
@@ -709,7 +723,6 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
 {
 
     ListObject *oIter;
-
     ListString *sIter;
 
     oIter = tree->definedSymbols;
@@ -779,33 +792,23 @@ void printSequential(ListString * list, int indent, int newlines)
     int i;
 
     if (!newlines) {
-
         if (list == 0) {
-
             printf("\n");
-
             return;
-
         }
 
         printf("%s, ", list->value);
 
         while (list->next != 0) {
-
             list = list->next;
-
             printf("%s, ", list->value);
-
         }
 
         printf("\n");
-
     } else {
 
         if (list == 0) {
-
             return;
-
         }
 
         for (i = 0; i < indent; i++) {
@@ -814,14 +817,11 @@ void printSequential(ListString * list, int indent, int newlines)
         printf("\"%s\"\n", list->value);
 
         while (list->next != 0) {
-
             list = list->next;
-
             for (i = 0; i < indent; i++) {
                 printf("  ");
             }
             printf("\"%s\"\n", list->value);
-
         }
 
     }

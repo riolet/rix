@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h>
+#include "rsl/rsl.h"
 #include "rsl/RSL_String.h"
 
 void String_return_GCC(String *s)
@@ -31,14 +33,20 @@ String *String_$_String_$_ ()
     return calloc(1, sizeof(String));
 }
 
-String * String_$_stringlit(char *strlit)
+IDENT_RETVAR_RAW * String_$_stringlit(char *strlit)
 {
     String * s = String_$_String_$_();
     s->buffer = strlit;
     s->cap = strlen(strlit);
     s->length = strlen(strlit);
-    s->isStored = StringStatusLiteral;
-    return s;
+
+    //Todod pass this from the caller
+    IDENT_RETVAR_RAW * $_retvar_in = malloc(sizeof(IDENT_RETVAR_RAW));
+    $_retvar_in->ctr = 1;
+    $_retvar_in->ptr = 0;
+    $_retvar_in->obj = s;
+    $_retvar_in->objType = "String";
+    return $_retvar_in;
 }
 
 String * String_$_assign_$_String(String *left, String * right)
@@ -50,18 +58,25 @@ String * String_$_assign_$_String(String *left, String * right)
     return left;
 }
 
-String * String_$_plus_$_String(String * left, String * right)
+IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in)
 {
     String * newString;
-    newString->isStored = StringStatusDelete;
+    String * left = left_->obj;
+    String * right = right_->obj;
+
+    newString = malloc(sizeof(String));
+
     newString->buffer = malloc(left->length + right->length + 1);
     memcpy(newString->buffer, left->buffer, left->length);
     memcpy(newString->buffer + left->length, right->buffer, right->length);
     newString->length = left->length + right->length;
     newString->buffer[newString->length] = 0;
-    String_cleanUp(left);
-    String_cleanUp(right);
-    return newString;
+
+    $_retvar_in->ctr = 0;
+    $_retvar_in->ptr = 0;
+    $_retvar_in->obj = newString;
+    $_retvar_in->objType = "String";
+    return $_retvar_in;
 }
 
 String * String_$_plus_$_Integer(String * left, int right)

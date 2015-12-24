@@ -66,6 +66,12 @@ void defineRSLSymbols(Object * root)
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
+    temp4 =
+            CreateObject(IDENT_RETVAR, IDENT_RETVAR COMPILER_SEP "BaseType", objBaseType, Type,
+                         IDENT_RETVAR);
+    setFlags(temp4, FLAG_EXTERNAL);
+    addSymbol(root, temp4);
+
     // ==============  Basetype constructor ===============
 
     rslFunc =
@@ -74,6 +80,7 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "BaseType");
     addSymbol(root, rslFunc);
+
     // ==============  Exponent functions ===============
 
     rslFunc =

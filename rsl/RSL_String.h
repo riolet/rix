@@ -1,8 +1,12 @@
 #ifndef RSL_STRING_H
 #define RSL_STRING_H
 
-#define RSL_STRING_MAX_BUFFLEN 1024
 #include <stddef.h>
+#include "ObjectTree.h"
+#include "rsl/rsl.h"
+
+#define RSL_STRING_MAX_BUFFLEN 1024
+
 enum StringStatus
 {
     StringStatusDelete=0,
@@ -11,13 +15,7 @@ enum StringStatus
     StringStatusReturned
 };
 
-typedef struct {
-    char *buffer;
-    size_t length;
-    size_t cap;
 
-    int isStored;
-} String;
 
 void String_return_GCC(String *s);
 
@@ -27,11 +25,9 @@ void String_cleanUp(String *s);
 
 String *String_$_String_$_ ();
 
-String *String_$_stringlit(char *strlit);
+IDENT_RETVAR_RAW * String_$_stringlit(char *strlit);
 
-String *String_$_assign_$_String(String *left, String *right);
-
-String *String_$_plus_$_String(String *left, String *right);
+IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in);
 
 String *String_$_plus_$_Integer(String *left, int right);
 

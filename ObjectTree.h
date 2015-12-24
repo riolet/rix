@@ -6,6 +6,11 @@
 #include <stdarg.h>
 #include "errors.h"
 
+#define xstr(a) str(a)
+#define str(a) #a
+#define cat(a,b) a ## b
+
+
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2
 #define FLAG_EXTERNAL   4
@@ -16,6 +21,18 @@
 #define COMPILER_SEP "_$_"
 #define IDENT_SELF "$"
 #define IDENT_SUPER "$super"
+#define IDENT_RETVAR_RAW _$_retvar
+
+#define IDENT_CTR_PTR _$_counter_pointer
+#define RETVAR_POINT_RAW cat(IDENT_RETVAR_RAW,_point)
+#define IDENT_RETVAR_INITIALIZE_RAW cat(IDENT_RETVAR_RAW,_initialize)
+
+
+#define IDENT_RETVAR xstr(IDENT_RETVAR_RAW)
+#define IDENT_RETVAR_INITIALIZE xstr(IDENT_RETVAR_INITIALIZE_RAW)
+#define RETVAR_POINT xstr(RETVAR_POINT_RAW)
+
+//typedef enum { false, true } bool;
 
 typedef enum {
     Undefined,

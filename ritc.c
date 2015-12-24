@@ -32,6 +32,7 @@ char prevExists[MAXSCOPE];
 ListString *prevNode[MAXSCOPE];
 int prev_idx = 0;
 bool external = false;
+int retVarNumber = 0;
 
 Object *scope_pop()
 {
@@ -451,12 +452,17 @@ Object *makeReturn(Object * expression)
     }
     char *oldCode = line->value;
     char newCode[BUFFLEN];
-    snprintf(newCode, BUFFLEN, "return %s", oldCode);
-    //TODO: this violates encapsulation
-    free(line->value);
-    line->value = strdup(newCode);
-
-    if (expression->type == Variable) {
+    Object * rType = findByName(expression->returnType);
+    if (getFlag(rType,FLAG_PRIMITIVE)) {
+        snprintf(newCode, BUFFLEN, "return %s", oldCode);
+        //TODO: this violates encapsulation
+        free(line->value);
+        line->value = strdup(newCode);
+    } else {
+        snprintf(newCode, BUFFLEN, IDENT_RETVAR "_prepare(%s, " IDENT_RETVAR "_in);\n"
+                "return " IDENT_RETVAR "_in;", line->value);
+        free(line->value);
+        line->value = strdup(newCode);
         printf("Expression type %d code %s\n",expression->type,expression->code->value);
         setFlags(expression, FLAG_RETURNS);
     }
@@ -609,9 +615,15 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             }
         }
 
+        Object * rType = findByName(objects->returnType);
 
-        snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
-             objects->code->value);
+        if (getFlag(rType,FLAG_PRIMITIVE)) {
+            snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
+                     objects->code->value);
+        } else {
+            snprintf(verbname, BUFFLEN, RETVAR_POINT "(%s,%s)", subject->code->value,
+                     objects->code->value);
+        }
 
 
         addCode(result, verbname);
@@ -689,7 +701,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     if (getFlag(verb, FLAG_ASSIGNMENT)) {
         return conjugateAssign(subject, verb, objects);
     }
+
+
     //== Build the fullname for the verb ==
+
     if (subject) {
         if (subject->returnType == 0) {
             char error[BUFFLEN];
@@ -937,6 +952,22 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             codeIter = codeIter->next;
         }
     }
+    //== RetVar shenanigans ==
+    Object * rType = findByName(realVerb->returnType);
+
+    if (!getFlag(rType,FLAG_PRIMITIVE)) {
+        char retVarName[BUFFLEN];
+        snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+        retVarNumber++;
+        Object *retVar =
+                CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
+        addSymbol(current, retVar);
+        if (objects) {
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",");
+        }
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
+    }
+    //Close
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
 
     if (strcmp(realVerb->returnType, "Generic_$$")) {
