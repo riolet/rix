@@ -13,7 +13,7 @@ typedef struct String{
     char *buffer;
     size_t length;
     size_t cap;
-    int isStored;
+    bool isStaticBuffer;
 } String;
 
 typedef struct {
@@ -29,6 +29,7 @@ typedef struct {
     void *ptr;
     void *obj;
     void (*destructor)(void *);
+    char *debugName;
 } IDENT_RETVAR_RAW;
 
 
@@ -131,5 +132,7 @@ void _$_retvar_prepare(IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW * b);
 
 IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_point (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW *b);
 
-void IDENTWAR_INITIALIZE_RAW(IDENT_RETVAR_RAW * retvar);
+IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_assign (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW *b);
+
+void IDENT_RETVAR_RAW_initialize(IDENT_RETVAR_RAW * retvar, char *name);
 #endif

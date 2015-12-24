@@ -25,11 +25,11 @@ void String_$_destructor_$_(String *s);
 
 String *String_$_String_$_ ();
 
-IDENT_RETVAR_RAW * String_$_stringlit(char *strlit);
+IDENT_RETVAR_RAW * String_$_stringlit(char *strlit, IDENT_RETVAR_RAW * $_retvar_in);
 
 IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in);
 
-String *String_$_plus_$_Integer(String *left, int right);
+IDENT_RETVAR_RAW * String_$_plus_$_Integer(IDENT_RETVAR_RAW * left_, int right, IDENT_RETVAR_RAW * $_retvar_in);
 
 String *Integer_$_plus_$_String(int left, String *right);
 
@@ -39,5 +39,5 @@ String *Float_$_plus_$_String(float left, String *right);
 
 char String_$_getObjectAtIndex_$_Integer(String * right, int left);
 
-int String_$_length_$_(String * right);
+int String_$_length_$_(IDENT_RETVAR_RAW *  string);
 #endif

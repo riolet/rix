@@ -7,11 +7,12 @@ someMoreFun->String:String in
     #abcd = ab + "C" + "D" + in
     -> "E" + "F"
 
-somefun->String:
-    #s = "WOAH"
+somefun->String:String in
+    #t = ""
+    #i for 1, 1000
+        t = t + in
+    #u = t
+    #s = "WOAH" + in + " " + (t length)
     ->s
 
-
-someMoreFun "!"
-someOtherFun
-print somefun
+print ((somefun someMoreFun "!") + someOtherFun)

@@ -72,7 +72,7 @@ Object *beginClass(char *className, char *parentName)
 
     Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
-    printf("External class %d\n",external);
+    compilerDebugPrintf("External class %d\n",external);
     if (external) {
         setFlags(result, FLAG_EXTERNAL);
     } else {
@@ -158,7 +158,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     Object *result =
         CreateObject(funcName, funcFullName, parentScope, Function, returnType);
 
-    printf("External func %d\n",external);
+    compilerDebugPrintf("External func %d\n",external);
     if (external) {
         setFlags(result, FLAG_EXTERNAL);
     } else {
@@ -248,7 +248,7 @@ Object *beginConstructor(Object * parameters)
         types = types->next;
     }
 
-    printf("External ctor %d\n",external);
+    compilerDebugPrintf("External ctor %d\n",external);
     if (external) {
         setFlags(result, FLAG_EXTERNAL);
     } else {
@@ -463,7 +463,7 @@ Object *makeReturn(Object * expression)
                 "return " IDENT_RETVAR "_in;", line->value);
         free(line->value);
         line->value = strdup(newCode);
-        printf("Expression type %d code %s\n",expression->type,expression->code->value);
+        compilerDebugPrintf("Expression type %d code %s\n",expression->type,expression->code->value);
         setFlags(expression, FLAG_RETURNS);
     }
     return expression;
@@ -571,7 +571,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         }
     }
     //search for the definition of that object
-    printf("ConjugateAssign: fullVerbName: %s\n", verbname);
+    compilerDebugPrintf("ConjugateAssign: fullVerbName: %s\n", verbname);
     realVerb = findFunctionByFullName(verbname);
     if (realVerb == 0 && isalpha(verb->name[0])) {
         char error[BUFFLEN];
@@ -588,7 +588,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
         if (!subject->returnType) {
             if (subject->type == NewMarkedIdent) {
-                printf ("Creating new variable %s\n",subject->name);
+                compilerDebugPrintf ("Creating new variable %s\n",subject->name);
                 Object *variable =
                     CreateObject(subject->name, subject->fullname, 0, Variable,
                                  objects->paramTypes->value);
@@ -621,13 +621,13 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                      objects->code->value);
         } else {
-            snprintf(verbname, BUFFLEN, RETVAR_POINT "(%s,%s)", subject->code->value,
+            snprintf(verbname, BUFFLEN, RETVAR_ASSIGN "(%s,%s)", subject->code->value,
                      objects->code->value);
         }
 
 
         addCode(result, verbname);
-        printf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
+        compilerDebugPrintf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
         return result;
     }
     //build code line statement invoking that verb.
@@ -662,7 +662,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
     if (subject && subject->returnType == 0) {
         if (subject->type == NewMarkedIdent) {
-            printf("NewMarkedIdent %s", subject->name);
+            compilerDebugPrintf("NewMarkedIdent %s", subject->name);
             Object *variable = CreateObject(subject->name, subject->fullname, 0, Variable,
                                             verb->returnType);
             addSymbol(current, variable);
@@ -674,7 +674,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     }
 
     verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, ")");
-    printf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
+    compilerDebugPrintf("\tConjugated: (%d) %s at \n", __LINE__, verbname);
 
     result = CreateObject(0, 0, 0, Expression, "void");
 
@@ -814,8 +814,8 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     }
 
     //search for the definition of that object
-    printf("Conjugate: fullVerbName: %s\n", verbname);
-    printf("Conjugate: genericVerbName: %s\n", genericVerbName);
+    compilerDebugPrintf("Conjugate: fullVerbName: %s\n", verbname);
+    compilerDebugPrintf("Conjugate: genericVerbName: %s\n", genericVerbName);
     if (verb->type == Type) {
         //look for ctor inside class
         realVerb = findByNameInScope(verb, verbname, true);
@@ -848,7 +848,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
         while (!realVerb && parent && parent->type == Type) {
             snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
-            printf("Trying parent class: %s\n", newName);
+            compilerDebugPrintf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
             subject_idx +=
                 snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER "->");
@@ -901,7 +901,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                      subject->code->value, verb->fullname, objects->code->value);
         addCode(result, invocation);
 
-        printf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
+        compilerDebugPrintf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
         return result;
     }
     //Hack to allow if statements without codeblocks working yet.
@@ -963,7 +963,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                 CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
         addSymbol(current, retVar);
         if (objects) {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "\t,\t");
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
         }
         invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
     }
@@ -986,7 +986,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     } else {
         addCode(result, invocation);
     }
-    printf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
+    compilerDebugPrintf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
     return result;
 }
 
@@ -1035,49 +1035,49 @@ Object *conjugateConditional(Object * subject, Object * realverb, Object * objec
 
 Object *verbMathOp(char *verb)
 {
-    printf("verbMathOp(%s)\n", verb);
+    compilerDebugPrintf("verbMathOp(%s)\n", verb);
     Object *result = CreateObject(verb, verb, 0, Function, 0);
     return result;
 }
 
 Object *verbComparison(char *verb)
 {
-    printf("verbComparison(%s)\n", verb);
+    compilerDebugPrintf("verbComparison(%s)\n", verb);
     Object *result = CreateObject(verb, verb, 0, Function, "Boolean");
     return result;
 }
 
 Object *verbTernary()
 {
-    printf("verbTernary(<>)\n");
+    compilerDebugPrintf("verbTernary(<>)\n");
     Object *result = CreateObject("<>", "<>", 0, Function, "Boolean");
     return result;
 }
 
 Object *verbDestructor()
 {
-    printf("verbDestructor(#)\n");
+    compilerDebugPrintf("verbDestructor(#)\n");
     Object *result = CreateObject("destructor", "destructor", 0, Function, 0);
     return result;
 }
 
 Object *verbObjAtIdx()
 {
-    printf("verbObjAtIdx(#)\n");
+    compilerDebugPrintf("verbObjAtIdx(#)\n");
     Object *result = CreateObject("getObjectAtIndex", "getObjectAtIndex", 0, Function, 0);
     return result;
 }
 
 Object *verbCondReturn()
 {
-    printf("verbCondReturn(-->)\n");
+    compilerDebugPrintf("verbCondReturn(-->)\n");
     Object *result = CreateObject("-->", "-->", 0, Function, "Boolean");
     return result;
 }
 
 Object *verbAssignment(char *verb)
 {
-    printf("verbAssignment(%s)\n", verb);
+    compilerDebugPrintf("verbAssignment(%s)\n", verb);
     Object *result = CreateObject(verb, verb, 0, Function, 0);
     setFlags(result, FLAG_ASSIGNMENT);
     return result;
@@ -1085,7 +1085,7 @@ Object *verbAssignment(char *verb)
 
 Object *verbIdent(char *verb)
 {
-    printf("verbIdent(%s)\n", verb);
+    compilerDebugPrintf("verbIdent(%s)\n", verb);
     Object *result = findByName(verb);
     if (result == 0) {
         char error[BUFFLEN];
@@ -1119,7 +1119,7 @@ Object *sVerbIdent(char *staticVerb)
 
 Object *verbCtor(char *type)
 {
-    printf("verbCtor(%s)\n", type);
+    compilerDebugPrintf("verbCtor(%s)\n", type);
     Object *result = findByName(type);
     if (result == 0) {
         char error[BUFFLEN];
@@ -1131,7 +1131,7 @@ Object *verbCtor(char *type)
 
 Object *parenthesize(Object * expr)
 {
-    printf("parenthesize(%s)\n", expr->code->value);
+    compilerDebugPrintf("parenthesize(%s)\n", expr->code->value);
     char line[BUFFLEN];
     if (expr == 0) {
         criticalError(ERROR_ParseError,
@@ -1156,7 +1156,7 @@ Object *parenthesize(Object * expr)
 
 Object *objectNewIdent(char *ident)
 {
-    printf("objectNewIdent(%s)\n", ident);
+    compilerDebugPrintf("objectNewIdent(%s)\n", ident);
     Object *result;
     Object *identifier = findByName(ident);
 
@@ -1173,7 +1173,7 @@ Object *objectNewIdent(char *ident)
 
 Object *objectUnmarkedNewIdent(char *ident)
 {
-    printf("objectNewIdent(%s)\n", ident);
+    compilerDebugPrintf("objectNewIdent(%s)\n", ident);
     Object *result;
     Object *identifier = findByName(ident);
 
@@ -1191,7 +1191,7 @@ Object *objectUnmarkedNewIdent(char *ident)
 
 Object *objectIdent(char *ident)
 {
-    printf("objectIdent(%s)\n", ident);
+    compilerDebugPrintf("objectIdent(%s)\n", ident);
     Object *result;
     Object *identifier = findByName(ident);
 
@@ -1205,14 +1205,14 @@ Object *objectIdent(char *ident)
                          identifier->returnType);
         addParam(result, identifier->returnType);
     }
-    printf("Ident full name %s\n",identifier->fullname);
+    compilerDebugPrintf("Ident full name %s\n",identifier->fullname);
     addCode(result, identifier ? identifier->fullname : ident);
     return result;
 }
 
 Object *objectSelfIdent(char *ident)
 {
-    printf("objectSelfIdent(%s)\n", ident);
+    compilerDebugPrintf("objectSelfIdent(%s)\n", ident);
     //must be Function or Constructor and be inside a class
     if ((current->type != Function && current->type != Constructor) || scope_idx == 0
         || scopeStack[scope_idx - 1]->type != Type) {
@@ -1243,7 +1243,7 @@ Object *objectSelfIdent(char *ident)
 
 Object *objectFloat(float f)
 {
-    printf("objectFloat(%f)\n", f);
+    compilerDebugPrintf("objectFloat(%f)\n", f);
     char buffer[128];
     snprintf(buffer, BUFFLEN, "%f", f);
     Object *result = CreateObject(0, 0, 0, Expression, "Float");
@@ -1254,7 +1254,7 @@ Object *objectFloat(float f)
 
 Object *objectInt(int d)
 {
-    printf("objectInt(%d)\n", d);
+    compilerDebugPrintf("objectInt(%d)\n", d);
     char buffer[32];            // 20 = (log10(2^64))
     snprintf(buffer, 32, "%d", d);
     Object *result = CreateObject(0, 0, 0, Expression, "Integer");
@@ -1265,7 +1265,7 @@ Object *objectInt(int d)
 
 Object *objectChar(char *c)
 {
-    printf("objectInt(%c)\n", c[1]);
+    compilerDebugPrintf("objectInt(%c)\n", c[1]);
     char buffer[4];            // 20 = (log10(2^64))
     snprintf(buffer, 4, "%s", c);
     Object *result = CreateObject(0, 0, 0, Expression, "Char");
@@ -1276,9 +1276,21 @@ Object *objectChar(char *c)
 
 Object *objectString(char *string)
 {
-    printf("objectString(%s)\n", string);
+    //== RetVar shenanigans ==
+    Object * rType = findByName("String");
+
+
+    char retVarName[BUFFLEN];
+    snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+    retVarNumber++;
+    Object *retVar =
+            CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
+    addSymbol(current, retVar);
+
+
+    compilerDebugPrintf("objectString(%s)\n", string);
     char buffer[BUFFLEN];
-    snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s)", string);
+    snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s,&%s)", string, retVarName);
     Object *result = CreateObject(0, 0, 0, Expression, "String");
     addCode(result, buffer);
     addParam(result, "String");
@@ -1287,7 +1299,7 @@ Object *objectString(char *string)
 
 Object *objectPrev()
 {
-    printf("objectPrev(%s)\n", previous[prev_idx]);
+    compilerDebugPrintf("objectPrev(%s)\n", previous[prev_idx]);
     Object *result = CreateObject(0, 0, 0, Expression, prevType[prev_idx]);
     addCode(result, previous[prev_idx]);
     addParam(result, prevType[prev_idx]);
@@ -1311,7 +1323,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
 
         //verify parent is defined
         char *parent = subject->code->value;
-        printf("Parent %s\n", parent);
+        compilerDebugPrintf("Parent %s\n", parent);
 
         Object *oParent = subject;
         if (!oParent) {
@@ -1358,7 +1370,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
 
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
-        printf ("Parent field %s %s\n",parent, field);
+        compilerDebugPrintf ("Parent field %s %s\n",parent, field);
         snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
@@ -1379,7 +1391,7 @@ Object *findFunctionByFullName(char *name)
 }
 
 Object * directive(char *key, char *value) {
-    printf ("Directive value %s\n",value);
+    compilerDebugPrintf ("Directive value %s\n",value);
     if (!strcmp(key,"##external")) {
         if (!strcmp(value,"\"\"")) {
             external = false;
@@ -1412,7 +1424,7 @@ int main(int argc, char **argv)
     while ((c = getopt(argc, argv, "o:t")) != -1) {
         switch (c) {
         case 't':
-            printf("hit -t arg\n");
+            compilerDebugPrintf("hit -t arg\n");
             printTreeBool = 1;
             break;
 
@@ -1477,11 +1489,11 @@ int main(int argc, char **argv)
         perror("fopen");
         return 1;
     }
-    printf("%s\n", ifile);
+    compilerDebugPrintf("%s\n", ifile);
     //Read RSL
     readFile("rsl/rsl.rit", ritTempFile, &numline);
 
-    //printf("Lines read %d\n",numline);
+    //compilerDebugPrintf("Lines read %d\n",numline);
     //Read mainfile
     readFile(ifile, ritTempFile, &numline);
     fclose(ritTempFile);
@@ -1502,7 +1514,7 @@ int main(int argc, char **argv)
         yyparse();
     }
     fprintf(outMakeFile, " -lm");
-    printf("=============  Compiling Complete!  ==============\n");
+    compilerDebugPrintf("=============  Compiling Complete!  ==============\n");
 
 
 
@@ -1527,7 +1539,7 @@ int main(int argc, char **argv)
     fclose(file);
     remove("ritchie_temp_file.rit");
 
-    //printf("\n%s compiled successfully.\n", ifile);
+    //compilerDebugPrintf("\n%s compiled successfully.\n", ifile);
 
     return 0;
 }
