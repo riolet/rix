@@ -632,29 +632,10 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                 fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
                         oIter->value->fullname);
             } else {
-//                if (!strcmp(oIter->value->returnType,IDENT_RETVAR)){
-//                    fprintf(outFile, "\t%s __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) * %s;%s.ptr=0;\n",
-//                            oIter->value->returnType, oIter->value->fullname, oIter->value->fullname);
-//                } else {
-//                    fprintf(outFile, "\t%s __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) %s;\n",
-//                            oIter->value->returnType, oIter->value->fullname);
-//                }
-
-//                if (!strcmp(oIter->value->returnType,IDENT_RETVAR)) {
-//                    fprintf(outFile,
-//                            "\t" IDENT_RETVAR " __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup))) %s;\n\t" IDENT_RETVAR_INITIALIZE "(&%s,\"%s\");\n",
-//                            oIter->value->fullname, oIter->value->fullname, oIter->value->fullname);
-//                } else {
-//                    fprintf(outFile,
-//                            "\t" IDENT_RETVAR " __attribute__ ((__cleanup__(" COMPILER_SEP "cleanup_var))) * %s = alloca(sizeof(" IDENT_RETVAR "));\n"
-//                                    IDENT_RETVAR_INITIALIZE "(%s,\"%s\");",
-//                            oIter->value->fullname,oIter->value->fullname, oIter->value->fullname);
-//                }
-
                 if (!strcmp(oIter->value->returnType,IDENT_RETVAR)) {
-                    fprintf(outFile, "_$_TEMP_OBJ(%s);\n",oIter->value->fullname);
+                    fprintf(outFile, "\t_$_TEMP_OBJ(%s);\n",oIter->value->fullname);
                 } else {
-                    fprintf(outFile, "_$_VARIABLE(%s);\n",oIter->value->fullname);
+                    fprintf(outFile, "\t_$_VARIABLE(%s);\n",oIter->value->fullname);
                 }
 
             }

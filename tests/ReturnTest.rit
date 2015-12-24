@@ -9,10 +9,10 @@ someMoreFun->String:String in
 
 somefun->String:String in
     #t = ""
-    #i for 1, 1000
+    #i for 1, 100000
         t = t + in
     #u = t
     #s = "WOAH" + in + " " + (t length)
     ->s
 
-print ((somefun someMoreFun "!") + someOtherFun)
+print ((somefun (someMoreFun "!")) + someOtherFun)

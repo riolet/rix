@@ -2,8 +2,8 @@ import "ext/BetterString/BetterString.rit"
 #bs = BetterString "Whereas recognition of the inherent dignity and of the equal and inalienable rights"
 #s = bs toString
 print s
-#blist = (bs toUpper) split (' ')
-#i for 0, blist.length
-    print blist[i].toString
-bs#
-blist#
+//#blist = (bs toUpper) split (' ')
+//#i for 0, blist.length
+//    print blist[i].toString
+//bs#
+//blist#

@@ -28,11 +28,7 @@ IDENT_RETVAR_RAW * String_$_stringlit(char *strlit, IDENT_RETVAR_RAW * $_retvar_
     s->isStaticBuffer = true;
 
     //Todod pass this from the caller
-    $_retvar_in->ctr = 0;
-    $_retvar_in->ptr = 0;
-    $_retvar_in->obj = s;
-    $_retvar_in->destructor = (void *) String_$_destructor_$_;
-    return $_retvar_in;
+    return _$_returnAppointer($_retvar_in,s,String_$_destructor_$_);
 }
 
 String * String_$_assign_$_String(String *left, String * right)
@@ -65,10 +61,7 @@ IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR
 //        _$_cleanup($_retvar_in);
 //    }
 
-    $_retvar_in->ctr = 0;
-    $_retvar_in->ptr = 0;
-    $_retvar_in->obj = newString;
-    $_retvar_in->destructor = (void *) String_$_destructor_$_;
+    _$_returnAppointer($_retvar_in,newString,String_$_destructor_$_);
     return $_retvar_in;
 }
 
@@ -90,11 +83,7 @@ IDENT_RETVAR_RAW * String_$_plus_$_Integer(IDENT_RETVAR_RAW * left_, int right, 
     newString->buffer[newString->length] = 0;
     newString->isStaticBuffer = false;
 
-    $_retvar_in->ctr = 0;
-    $_retvar_in->ptr = 0;
-    $_retvar_in->obj = newString;
-    $_retvar_in->destructor = (void *) String_$_destructor_$_;
-    return $_retvar_in;
+    _$_returnAppointer($_retvar_in,newString,String_$_destructor_$_);
 }
 
 String * Integer_$_plus_$_String(int left, String * right)

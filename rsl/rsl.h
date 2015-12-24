@@ -134,5 +134,6 @@ IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_point (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RA
 
 IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_assign (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW *b);
 
-void IDENT_RETVAR_RAW_initialize(IDENT_RETVAR_RAW * retvar, char *name);
+IDENT_RETVAR_RAW * _$_returnAppointer (IDENT_RETVAR_RAW * $_retvar_in, void * obj, void * destructor);
+
 #endif
