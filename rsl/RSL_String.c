@@ -21,11 +21,10 @@ void String_cleanUp_GCC(String *s)
     }
 }
 
-void String_cleanUp(String *s)
+void String_$_destructor_$_(String *s)
 {
-    if (s->isStored==StringStatusDelete) {
-        free(s->buffer);
-    }
+    free(s->buffer);
+    free(s);
 }
 
 String *String_$_String_$_ ()
@@ -45,7 +44,7 @@ IDENT_RETVAR_RAW * String_$_stringlit(char *strlit)
     $_retvar_in->ctr = 1;
     $_retvar_in->ptr = 0;
     $_retvar_in->obj = s;
-    $_retvar_in->objType = "String";
+    $_retvar_in->destructor = String_$_destructor_$_;
     return $_retvar_in;
 }
 
@@ -75,7 +74,7 @@ IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR
     $_retvar_in->ctr = 0;
     $_retvar_in->ptr = 0;
     $_retvar_in->obj = newString;
-    $_retvar_in->objType = "String";
+    $_retvar_in->destructor = String_$_destructor_$_;
     return $_retvar_in;
 }
 
@@ -90,7 +89,6 @@ String * String_$_plus_$_Integer(String * left, int right)
     memcpy(newString->buffer + left->length, rightStr, right_length);
     newString->length = left->length + right_length;
     newString->buffer[newString->length] = 0;
-    String_cleanUp(left);
     return newString;
 }
 
@@ -105,7 +103,6 @@ String * Integer_$_plus_$_String(int left, String * right)
     memcpy(newString->buffer + left_length, right->buffer, right->length);
     newString->length = right->length + left_length;
     newString->buffer[newString->length] = 0;
-    String_cleanUp(right);
     return newString;
 }
 
@@ -120,7 +117,6 @@ String * String_$_plus_$_Float(String * left, float right)
     memcpy(newString->buffer + left->length, rightStr, right_length);
     newString->length = left->length + right_length;
     newString->buffer[newString->length] = 0;
-    String_cleanUp(left);
     return newString;
 }
 
@@ -135,7 +131,6 @@ String * Float_$_plus_$_String(float left, String * right)
     memcpy(newString->buffer, leftStr, left_length);
     newString->length = right->length + left_length;
     newString->buffer[newString->length] = 0;
-    String_cleanUp(right);
     return newString;
 }
 

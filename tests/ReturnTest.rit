@@ -2,14 +2,16 @@ someOtherFun->Integer:
     #i=5
     ->i
 
-someMoreFun->String:
+someMoreFun->String:String in
     #ab = "A" + "B"
-    -> "A" + "B"
+    #abcd = ab + "C" + "D" + in
+    -> "E" + "F"
 
 somefun->String:
-    #s = "ABCDE"
+    #s = "WOAH"
     ->s
 
 
+someMoreFun "!"
 someOtherFun
 print somefun

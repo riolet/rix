@@ -963,7 +963,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                 CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
         addSymbol(current, retVar);
         if (objects) {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",");
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "\t,\t");
         }
         invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
     }

@@ -21,7 +21,7 @@ void String_return_GCC(String *s);
 
 void String_cleanUp_GCC(String *s);
 
-void String_cleanUp(String *s);
+void String_$_destructor_$_(String *s);
 
 String *String_$_String_$_ ();
 

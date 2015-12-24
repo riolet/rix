@@ -28,7 +28,7 @@ typedef struct {
     int ctr;
     void *ptr;
     void *obj;
-    void *destructor;
+    void (*destructor)(void *);
 } IDENT_RETVAR_RAW;
 
 
