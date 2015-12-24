@@ -1,0 +1,15 @@
+someOtherFun->Integer:
+    #i=5
+    ->i
+
+someMoreFun->String:
+    #ab = "A" + "B"
+    -> "A" + "B"
+
+somefun->String:
+    #s = "ABCDE"
+    ->s
+
+
+someOtherFun
+print somefun
