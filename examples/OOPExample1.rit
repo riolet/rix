@@ -1,0 +1,36 @@
+Rectangle :: BaseType
+
+  width = Integer
+  height = Integer
+
+  ::: Integer width, Integer height
+    $.width = width
+    $.height = height
+
+  area -> Integer: = width * height
+
+
+Square :: Rectangle
+
+    ::: Integer edge
+        width = edge
+        height = edge
+
+NamedSquare :: Square
+    name = String
+
+    ::: Integer edge, String name
+        width = edge
+        height = edge
+        $.name = name
+
+
+
+#r = Rectangle 5, 10
+#s = Square 16
+#t = s
+#n = NamedSquare 20, "Hello World"
+
+print ("Rectangle r area " + (r area))
+print ("Square t Area " + (t area))
+print ("Square n Area " + (n area) + " is named " + n.name)
