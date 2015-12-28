@@ -21,17 +21,17 @@ void String_return_GCC(String *s);
 
 void String_cleanUp_GCC(String *s);
 
-void String_$_destructor_$_(String *s);
-
-String *String_$_String_$_ ();
+void String_$_destructor_$_(IDENT_RETVAR_RAW *s_);
 
 IDENT_RETVAR_RAW * String_$_stringlit(char *strlit, IDENT_RETVAR_RAW * $_retvar_in);
+
+IDENT_RETVAR_RAW * String_$_String_$_ (IDENT_RETVAR_RAW * $_retvar_in);
 
 IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in);
 
 IDENT_RETVAR_RAW * String_$_plus_$_Integer(IDENT_RETVAR_RAW * left_, int right, IDENT_RETVAR_RAW * $_retvar_in);
 
-String *Integer_$_plus_$_String(int left, String *right);
+IDENT_RETVAR_RAW * Integer_$_plus_$_String(int left, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in);
 
 String *String_$_plus_$_Float(String *left, float right);
 

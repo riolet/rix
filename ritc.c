@@ -70,7 +70,8 @@ Object *beginClass(char *className, char *parentName)
 
     snprintf(codename, BUFFLEN, "%s", className);
 
-    Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, parent->name);
+    Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_RETVAR);
+    Object *parentReference_ = CreateObject(IDENT_SUPER"_", IDENT_SUPER"_", 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
     compilerDebugPrintf("External class %d\n",external);
     if (external) {
@@ -78,6 +79,7 @@ Object *beginClass(char *className, char *parentName)
     } else {
         setParentClass(result, parent);
         addSymbol(result, parentReference);
+        addSymbol(result, parentReference_);
     }
     addSymbol(current, result);
     scope_push(result);
@@ -207,7 +209,7 @@ Object *beginConstructor(Object * parameters)
 
     funcFullName_pos +=
         snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
-                 "%s" COMPILER_SEP "%s", current->name, current->name);
+                 "%s" COMPILER_SEP "%s" , current->name, current->name);
 
     while (types != 0) {
         funcFullName_pos +=
@@ -254,12 +256,77 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s * self = calloc(1, sizeof(%s));", returnType,
-                 current->name);
+        //_$_returnAppointer($_retvar_in,newString,String_$_destructor_$_);
+        snprintf(allocator, BUFFLEN, "%s * self_ = calloc(1, sizeof(%s));\n"
+                         IDENT_RETVAR " * self = _$_returnAppointer(_$_retvar_in,self_,%s_$_destructor_$_);", returnType,
+                 current->name,returnType);
         addCode(result, allocator);
-        snprintf(allocator, BUFFLEN, "self->" IDENT_SUPER "= %s" COMPILER_SEP "%s" "();",
-                 current->parentClass->name, current->parentClass->name);
+
+
+        if (!getFlag(current->parentClass,FLAG_PRIMITIVE)) {
+            char retVarName[BUFFLEN];
+            snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+            retVarNumber++;
+            Object *retVar =
+                    CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_RETVAR);
+            addSymbol(result, retVar);
+
+            //Todo: Handle heap variables
+
+            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" "(%s);",
+                     current->parentClass->name, current->parentClass->name, retVarName);
+
+        } else {
+            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s"  "();",
+                      current->parentClass->name, current->parentClass->name);
+        }
         addCode(result, allocator);
+
+        snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "_= self_->"IDENT_SUPER"->obj;");
+        addCode(result, allocator);
+
+        //Add field allocators
+        ListObject *oIter;
+
+        oIter = current->definedSymbols;
+
+        //fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
+        //        tree->name);
+        //fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
+
+        while (oIter != 0) {
+
+            if (strcmp(oIter->value->name,IDENT_SUPER)&&strcmp(oIter->value->name,IDENT_SUPER "_"))
+            {
+                if (oIter->value->type == Variable) {
+                    Object * rType = findByName(oIter->value->returnType);
+                    if (!getFlag(rType,FLAG_PRIMITIVE)) {
+
+                        char retVarName[BUFFLEN];
+                        snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+                        retVarNumber++;
+                        Object *retVar =
+                                CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_RETVAR);
+                        addSymbol(result, retVar);
+
+                        //Todo: Handle heap variables
+                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
+                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType, retVarName);
+                        addCode(result, allocator);
+
+                    } else {
+//                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" "();",
+//                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType);
+                    }
+
+                } else {
+                    oIter = oIter->next;
+                    break;
+                }
+            }
+            oIter = oIter->next;
+
+        }
     }
     addSymbol(parentScope, result);
     scope_push(result);
@@ -834,7 +901,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
         char paramTypes[BUFFLEN][BUFFLEN];
-        int subject_idx = snprintf(newSubject, BUFFLEN, "%s->", subject->code->value);
+        int subject_idx = snprintf(newSubject, BUFFLEN,   "((%s *) (%s->obj))->",subject->returnType, subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset - 1] == '*' || newName[offset - 1] == ' ') {
             offset--;
@@ -850,11 +917,16 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
             compilerDebugPrintf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
+            char * oldSubject = strdup(newSubject);
+
             subject_idx +=
-                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER "->");
+                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx,  IDENT_SUPER "_->");
+
+
+
             parent = parent->parentClass;
         }
-        newSubject[subject_idx-2] = '\0';
+        newSubject[subject_idx-3] = '\0';
         if (realVerb) {
             //TODO: violates encapsulation. (just this once!)
             free(subject->code->value);
@@ -1227,7 +1299,9 @@ Object *objectSelfIdent(char *ident)
         //must be $ by itself.
         result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx - 1]->returnType);
         addParam(result, scopeStack[scope_idx - 1]->returnType);
-        addCode(result, "self");
+        char code[BUFFLEN];
+        snprintf(code,BUFFLEN, "((%s *) (self->obj))",current->returnType);
+        addCode(result, code);
     } else {
         ident += 2;             // bypass the "$."
         identifier = findByNameInScope(scopeStack[scope_idx - 1], ident, false);
@@ -1235,7 +1309,7 @@ Object *objectSelfIdent(char *ident)
         result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
         addParam(result, identifier->returnType);
         char code[BUFFLEN];
-        snprintf(code, BUFFLEN, "self->%s", ident);
+        snprintf(code, BUFFLEN, "((%s *) (self->obj))->%s", current->returnType,ident);
         addCode(result, code);
     }
     return result;
@@ -1371,7 +1445,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
         compilerDebugPrintf ("Parent field %s %s\n",parent, field);
-        snprintf(accessCode, BUFFLEN, "%s->%s", parent, field);
+        snprintf(accessCode, BUFFLEN, "((%s *)%s->obj)->%s", parentType, parent, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
         return result;

@@ -10,7 +10,7 @@
 #define str(a) #a
 #define cat(a,b) a ## b
 
-#define debugPrintf //
+#define debugPrintf //printf
 #define compilerDebugPrintf printf
 
 #define FLAG_ASSIGNMENT 1
@@ -24,7 +24,7 @@
 #define IDENT_SELF "$"
 #define IDENT_SUPER "$super"
 #define IDENT_RETVAR_RAW _$_retvar
-
+#define IDENT_HEAP_RETVAR_RAW _$_heap_retvar
 #define IDENT_CTR_PTR _$_counter_pointer
 #define RETVAR_POINT_RAW cat(IDENT_RETVAR_RAW,_point)
 #define RETVAR_ASSIGN_RAW cat(IDENT_RETVAR_RAW,_assign)
@@ -32,12 +32,15 @@
 
 
 #define IDENT_RETVAR xstr(IDENT_RETVAR_RAW)
+#define IDENT_HEAP_RETVAR xstr(IDENT_HEAP_RETVAR_RAW)
 #define IDENT_RETVAR_INITIALIZE xstr(IDENT_RETVAR_INITIALIZE_RAW)
 #define RETVAR_POINT xstr(RETVAR_POINT_RAW)
 #define RETVAR_ASSIGN xstr(RETVAR_ASSIGN_RAW)
 
 #define _$_TEMP_OBJ(x) _$_retvar __attribute__ ((__cleanup__(_$_cleanup))) x; IDENT_RETVAR_INITIALIZE_RAW (&x,xstr(x));
 #define _$_VARIABLE(x) _$_retvar __attribute__ ((__cleanup__(_$_cleanup_var))) * x = alloca(sizeof(IDENT_RETVAR_RAW)); IDENT_RETVAR_INITIALIZE_RAW(x,xstr(x));
+#define _$_HEAP_VARIABLE(x) _$_retvar * x = malloc(sizeof(IDENT_RETVAR_RAW)); IDENT_RETVAR_INITIALIZE_RAW(x,xstr(x));
+
 //typedef enum { false, true } bool;
 
 typedef enum {

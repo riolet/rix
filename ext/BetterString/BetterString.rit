@@ -20,6 +20,9 @@ BetterString::String
     split->#BetterStringList:Char __c__
         //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
 
+    split->#BetterStringList:String __s__
+        //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
+
 BetterStringList::BaseType
     getObjectAtIndex->BetterString:Integer __i__
         //virtual

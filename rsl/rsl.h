@@ -24,13 +24,15 @@ typedef struct {
     BaseType parent;
 } Number;
 
-typedef struct {
+typedef struct IDENT_RETVAR_RAW IDENT_RETVAR_RAW;
+
+struct IDENT_RETVAR_RAW {
     int ctr;
-    void *ptr;
+    IDENT_RETVAR_RAW *ptr;
     void *obj;
     void (*destructor)(void *);
     char *debugName;
-} IDENT_RETVAR_RAW;
+};
 
 
 typedef FILE *Stream;
@@ -122,7 +124,10 @@ char **_$$_argv;
 IDENT_RETVAR_RAW args_$_Integer(Integer i, IDENT_RETVAR_RAW $_retvar_in);
 
 
-BaseType * BaseType_$_BaseType ();
+
+void BaseType_$_destructor (IDENT_RETVAR_RAW * $_retvar_in);
+
+IDENT_RETVAR_RAW * BaseType_$_BaseType (IDENT_RETVAR_RAW * $_retvar_in);
 
 void _$_cleanup (IDENT_RETVAR_RAW *p);
 

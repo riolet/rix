@@ -72,11 +72,17 @@ void defineRSLSymbols(Object * root)
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
+    temp4 =
+            CreateObject(IDENT_HEAP_RETVAR, IDENT_HEAP_RETVAR COMPILER_SEP "BaseType", objBaseType, Type,
+                         IDENT_HEAP_RETVAR);
+    setFlags(temp4, FLAG_EXTERNAL);
+    addSymbol(root, temp4);
+
     // ==============  Basetype constructor ===============
 
     rslFunc =
             CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType",
-                         0, Function, "BaseType");
+                         0, Function, IDENT_RETVAR);
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "BaseType");
     addSymbol(root, rslFunc);
