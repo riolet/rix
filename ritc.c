@@ -7,7 +7,6 @@
 #include "ritc.h"
 #include "crsl.h"
 
-typedef enum { false, true } bool;
 
 #define BUFFLEN 1024
 #define LABELMAX 8096
@@ -88,9 +87,21 @@ Object *beginClass(char *className, char *parentName)
 
 void doneClass(Object * tree)
 {
-    //check for 0-arg constructor.
-    //if no 0-arg ctor exists, add one.
+
     if (!external) {
+        //check for destructor.
+        //if no destructor exists, add one.
+        char dtorName[BUFFLEN];
+        snprintf(dtorName, BUFFLEN, "%s" COMPILER_SEP "%s" COMPILER_SEP, current->name, "destructor");
+        Object *dtor = findByNameInScope(current, dtorName, true);
+        if (!dtor) {
+            printf ("Beginning Destructor %s!\n",dtorName);
+            beginDestructor(CreateObject(0, 0, 0, Expression, 0));
+            doneDestructor(0);
+        }
+
+        //check for 0-arg constructor.
+        //if no 0-arg ctor exists, add one.
         char ctorName[BUFFLEN];
         snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
         Object *ctor = findByNameInScope(current, ctorName, true);
@@ -339,6 +350,99 @@ void doneConstructor(Object * tree)
     if (!external) {
         addCode(current, "return self;");
     }
+    scope_pop();
+}
+
+Object *beginDestructor(Object * parameters)
+{
+    if (current->type != Type) {
+        criticalError(ERROR_ParseError, "Destructor can only exist inside a class.\n");
+    }
+    ListString *types = parameters->paramTypes;
+    ListString *names = parameters->code;
+
+    char funcFullName[BUFFLEN];
+    int funcFullName_pos = 0;
+
+    funcFullName_pos +=
+            snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                     "%s" COMPILER_SEP "%s" COMPILER_SEP, current->name, "destructor");
+
+    while (types != 0) {
+        funcFullName_pos +=
+                snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                         COMPILER_SEP "%s", types->value);
+        while (funcFullName[funcFullName_pos - 1] == ' '
+               || funcFullName[funcFullName_pos - 1] == '*') {
+            funcFullName_pos--;
+        }
+        funcFullName[funcFullName_pos] = '\0';
+        types = types->next;
+    }
+    Object *parentScope;
+    int i = scope_idx;
+    while (i >= 0) {
+        if (scopeStack[i]->type != Type) {
+            break;
+        }
+        i--;
+    }
+    parentScope = scopeStack[i];
+
+    char returnType[BUFFLEN];
+    snprintf(returnType, BUFFLEN, "%s", "destructor");
+
+    Object *result =
+            CreateObject(current->name, funcFullName, parentScope, Function, returnType);
+    result->parentClass = current;
+
+    ListObject *oIter;
+
+    oIter = current->definedSymbols;
+    char deallocator[BUFFLEN];
+
+    while (oIter != 0) {
+
+        if (strcmp(oIter->value->name,IDENT_SUPER "_"))
+        {
+            if (oIter->value->type == Variable) {
+                Object * rType = findByName(oIter->value->returnType);
+                if (!getFlag(rType,FLAG_PRIMITIVE)) {
+                    snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_RETVAR "_in->obj)->%s);",
+                             current->returnType, oIter->value->name);
+                    addCode(result, deallocator);
+                    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj)->%s);",
+                             current->returnType, oIter->value->name);
+                    addCode(result, deallocator);
+                } else {
+//                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" "();",
+//                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType);
+                }
+
+            } else {
+                oIter = oIter->next;
+                break;
+            }
+        }
+        oIter = oIter->next;
+
+    }
+
+    //self destruct
+//    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj)->" IDENT_SUPER ");",current->returnType);
+//    addCode(result, deallocator);
+
+    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj));",current->returnType);
+    addCode(result, deallocator);
+
+    addSymbol(parentScope, result);
+    scope_push(result);
+
+    return result;
+}
+
+void doneDestructor(Object * tree)
+{
     scope_pop();
 }
 
@@ -1027,7 +1131,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //== RetVar shenanigans ==
     Object * rType = findByName(realVerb->returnType);
 
-    if (!getFlag(rType,FLAG_PRIMITIVE)) {
+    if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
         char retVarName[BUFFLEN];
         snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
         retVarNumber++;

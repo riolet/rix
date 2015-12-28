@@ -5,6 +5,9 @@ Ritchie Standard Library
 */
 ##external "rsl/RSL_String.h"
 String::BaseType
+    destructor->:
+        //virtual
+
     length->Integer:
         //Virtual
 //Done

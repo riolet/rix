@@ -34,6 +34,9 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters);
 void doneFunction(Object * tree);
 Object *beginConstructor(Object * parameters);
 void doneConstructor(Object * tree);
+Object *beginDestructor(Object * parameters);
+void doneDestructor(Object * tree);
+
 Object *funcParameters(Object * tree, char *paramType, char *paramName);
 Object *concatParams(Object * existing, Object * newParam);
 Object *declareVariable(char *name, char *type);

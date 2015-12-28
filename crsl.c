@@ -8,7 +8,7 @@ void defineRSLSymbols(Object * root)
 
     // ==============  Built-in Types ===============
 
-    objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType *");
+    objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType");
     setFlags(objBaseType, FLAG_EXTERNAL);
     addSymbol(root, objBaseType);
 

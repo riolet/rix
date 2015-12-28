@@ -5,9 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdbool.h>
 #include "ObjectTree.h"
 
-typedef enum { false, true } bool;
+
 
 typedef struct String{
     char *buffer;
@@ -41,7 +42,7 @@ UNKNOWNTYPE UNKNOWNOBJECT;
 typedef int Integer;
 typedef float Float;
 typedef char Char;
-typedef enum bool Boolean;
+typedef bool Boolean;
 typedef enum { lt = -1, eq = 0, gt = 1 } Ternary;
 typedef void *System;
 typedef void *Generic_$$;

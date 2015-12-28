@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include "errors.h"
 
 #define xstr(a) str(a)
@@ -11,7 +12,7 @@
 #define cat(a,b) a ## b
 
 #define debugPrintf //printf
-#define compilerDebugPrintf printf
+#define compilerDebugPrintf //printf
 
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2
@@ -41,7 +42,7 @@
 #define _$_VARIABLE(x) _$_retvar __attribute__ ((__cleanup__(_$_cleanup_var))) * x = alloca(sizeof(IDENT_RETVAR_RAW)); IDENT_RETVAR_INITIALIZE_RAW(x,xstr(x));
 #define _$_HEAP_VARIABLE(x) _$_retvar * x = malloc(sizeof(IDENT_RETVAR_RAW)); IDENT_RETVAR_INITIALIZE_RAW(x,xstr(x));
 
-//typedef enum { false, true } bool;
+//typedef enum {false, true} bool;
 
 typedef enum {
     Undefined,
@@ -54,6 +55,7 @@ typedef enum {
     Dummy,
     NewMarkedIdent,
     NewUnmarkedIdent,
+    Destructor,
 } OBJ_TYPE;
 
 typedef struct _Object Object;
@@ -102,9 +104,11 @@ int listlen(ListString * head);
 void writeTree(FILE * outc, FILE * outh, Object * tree);
 void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent);
 void writeTypeDefs(FILE * outh, Object * tree);
-void writeFunction(FILE * outh, Object * tree, int indent);
+void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly);
 void writeOther(FILE * outc, FILE * outh, Object * tree, int indent);
 void writeClass(FILE * outc, FILE * outh, Object * tree, int indent);
+void writeForwardDeclarations (FILE * outh, Object * tree);
+
 void printTree(Object * tree, int indent);
 void printTreeToFile(Object * tree, int indent, char *fname);
 

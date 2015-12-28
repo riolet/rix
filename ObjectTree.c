@@ -298,7 +298,7 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
 
         if (result && result->type != Type && result->type != Function
-            && result->type != Constructor) {
+            && result->type != Constructor && result->type != Destructor) {
 
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
@@ -345,7 +345,7 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
     if (!result && scope->parentClass) {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->type != Variable && result->type != Type
-            && result->type != Constructor) {
+            && result->type != Constructor && result->type != Destructor) {
             //printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
             result = 0;
 
@@ -560,6 +560,7 @@ OBJ_TYPE getIdentType(Object * scope, char *identifier)
 void writeTree(FILE * outc, FILE * outh, Object * tree)
 {
     writeTypeDefs(outh, tree);
+    writeForwardDeclarations(outh, tree);
     writeTreeHelper(outc, outh, tree, 0);
 }
 
@@ -595,9 +596,10 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
     sIter = tree->paramTypes;
 
     //construct and print function header
-    if ((tree->type == Function || tree->type == Constructor)
+    if ((tree->type == Function || tree->type == Constructor || tree->type == Destructor)
         && !getFlag(tree, FLAG_EXTERNAL)) {
-        writeFunction(outh, tree, indent);
+        debugPrintf("Writing function %s\n",tree->fullname);
+        writeFunction(outh, tree, indent, false);
     } else if (tree->type == Type && !getFlag(tree, FLAG_EXTERNAL)) {
         writeClass(outc, outh, tree, indent);
     } else if (tree->type == Dummy) {
@@ -640,20 +642,21 @@ void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree
     }
 }
 
-void writeFunction(FILE * outh, Object * tree, int indent)
+void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 {
-
     ListObject *oIter;
     ListString *sIter;
 
     oIter = tree->definedSymbols;
     sIter = tree->paramTypes;
 
+    compilerDebugPrintf("Looking up function %s\n",tree->fullname);
     Object * rType = findByNameInScope(tree,tree->returnType,false);
 
-    //debugPrintf ("Looking up type %s %u\n",tree->returnType,rType);
+    compilerDebugPrintf ("Looking up type %s %u\n",tree->returnType,rType);
 
     if (rType) {
+        compilerDebugPrintf("Line%d %s\n",__LINE__, tree->fullname);
         if (getFlag(rType, FLAG_PRIMITIVE)) {
             fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
         } else {
@@ -669,11 +672,13 @@ void writeFunction(FILE * outh, Object * tree, int indent)
     while (sIter != 0) {
         printComma = ',';
         pType = findByNameInScope(tree,sIter->value,false);
-
-        if (getFlag(pType,FLAG_PRIMITIVE)) {
-            fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
-        } else {
-            fprintf(outh, IDENT_RETVAR " * %s",  oIter->value->fullname);
+        compilerDebugPrintf("Looking up symbol %d\n",oIter);
+        if (pType) {
+            if (getFlag(pType, FLAG_PRIMITIVE)) {
+                fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
+            } else {
+                fprintf(outh, IDENT_RETVAR " * %s", oIter->value->fullname);
+            }
         }
 
         sIter = sIter->next;
@@ -689,7 +694,12 @@ void writeFunction(FILE * outh, Object * tree, int indent)
     }
 
     //finish
-    fprintf(outh, ") {\n");
+    if (sigOnly) {
+        fprintf(outh, ");\n");
+        return;
+    } else {
+        fprintf(outh, ") {\n");
+    }
 
     while (oIter != 0) {
         if (oIter->value->type == Variable) {
@@ -703,13 +713,11 @@ void writeFunction(FILE * outh, Object * tree, int indent)
     if (tree->code != 0 && tree->code->value != 0) {
         sIter = tree->code;
         while (sIter != 0) {
-            fprintf(outh, "    %s\n", sIter->value);
+            fprintf(outh, " \t%s\n", sIter->value);
             sIter = sIter->next;
         }
     }
-
     fprintf(outh, "}\n");
-
 }
 
 void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
@@ -747,34 +755,50 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     ListObject *oIter;
 
     oIter = tree->definedSymbols;
-
     //fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
     //        tree->name);
     fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
 
     while (oIter != 0) {
-
         if (oIter->value->type == Variable) {
             writeDeclareClassVariable (oIter, outh, tree);
         } else {
             oIter = oIter->next;
             break;
         }
-
         oIter = oIter->next;
-
     }
 
     fprintf(outh, "};\n");
 
+
+
     while (oIter != 0) {
-        if (oIter->value->type == Constructor || oIter->value->type == Function) {
-            writeFunction(outh, tree, indent);
+        if (oIter->value->type == Constructor || oIter->value->type == Destructor || oIter->value->type == Function) {
+            writeFunction(outh, tree, indent, false);
         } else {
             writeTreeHelper(outc, outh, tree, indent);
         }
     }
 
+}
+
+void writeForwardDeclarations (FILE * outh, Object * tree)
+{
+    ListObject *fiter;
+    int indent = 0;
+    fiter = tree->definedSymbols;
+    //Do the forward declarations
+    while (fiter) {
+
+        if (fiter->value->type == Constructor || fiter->value->type == Destructor || fiter->value->type == Function) {
+            if (!getFlag(fiter->value, FLAG_EXTERNAL)) {
+                compilerDebugPrintf("Forward decling %s\n", fiter->value->fullname);
+                writeFunction(outh, fiter->value, indent, true);
+            }
+        }
+        fiter = fiter->next;
+    }
 }
 
 //================  Testing / Printing =================
