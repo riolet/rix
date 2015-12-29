@@ -12,7 +12,7 @@
 #define cat(a,b) a ## b
 
 #define debugPrintf //printf
-#define compilerDebugPrintf //printf
+#define compilerDebugPrintf printf
 
 #define FLAG_ASSIGNMENT 1
 #define FLAG_SUBJECT    2

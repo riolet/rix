@@ -128,7 +128,7 @@ IDENT_RETVAR_RAW args_$_Integer(Integer i, IDENT_RETVAR_RAW $_retvar_in);
 
 void BaseType_$_destructor (IDENT_RETVAR_RAW * $_retvar_in);
 
-IDENT_RETVAR_RAW * BaseType_$_BaseType (IDENT_RETVAR_RAW * $_retvar_in);
+IDENT_RETVAR_RAW * BaseType_$_BaseType_$_ (IDENT_RETVAR_RAW * $_retvar_in);
 
 void _$_cleanup (IDENT_RETVAR_RAW *p);
 

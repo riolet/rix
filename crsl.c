@@ -81,7 +81,7 @@ void defineRSLSymbols(Object * root)
     // ==============  Basetype constructor ===============
 
     rslFunc =
-            CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType",
+            CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType" COMPILER_SEP,
                          0, Function, IDENT_RETVAR);
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "BaseType");
@@ -128,6 +128,14 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
 
     // ==============  String Functions ===============
+
+    rslFunc =
+            CreateObject("assign", "String" COMPILER_SEP "String" COMPILER_SEP, 0,
+                         Function, "String");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "String");
+    addParam(rslFunc, "String");
+    addSymbol(root, rslFunc);
 
     rslFunc =
         CreateObject("assign", "String" COMPILER_SEP "assign" COMPILER_SEP "String", 0,

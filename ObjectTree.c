@@ -653,7 +653,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     compilerDebugPrintf("Looking up function %s\n",tree->fullname);
     Object * rType = findByNameInScope(tree,tree->returnType,false);
 
-    compilerDebugPrintf ("Looking up type %s %u\n",tree->returnType,rType);
+    compilerDebugPrintf ("Looking up type %s\n",tree->returnType);
 
     if (rType) {
         compilerDebugPrintf("Line%d %s\n",__LINE__, tree->fullname);
@@ -672,7 +672,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     while (sIter != 0) {
         printComma = ',';
         pType = findByNameInScope(tree,sIter->value,false);
-        compilerDebugPrintf("Looking up symbol %d\n",oIter);
+        //compilerDebugPrintf("Looking up symbol %d\n",oIter);
         if (pType) {
             if (getFlag(pType, FLAG_PRIMITIVE)) {
                 fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);

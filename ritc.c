@@ -102,12 +102,16 @@ void doneClass(Object * tree)
 
         //check for 0-arg constructor.
         //if no 0-arg ctor exists, add one.
+
         char ctorName[BUFFLEN];
-        snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s", current->name, current->name);
+        snprintf(ctorName, BUFFLEN, "%s" COMPILER_SEP "%s" COMPILER_SEP, current->name, current->name);
         Object *ctor = findByNameInScope(current, ctorName, true);
+        compilerDebugPrintf("Finding ctor for %s\n", ctorName);
         if (!ctor) {
             beginConstructor(CreateObject(0, 0, 0, Expression, 0));
             doneConstructor(0);
+        } else {
+            compilerDebugPrintf("Ctor found for %s\n", ctorName);
         }
     }
     scope_pop();
@@ -222,7 +226,16 @@ Object *beginConstructor(Object * parameters)
         snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
                  "%s" COMPILER_SEP "%s" , current->name, current->name);
 
+    compilerDebugPrintf("Doing constructor %s\n",funcFullName);
+    if (!types) {
+        compilerDebugPrintf("Adding no types\n");
+        funcFullName_pos +=
+                snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
+                         COMPILER_SEP);
+    }
+
     while (types != 0) {
+        compilerDebugPrintf("Adding type %s\n",types->value);
         funcFullName_pos +=
             snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
                      COMPILER_SEP "%s", types->value);
@@ -246,6 +259,7 @@ Object *beginConstructor(Object * parameters)
     char returnType[BUFFLEN];
     snprintf(returnType, BUFFLEN, "%s", current->name);
 
+    compilerDebugPrintf("Adding ctor %s\n",funcFullName);
     Object *result =
         CreateObject(current->name, funcFullName, parentScope, Constructor, returnType);
     result->parentClass = current;
@@ -284,12 +298,12 @@ Object *beginConstructor(Object * parameters)
 
             //Todo: Handle heap variables
 
-            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" "(%s);",
+            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
                      current->parentClass->name, current->parentClass->name, retVarName);
 
         } else {
-            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s"  "();",
-                      current->parentClass->name, current->parentClass->name);
+//            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "();",
+//                      current->parentClass->name, current->parentClass->name);
         }
         addCode(result, allocator);
 
