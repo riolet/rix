@@ -19,6 +19,7 @@ FILE *outMainFile;
 FILE *outHeaderFile;
 FILE *outMakeFile;
 
+
 bool hitEOF;
 
 Object *root;
@@ -69,7 +70,7 @@ Object *beginClass(char *className, char *parentName)
 
     snprintf(codename, BUFFLEN, "%s", className);
 
-    Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_RETVAR);
+    Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_MPTR);
     Object *parentReference_ = CreateObject(IDENT_SUPER"_", IDENT_SUPER"_", 0, Variable, parent->name);
     Object *result = CreateObject(className, fullname, current, Type, codename);
     compilerDebugPrintf("External class %d\n",external);
@@ -95,7 +96,7 @@ void doneClass(Object * tree)
         snprintf(dtorName, BUFFLEN, "%s" COMPILER_SEP "%s" COMPILER_SEP, current->name, "destructor");
         Object *dtor = findByNameInScope(current, dtorName, true);
         if (!dtor) {
-            printf ("Beginning Destructor %s!\n",dtorName);
+            compilerDebugPrintf ("Beginning Destructor %s!\n",dtorName);
             beginDestructor(CreateObject(0, 0, 0, Expression, 0));
             doneDestructor(0);
         }
@@ -281,19 +282,19 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        //_$_returnAppointer($_retvar_in,newString,String_$_destructor_$_);
+        //_$_returnAppointer($_mptr_in,newString,String_$_destructor_$_);
         snprintf(allocator, BUFFLEN, "%s * self_ = calloc(1, sizeof(%s));\n"
-                         IDENT_RETVAR " * self = _$_returnAppointer(_$_retvar_in,self_,%s_$_destructor_$_);", returnType,
+                         IDENT_MPTR " * self = _$_returnAppointer(_$_mptr_in,self_,%s_$_destructor_$_);", returnType,
                  current->name,returnType);
         addCode(result, allocator);
 
 
         if (!getFlag(current->parentClass,FLAG_PRIMITIVE)) {
             char retVarName[BUFFLEN];
-            snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+            snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
             retVarNumber++;
             Object *retVar =
-                    CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_RETVAR);
+                    CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
             addSymbol(result, retVar);
 
             //Todo: Handle heap variables
@@ -328,10 +329,10 @@ Object *beginConstructor(Object * parameters)
                     if (!getFlag(rType,FLAG_PRIMITIVE)) {
 
                         char retVarName[BUFFLEN];
-                        snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+                        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
                         retVarNumber++;
                         Object *retVar =
-                                CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_RETVAR);
+                                CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
                         addSymbol(result, retVar);
 
                         //Todo: Handle heap variables
@@ -422,10 +423,10 @@ Object *beginDestructor(Object * parameters)
             if (oIter->value->type == Variable) {
                 Object * rType = findByName(oIter->value->returnType);
                 if (!getFlag(rType,FLAG_PRIMITIVE)) {
-                    snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_RETVAR "_in->obj)->%s);",
+                    snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_MPTR "_in->obj)->%s);",
                              current->returnType, oIter->value->name);
                     addCode(result, deallocator);
-                    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj)->%s);",
+                    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->%s);",
                              current->returnType, oIter->value->name);
                     addCode(result, deallocator);
                 } else {
@@ -443,10 +444,10 @@ Object *beginDestructor(Object * parameters)
     }
 
     //self destruct
-//    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj)->" IDENT_SUPER ");",current->returnType);
+//    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->" IDENT_SUPER ");",current->returnType);
 //    addCode(result, deallocator);
 
-    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_RETVAR "_in->obj));",current->returnType);
+    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj));",current->returnType);
     addCode(result, deallocator);
 
     addSymbol(parentScope, result);
@@ -644,8 +645,8 @@ Object *makeReturn(Object * expression)
         free(line->value);
         line->value = strdup(newCode);
     } else {
-        snprintf(newCode, BUFFLEN, IDENT_RETVAR "_prepare(%s, " IDENT_RETVAR "_in);\n"
-                "return " IDENT_RETVAR "_in;", line->value);
+        snprintf(newCode, BUFFLEN, IDENT_MPTR "_prepare(%s, " IDENT_MPTR "_in);\n"
+                "return " IDENT_MPTR "_in;", line->value);
         free(line->value);
         line->value = strdup(newCode);
         compilerDebugPrintf("Expression type %d code %s\n",expression->type,expression->code->value);
@@ -767,13 +768,18 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         if (!objects) {
             criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
         }
+        if (!objects->paramTypes) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Parmtypes not found for %s %d.\n", objects->name,__LINE__);
+            criticalError(ERROR_ParseError, error);
+        }
         result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
         addParam(result, objects->paramTypes->value);
 
 
         if (!subject->returnType) {
             if (subject->type == NewMarkedIdent) {
-                compilerDebugPrintf ("Creating new variable %s\n",subject->name);
+                compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->paramTypes->value);
                 Object *variable =
                     CreateObject(subject->name, subject->fullname, 0, Variable,
                                  objects->paramTypes->value);
@@ -786,27 +792,41 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->paramTypes->value)) {
-                if (!((strcmp(subject->returnType, "Integer")
-                       || strcmp(subject->returnType, "Float")
-                      ) && (strcmp(objects->paramTypes->value, "Integer")
-                            || strcmp(objects->paramTypes->value, "Float")
-                      ))) {
+//                if (!((strcmp(subject->returnType, "Integer")
+//                       || strcmp(subject->returnType, "Float")
+//                      ) && (strcmp(objects->paramTypes->value, "Integer")
+//                            || strcmp(objects->paramTypes->value, "Float")
+//                      ))) {
                     char error[BUFFLEN];
                     snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n",
                              subject->name, subject->returnType,
                              objects->paramTypes->value);
                     criticalError(ERROR_IncompatibleTypes, error);
-                }
+//                }
             }
         }
 
+
+
+//        if (subject->returnType&&strcmp(subject->returnType,objects->returnType)) {
+//            char error[1024];
+//            snprintf(error, 1024, "Can't assign %s (%s) to %s\n", objects->returnType, objects->paramTypes->value, subject->returnType);
+//            criticalError(ERROR_IncompatibleTypes, error);
+//        }
+
         Object * rType = findByName(objects->returnType);
+
+        if (!rType) {
+            char error[BUFFLEN];
+            snprintf(error, BUFFLEN, "Cannot find type for %s\n",objects->returnType);
+            criticalError(ERROR_ParseError, error);
+        }
 
         if (getFlag(rType,FLAG_PRIMITIVE)) {
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                      objects->code->value);
         } else {
-            snprintf(verbname, BUFFLEN, RETVAR_ASSIGN "(%s,%s)", subject->code->value,
+            snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
                      objects->code->value);
         }
 
@@ -1147,10 +1167,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
         char retVarName[BUFFLEN];
-        snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
         retVarNumber++;
         Object *retVar =
-                CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
+                CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
         addSymbol(current, retVar);
         if (subject||objects) {
             invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
@@ -1473,10 +1493,10 @@ Object *objectString(char *string)
 
 
     char retVarName[BUFFLEN];
-    snprintf(retVarName, BUFFLEN, IDENT_RETVAR "%d", retVarNumber);
+    snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
     retVarNumber++;
     Object *retVar =
-            CreateObject(retVarName, retVarName, 0, Variable, IDENT_RETVAR);
+            CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
     addSymbol(current, retVar);
 
 
@@ -1612,6 +1632,7 @@ int main(int argc, char **argv)
     extern char *optarg;
     extern int optind, optopt;
     FILE *ritTempFile;
+    bool quiet = false;
 
     while ((c = getopt(argc, argv, "o:t")) != -1) {
         switch (c) {
@@ -1623,10 +1644,14 @@ int main(int argc, char **argv)
         case 'o':
             ofile = optarg;
             break;
+
         case ':':              /* -f or -o without operand */
             fprintf(stderr, "Option -%c requires an operand\n", optopt);
             errflg++;
             break;
+
+            case 'q':
+                quiet = true;
         };
     }
 
@@ -1644,7 +1669,7 @@ int main(int argc, char **argv)
     if (ifile == NULL) {
         errorMsg("No file to compile\n");
 //      file = fopen("helloworld.rit", "r");
-        criticalError(0, "No file to compile specified");
+        criticalError(ERROR_ParseError, "No file to compile specified");
     } else {
         file = fopen(ifile, "r");
     }
@@ -1652,23 +1677,25 @@ int main(int argc, char **argv)
     char oMainFileName[BUFFLEN];
     char oHeaderFileName[BUFFLEN];
     char oMakeFileName[BUFFLEN];
-
+    char oCompilerLogFileName[BUFFLEN];
 
     if (ofile == NULL) {
         strcpy(oMainFileName, "out.c");
         strcpy(oHeaderFileName, "out.h");
         strcpy(oMakeFileName, "out.sh");
+        strcpy(oCompilerLogFileName, "out.log");
     } else {
         snprintf(oMainFileName, BUFFLEN, "%s.c", ofile);
         snprintf(oHeaderFileName, BUFFLEN, "%s.h", ofile);
         snprintf(oMakeFileName, BUFFLEN, "%s.sh", ofile);
+        snprintf(oCompilerLogFileName, BUFFLEN, "%s.log", ofile);
     }
 
-    errorMsg(ANSI_COLOR_MAGENTA "\n"
-             "**********************************\n"
-             "**********************************\n"
-             "**********************************\n"
-             "**********************************\n" ANSI_COLOR_RESET);
+//    errorMsg(ANSI_COLOR_MAGENTA "\n"
+//             "**********************************\n"
+//             "**********************************\n"
+//             "**********************************\n"
+//             "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
     //addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
@@ -1681,7 +1708,10 @@ int main(int argc, char **argv)
         perror("fopen");
         return 1;
     }
+
+    outCompilerLogFile = fopen(oCompilerLogFileName, "w");
     compilerDebugPrintf("%s\n", ifile);
+
     //Read RSL
     readFile("rsl/rsl.rit", ritTempFile, &numline);
 
@@ -1700,6 +1730,7 @@ int main(int argc, char **argv)
     outHeaderFile = fopen(oHeaderFileName, "w");
     outMakeFile = fopen(oMakeFileName, "w");
 
+
     fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/ritchie -ggdb -o %s.out "
             "%s.c ${RITCHIE_HOME}/rsl/rsl.c ${RITCHIE_HOME}/errors.c ${RITCHIE_HOME}/rsl/RSL_String.c ", ofile, ofile);
     //getln();
@@ -1708,7 +1739,9 @@ int main(int argc, char **argv)
         yyparse();
     }
     fprintf(outMakeFile, " -lm");
-    compilerDebugPrintf("=============  Compiling Complete!  ==============\n");
+
+    if (!quiet)
+        printf("=============  Compilation Complete!  ==============\n");
 
 
 

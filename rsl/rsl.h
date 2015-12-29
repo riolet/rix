@@ -25,11 +25,11 @@ typedef struct {
     BaseType parent;
 } Number;
 
-typedef struct IDENT_RETVAR_RAW IDENT_RETVAR_RAW;
+typedef struct IDENT_MPTR_RAW IDENT_MPTR_RAW;
 
-struct IDENT_RETVAR_RAW {
+struct IDENT_MPTR_RAW {
     int ctr;
-    IDENT_RETVAR_RAW *ptr;
+    IDENT_MPTR_RAW *ptr;
     void *obj;
     void (*destructor)(void *);
     char *debugName;
@@ -86,13 +86,13 @@ float Float_$_exponent_$_Float(float f1, float f2);
 int Integer_$_sqrt_$_(int i);
 
 /* Print prints the param and a newline char */
-int Stream_$_print_$_String(Stream stream, IDENT_RETVAR_RAW * s_);
+int Stream_$_print_$_String(Stream stream, IDENT_MPTR_RAW * s_);
 
 int Stream_$_print_$_Integer(Stream stream, int i);
 
 int Stream_$_print_$_Float(Stream stream, float f);
 
-int print_$_String(IDENT_RETVAR_RAW * s);
+int print_$_String(IDENT_MPTR_RAW * s);
 
 int print_$_Char(char c);
 
@@ -122,24 +122,24 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-IDENT_RETVAR_RAW args_$_Integer(Integer i, IDENT_RETVAR_RAW $_retvar_in);
+IDENT_MPTR_RAW args_$_Integer(Integer i, IDENT_MPTR_RAW $_mptr_in);
 
 
 
-void BaseType_$_destructor (IDENT_RETVAR_RAW * $_retvar_in);
+void BaseType_$_destructor (IDENT_MPTR_RAW * $_mptr_in);
 
-IDENT_RETVAR_RAW * BaseType_$_BaseType_$_ (IDENT_RETVAR_RAW * $_retvar_in);
+IDENT_MPTR_RAW * BaseType_$_BaseType_$_ (IDENT_MPTR_RAW * $_mptr_in);
 
-void _$_cleanup (IDENT_RETVAR_RAW *p);
+void _$_cleanup (IDENT_MPTR_RAW *p);
 
-void _$_cleanup_var (IDENT_RETVAR_RAW **p);
+void _$_cleanup_var (IDENT_MPTR_RAW **p);
 
-void _$_retvar_prepare(IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW * b);
+void _$_mptr_prepare(IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * b);
 
-IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_point (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW *b);
+IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
-IDENT_RETVAR_RAW * IDENT_RETVAR_RAW_assign (IDENT_RETVAR_RAW * a, IDENT_RETVAR_RAW *b);
+IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
-IDENT_RETVAR_RAW * _$_returnAppointer (IDENT_RETVAR_RAW * $_retvar_in, void * obj, void * destructor);
+IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor);
 
 #endif

@@ -1,4 +1,5 @@
 #include "preproc.h"
+#include "ObjectTree.h"
 #include "stdlib.h"
 #include "stdio.h"
 #include <string.h>
@@ -17,7 +18,7 @@ int readFile(char name[], FILE * ofp, int *numline)
         name++;
     }
     if ((fp = fopen(name, "r")) == 0) {
-        printf("Cannot find import file %s in working directory. Trying RITCHIE_HOME\n",
+        compilerDebugPrintf("Cannot find import file %s in working directory. Trying RITCHIE_HOME\n",
                name);
         const char *RITCHIE_HOME = getenv("RITCHIE_HOME");
         char importPath[BUFFLEN];

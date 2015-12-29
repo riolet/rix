@@ -118,7 +118,7 @@ dtvAddsource "##addsource"
                             BEGIN(indent_caller);
                         }
 
-                        printf("lexer: EOF OUTDENT\n");
+                        compilerDebugPrintf("lexer: EOF OUTDENT\n");
                         decPrev(); //for tracking last-statement.
                         return UNINDENT;
                     } else {
@@ -138,13 +138,13 @@ dtvAddsource "##addsource"
                     // increase by one level at a time. Remember how many
                     // spaces this level has and emit an indentation token.
                     if(g_current_line_indent > stack_top()) {
-                        printf("lexer: INDENT\n");
+                        compilerDebugPrintf("lexer: INDENT\n");
                         stack_push(g_current_line_indent);
                         BEGIN(indent_caller);
                         incPrev(); //for tracking last-statement.
                         return INDENT;
                     } else if(g_current_line_indent < stack_top()) {
-                        printf("lexer: OUTDENT\n");
+                        compilerDebugPrintf("lexer: OUTDENT\n");
                         // Outdenting is the most difficult, as we might need to
                         // outdent multiple times at once, but flex doesn't allow
                         // emitting multiple tokens at once! So we fake this by
@@ -181,7 +181,7 @@ dtvAddsource "##addsource"
                     }
                 }
 
-<normal>\n    { printf("EOL\n");
+<normal>\n    { compilerDebugPrintf("EOL\n");
                 g_current_line_indent = 0;
                 indent_caller = YY_START;
                 BEGIN(indent);
@@ -190,17 +190,17 @@ dtvAddsource "##addsource"
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
 "`"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
-{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
-{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
-{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
-{char}     { printf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
-{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
-{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+{comment}     { compilerDebugPrintf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
+{string}      { compilerDebugPrintf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
+{integer}     { compilerDebugPrintf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
+{char}     { compilerDebugPrintf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
+{float}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
+{mathOp}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 
 {hash}{identifier}  {   char* first = strtok(yytext, "#");
                         Object* exists = findByName(first);
                         if (!exists) {
-                          printf("lexer: new identifier %s\n",first);
+                          compilerDebugPrintf("lexer: new identifier %s\n",first);
                           yylval->sval = strdup(first);
                           return NEWIDENT;
                         } else {
@@ -213,58 +213,58 @@ dtvAddsource "##addsource"
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
                         if (!exists) {
-                          printf("lexer: unidentified identifier\n");
+                          compilerDebugPrintf("lexer: unidentified identifier\n");
                           return UNMARKEDNEWIDENT;
                         } else if (exists->type == Variable) {
-                          printf("lexer: identifier\n");
+                          compilerDebugPrintf("lexer: identifier\n");
                           return IDENT;
                         } else if (exists->type == Function || exists->type == Constructor) {
-                          printf("lexer: verb\n");
+                          compilerDebugPrintf("lexer: verb\n");
                           return VERB;
                         } else if (exists->type == Type) {
-                          printf("lexer: type\n");
+                          compilerDebugPrintf("lexer: type\n");
                           return TYPE;
                         } else {
-                          printf("lexer: unidentified identifier\n");
+                          compilerDebugPrintf("lexer: unidentified identifier\n");
                           return IDENT;
                         }
                       }
 
-{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
-{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
+{assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
+{conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
-{colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
-{classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
-{classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
-{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
-{selfIdent}\.{identifier}  { printf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
-{selfIdent}     { printf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
+{paramComma}    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
+{colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
+{classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
+{classCtor}     { compilerDebugPrintf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
+{return}        { compilerDebugPrintf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
+{selfIdent}\.{identifier}  { compilerDebugPrintf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
+{selfIdent}     { compilerDebugPrintf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
 
-{booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
-{comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
-{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
-{condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
-{mathAssign}    { printf("leFloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
-{accessor}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
+{booleanOp}     { compilerDebugPrintf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+{comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
+{ternary}       { compilerDebugPrintf("lexer: ternary\n");                                   return TERNARY; }
+{condReturn}    { compilerDebugPrintf("lexer: condReturn\n");                                return CONDRETURN; }
+{mathAssign}    { compilerDebugPrintf("leFloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{accessor}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
-{hash}      { printf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }
+{hash}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }
 
-{dtvExternal}   { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
-{dtvAddsource}  { printf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
+{dtvExternal}   { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
+{dtvAddsource}  { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-"("           { printf("lexer: (\n"); return LPAREN; }
-")"           { printf("lexer: )\n"); return RPAREN; }
-"["           { printf("lexer: (\n"); return LBRACKET; }
-"]"           { printf("lexer: )\n"); return RBRACKET; }
-.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
+"("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
+")"           { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["           { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+"]"           { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+.             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
 
 char* handleCodeInsert(void) {
-	 printf("lexer: code insert\n");
+	 compilerDebugPrintf("lexer: code insert\n");
 	 int c;
 	 int index  = 0;
 	 char * ci = (char*)malloc(INSERT_BUFF_LEN);
@@ -282,7 +282,7 @@ char* handleCodeInsert(void) {
 }
 
 void* handleComma(void) {
-	 printf("lexer: eating spaces between commas\n");
+	 compilerDebugPrintf("lexer: eating spaces between commas\n");
 	 int c;
 	 while ( c = input()) {
         if ( c !=  '\t' || c != ' ') {

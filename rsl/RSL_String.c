@@ -5,7 +5,7 @@
 #include "rsl/rsl.h"
 #include "rsl/RSL_String.h"
 
-void String_$_destructor_$_(IDENT_RETVAR_RAW *s_)
+void String_$_destructor_$_(IDENT_MPTR_RAW *s_)
 {
     String * s = (String *) s_->obj;
     if (!s->isStaticBuffer) {
@@ -14,29 +14,29 @@ void String_$_destructor_$_(IDENT_RETVAR_RAW *s_)
     free(s);
 }
 
-IDENT_RETVAR_RAW * String_$_String_$_ (IDENT_RETVAR_RAW * $_retvar_in)
+IDENT_MPTR_RAW * String_$_String_$_ (IDENT_MPTR_RAW * $_mptr_in)
 {
     String * s = calloc(1, sizeof(String));
-    return  _$_returnAppointer($_retvar_in,s,String_$_destructor_$_);
+    return  _$_returnAppointer($_mptr_in,s,String_$_destructor_$_);
 }
 
-IDENT_RETVAR_RAW * String_$_stringlit(char *strlit, IDENT_RETVAR_RAW * $_retvar_in)
+IDENT_MPTR_RAW * String_$_stringlit(char *strlit, IDENT_MPTR_RAW * $_mptr_in)
 {
-    debugPrintf("String_$_stringlit %s %s\n",strlit,$_retvar_in->debugName);
-    _$_retvar __attribute__ ((__cleanup__(_$_cleanup))) $_retvar_temp; IDENT_RETVAR_INITIALIZE_RAW (&$_retvar_temp,
-                                                                                                    xstr($_retvar_temp));
-    IDENT_RETVAR_RAW * s_ = String_$_String_$_(&$_retvar_temp);
+    debugPrintf("String_$_stringlit %s %s\n",strlit,$_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                                    xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
 
     s->buffer = strlit;
     s->cap = strlen(strlit);
     s->length = strlen(strlit);
     s->isStaticBuffer = true;
-    debugPrintf("String_$_stringlit %s -> %s\n",$_retvar_in->debugName,s->buffer);
+    debugPrintf("String_$_stringlit %s -> %s\n",$_mptr_in->debugName,s->buffer);
 
     //Todod pass this from the caller
-    _$_retvar_prepare(&$_retvar_temp,$_retvar_in);
-    return $_retvar_in;
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
 }
 
 String * String_$_assign_$_String(String *left, String * right)
@@ -49,12 +49,12 @@ String * String_$_assign_$_String(String *left, String * right)
     return left;
 }
 
-IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in)
+IDENT_MPTR_RAW * String_$_plus_$_String(IDENT_MPTR_RAW * left_, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
 {
-    debugPrintf("String_$_plus_$_String %s %s -> %s\n",left_->debugName,right_->debugName, $_retvar_in->debugName);
-    _$_retvar __attribute__ ((__cleanup__(_$_cleanup))) $_retvar_temp; IDENT_RETVAR_INITIALIZE_RAW (&$_retvar_temp,
-                                                                                                    xstr($_retvar_temp));
-    IDENT_RETVAR_RAW * s_ = String_$_String_$_(&$_retvar_temp);
+    debugPrintf("String_$_plus_$_String %s %s -> %s\n",left_->debugName,right_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                                    xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
     String * left = left_->obj;
     String * right = right_->obj;
@@ -66,17 +66,17 @@ IDENT_RETVAR_RAW * String_$_plus_$_String(IDENT_RETVAR_RAW * left_, IDENT_RETVAR
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_retvar_prepare(&$_retvar_temp,$_retvar_in);
-    return $_retvar_in;
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
 }
 
-IDENT_RETVAR_RAW * String_$_plus_$_Integer(IDENT_RETVAR_RAW * left_, int right, IDENT_RETVAR_RAW * $_retvar_in)
+IDENT_MPTR_RAW * String_$_plus_$_Integer(IDENT_MPTR_RAW * left_, int right, IDENT_MPTR_RAW * $_mptr_in)
 {
 
-    debugPrintf("String_$_plus_$_Integer %s -> %s\n",left_->debugName, $_retvar_in->debugName);
-    _$_retvar __attribute__ ((__cleanup__(_$_cleanup))) $_retvar_temp; IDENT_RETVAR_INITIALIZE_RAW (&$_retvar_temp,
-                                                                                                    xstr($_retvar_temp));
-    IDENT_RETVAR_RAW * s_ = String_$_String_$_(&$_retvar_temp);
+    debugPrintf("String_$_plus_$_Integer %s -> %s\n",left_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                                    xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
     String * left = left_->obj;
 
@@ -90,16 +90,16 @@ IDENT_RETVAR_RAW * String_$_plus_$_Integer(IDENT_RETVAR_RAW * left_, int right, 
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_retvar_prepare(&$_retvar_temp,$_retvar_in);
-    return $_retvar_in;
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
 }
 
-IDENT_RETVAR_RAW * Integer_$_plus_$_String(int left, IDENT_RETVAR_RAW * right_, IDENT_RETVAR_RAW * $_retvar_in)
+IDENT_MPTR_RAW * Integer_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
 {
-    debugPrintf("Integer_$_plus_$_String %s -> %s\n",right_->debugName, $_retvar_in->debugName);
-    _$_retvar __attribute__ ((__cleanup__(_$_cleanup))) $_retvar_temp; IDENT_RETVAR_INITIALIZE_RAW (&$_retvar_temp,
-                                                                                                    xstr($_retvar_temp));
-    IDENT_RETVAR_RAW * s_ = String_$_String_$_(&$_retvar_temp);
+    debugPrintf("Integer_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                                    xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
     String * right = right_->obj;
 
@@ -113,8 +113,8 @@ IDENT_RETVAR_RAW * Integer_$_plus_$_String(int left, IDENT_RETVAR_RAW * right_, 
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_retvar_prepare(&$_retvar_temp,$_retvar_in);
-    return $_retvar_in;
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
 }
 
 String * String_$_plus_$_Float(String * left, float right)
@@ -143,12 +143,13 @@ String * Float_$_plus_$_String(float left, String * right)
     return newString;
 }
 
-char String_$_getObjectAtIndex_$_Integer(String * right, int left)
+char String_$_getObjectAtIndex_$_Integer(IDENT_MPTR_RAW * right_, int left)
 {
+    String * right = (String *) right_->obj;
     return right->buffer[left];
 }
 
-int String_$_length_$_(IDENT_RETVAR_RAW *  s_)
+int String_$_length_$_(IDENT_MPTR_RAW *  s_)
 {
     String * s = s_ ->obj;
     return s->length;

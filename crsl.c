@@ -67,14 +67,14 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, temp4);
 
     temp4 =
-            CreateObject(IDENT_RETVAR, IDENT_RETVAR COMPILER_SEP "BaseType", objBaseType, Type,
-                         IDENT_RETVAR);
+            CreateObject(IDENT_MPTR, IDENT_MPTR COMPILER_SEP "BaseType", objBaseType, Type,
+                         IDENT_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
     temp4 =
-            CreateObject(IDENT_HEAP_RETVAR, IDENT_HEAP_RETVAR COMPILER_SEP "BaseType", objBaseType, Type,
-                         IDENT_HEAP_RETVAR);
+            CreateObject(IDENT_HEAP_MPTR, IDENT_HEAP_MPTR COMPILER_SEP "BaseType", objBaseType, Type,
+                         IDENT_HEAP_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
@@ -82,7 +82,7 @@ void defineRSLSymbols(Object * root)
 
     rslFunc =
             CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType" COMPILER_SEP,
-                         0, Function, IDENT_RETVAR);
+                         0, Function, IDENT_MPTR);
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "BaseType");
     addSymbol(root, rslFunc);
@@ -212,7 +212,7 @@ void defineRSLSymbols(Object * root)
     rslFunc =
         CreateObject("tf",
                      "Boolean" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0"
-                     COMPILER_SEP GENERIC_PARAM "1", 0, Function, "String");
+                     COMPILER_SEP GENERIC_PARAM "1", 0, Function, "$GP0");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addParam(rslFunc, "Generic_$$");

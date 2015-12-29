@@ -616,9 +616,9 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                 fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
                         oIter->value->fullname);
             } else {
-                if (!strcmp(oIter->value->returnType,IDENT_RETVAR)) {
+                if (!strcmp(oIter->value->returnType,IDENT_MPTR)) {
                     fprintf(outFile, "\t_$_TEMP_OBJ(%s);\n",oIter->value->fullname);
-                } else if (!strcmp(oIter->value->returnType,IDENT_HEAP_RETVAR)) {
+                } else if (!strcmp(oIter->value->returnType,IDENT_HEAP_MPTR)) {
                     fprintf(outFile, "\t_$_HEAP_VARIABLE(%s);\n",oIter->value->fullname);
                 }
                 else {
@@ -635,7 +635,7 @@ void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree
                 oIter->value->fullname);
     } else {
         if (strcmp(oIter->value->fullname,IDENT_SUPER "_")) {
-            fprintf(outFile, "\t" IDENT_RETVAR "* %s;\n", oIter->value->fullname);
+            fprintf(outFile, "\t" IDENT_MPTR "* %s;\n", oIter->value->fullname);
         } else {
             fprintf(outFile, "\t%s * %s;\n", oIter->value->returnType, oIter->value->fullname);
         }
@@ -660,7 +660,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
         if (getFlag(rType, FLAG_PRIMITIVE)) {
             fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
         } else {
-            fprintf(outh, IDENT_RETVAR "* %s(", tree->fullname);
+            fprintf(outh, IDENT_MPTR "* %s(", tree->fullname);
         }
     } else {
         fprintf(outh, "void %s(", tree->fullname);
@@ -677,7 +677,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
             if (getFlag(pType, FLAG_PRIMITIVE)) {
                 fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
             } else {
-                fprintf(outh, IDENT_RETVAR " * %s", oIter->value->fullname);
+                fprintf(outh, IDENT_MPTR " * %s", oIter->value->fullname);
             }
         }
 
@@ -690,7 +690,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 
 
     if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
-        fprintf(outh, "%c " IDENT_RETVAR " * " IDENT_RETVAR "_in",printComma);
+        fprintf(outh, "%c " IDENT_MPTR " * " IDENT_MPTR "_in",printComma);
     }
 
     //finish
