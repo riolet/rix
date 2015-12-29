@@ -1674,6 +1674,8 @@ int main(int argc, char **argv)
     //compilerDebugPrintf("Lines read %d\n",numline);
     //Read mainfile
     readFile(ifile, ritTempFile, &numline);
+
+    fprintf(ritTempFile,"\n"); //END OF FILE GUARANTEE!
     fclose(ritTempFile);
 
     file = fopen("ritchie_temp_file.rit", "r+");
