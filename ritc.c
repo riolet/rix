@@ -768,21 +768,21 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         if (!objects) {
             criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
         }
-        if (!objects->paramTypes) {
+        if (!objects->returnType) {
             char error[BUFFLEN];
             snprintf(error, BUFFLEN, "Parmtypes not found for %s %d.\n", objects->name,__LINE__);
             criticalError(ERROR_ParseError, error);
         }
-        result = CreateObject(0, 0, 0, Expression, objects->paramTypes->value);
-        addParam(result, objects->paramTypes->value);
+        result = CreateObject(0, 0, 0, Expression, objects->returnType);
+        addParam(result, objects->returnType);
 
 
         if (!subject->returnType) {
             if (subject->type == NewMarkedIdent) {
-                compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->paramTypes->value);
+                compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->returnType);
                 Object *variable =
                     CreateObject(subject->name, subject->fullname, 0, Variable,
-                                 objects->paramTypes->value);
+                                 objects->returnType);
                     addSymbol(current, variable);
             } else {
                 char error[1024];
@@ -791,7 +791,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             }
         } else {
             //Check compatible types if Subject exists
-            if (strcmp(subject->returnType, objects->paramTypes->value)) {
+            if (strcmp(subject->returnType, objects->returnType)) {
 //                if (!((strcmp(subject->returnType, "Integer")
 //                       || strcmp(subject->returnType, "Float")
 //                      ) && (strcmp(objects->paramTypes->value, "Integer")
@@ -800,19 +800,11 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
                     char error[BUFFLEN];
                     snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n",
                              subject->name, subject->returnType,
-                             objects->paramTypes->value);
+                             objects->returnType);
                     criticalError(ERROR_IncompatibleTypes, error);
 //                }
             }
         }
-
-
-
-//        if (subject->returnType&&strcmp(subject->returnType,objects->returnType)) {
-//            char error[1024];
-//            snprintf(error, 1024, "Can't assign %s (%s) to %s\n", objects->returnType, objects->paramTypes->value, subject->returnType);
-//            criticalError(ERROR_IncompatibleTypes, error);
-//        }
 
         Object * rType = findByName(objects->returnType);
 
@@ -1126,7 +1118,21 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     invoke_pos +=
         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(",
                  realVerb->fullname);
-    result = CreateObject(0, 0, 0, Expression, realVerb->returnType);
+
+    //Get the generic return type
+    char *returnType;
+    if (strcmp(realVerb->returnType, "Generic_$$")) {
+        returnType=realVerb->returnType;
+    } else {
+        if (realVerb->genericType)
+            //Preset return type
+            returnType=realVerb->genericType;
+        else
+            //Positional return type
+            returnType=paramTypes[realVerb->genericTypeArgPos - 1];
+    }
+
+    result = CreateObject(0, 0, 0, Expression, returnType);
 
     if (subject) {
         if (objects)
@@ -1167,7 +1173,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
         char retVarName[BUFFLEN];
-        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
+        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d_%d", scope_idx, retVarNumber);
         retVarNumber++;
         Object *retVar =
                 CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
@@ -1493,7 +1499,7 @@ Object *objectString(char *string)
 
 
     char retVarName[BUFFLEN];
-    snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
+    snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d_%d", scope_idx, retVarNumber);
     retVarNumber++;
     Object *retVar =
             CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
@@ -1732,7 +1738,7 @@ int main(int argc, char **argv)
 
 
     fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/ritchie -ggdb -o %s.out "
-            "%s.c ${RITCHIE_HOME}/rsl/rsl.c ${RITCHIE_HOME}/errors.c ${RITCHIE_HOME}/rsl/RSL_String.c ", ofile, ofile);
+            "%s.c ${RITCHIE_HOME}/rsl/rsl.c ${RITCHIE_HOME}/errors.c ", ofile, ofile);
     //getln();
     hitEOF = false;
     while (!hitEOF) {

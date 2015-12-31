@@ -4,6 +4,7 @@ Ritchie Standard Library
 
 */
 ##external "rsl/RSL_String.h"
+##addsource "rsl/RSL_String.c"
 String::BaseType
     destructor->:
         //virtual
@@ -12,3 +13,17 @@ String::BaseType
         //Virtual
 //Done
 ##external ""
+
+//##external "rsl/RSL_Array.h"
+//##addsource "rsl/RSL_Array.c"
+//Array::BaseType
+//    ::: ?s, Integer i
+//        //virtual
+//
+//    destructor->:
+//        //virtual
+//
+//    length->Integer:
+//        //Virtual
+////Done
+//##external ""

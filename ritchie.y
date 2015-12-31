@@ -89,7 +89,7 @@
 %type <oval> object;
 
 %type <sval> parameterIdent;
-%type <sval> anyIndent;
+%type <sval> anyIdent;
 %type <sval> function_type_entry;
 
 %{
@@ -170,7 +170,7 @@ expr:
   |        TYPE           { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbObjAtIdx(), $3); }
-  | expr ACCESSOR anyIndent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
+  | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
   | expr ACCESSOR VERB { compilerDebugPrintf("parser: expr-.v\n");   $$ = conjugate( $1, verbIdent($3), 0); }
   | expr ACCESSOR VERB expr { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
@@ -188,7 +188,7 @@ object:
   | CONDITIONLINK { compilerDebugPrintf("parser: object-previous\n"); $$ = objectPrev();   }
   ;
 
-anyIndent:
+anyIdent:
   IDENT   { compilerDebugPrintf("parser: IDENT\n"); $$ = $1; }
   | NEWIDENT   { compilerDebugPrintf("parser: NEWIDENT\n"); $$ = $1; }
   | UNMARKEDNEWIDENT { compilerDebugPrintf("parser: UNMARKEDNEWIDENT\n"); $$ = $1; }

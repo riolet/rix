@@ -35,6 +35,12 @@ struct IDENT_MPTR_RAW {
     char *debugName;
 };
 
+typedef struct  {
+    char *Type;
+    char *data;
+    size_t length;
+    size_t cap;
+} List;
 
 typedef FILE *Stream;
 typedef void *UNKNOWNTYPE;
@@ -51,8 +57,8 @@ typedef void *Generic_$$;
 #define Boolean_$_elif_$_Boolean(A) if (A) {
 #define Boolean_$_else(A) if (A) {
 
-#define Boolean_$_tf_$__$GP0_$__$GP1(T,A,B) (T) ? (A) : (B);
-#define Boolean_$_ft_$__$GP0_$__$GP1(T,A,B) (T) ? (B) : (A);
+#define Boolean_$_tf_$__$GP0_$__$GP1(T,A,B,MPTR) (T) ? (A) : (B);
+#define Boolean_$_ft_$__$GP0_$__$GP1(T,A,B,MPTR) (T) ? (B) : (A);
 
 #define Boolean_$_condreturn_$__$GP0(T,B) if (T) return (B);
 
@@ -69,8 +75,8 @@ typedef void *Generic_$$;
 #define false_$_() false
 #define true_$_() true
 
-#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
-#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
+#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
+#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
 
 int Integer_$_Integer_$_String(String * s);
 
@@ -142,4 +148,6 @@ IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
 IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor);
 
+//List Functions
+IDENT_MPTR_RAW * List_$_List_$__$GP0 (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * $_mptr_in);
 #endif

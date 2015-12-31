@@ -35,11 +35,6 @@ void defineRSLSymbols(Object * root)
                      "Stream");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
-//    temp2 =
-//        CreateObject("String", "String" COMPILER_SEP "BaseType", objBaseType, Type,
-//                     "String");
-//    setFlags(temp2, FLAG_EXTERNAL);
-//    addSymbol(root, temp2);
 
     temp2 =
         CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type,
@@ -78,11 +73,18 @@ void defineRSLSymbols(Object * root)
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
+    temp4 =
+            CreateObject("List", "List" COMPILER_SEP "BaseType", objBaseType, Type,
+                         IDENT_HEAP_MPTR);
+    setFlags(temp4, FLAG_EXTERNAL);
+    //setFlags(temp4, FLAG_PRIMITIVE);
+    addSymbol(root, temp4);
+
     // ==============  Basetype constructor ===============
 
     rslFunc =
             CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType" COMPILER_SEP,
-                         0, Function, IDENT_MPTR);
+                         0, Constructor, IDENT_MPTR);
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "BaseType");
     addSymbol(root, rslFunc);
@@ -128,6 +130,12 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
 
     // ==============  String Functions ===============
+//    rslFunc =
+//            CreateObject("String", "String" COMPILER_SEP "String" COMPILER_SEP, 0,
+//                         Constructor, IDENT_MPTR);
+//    setFlags(rslFunc, FLAG_EXTERNAL);
+//    addParam(rslFunc, "String");
+//    addSymbol(root, rslFunc);
 
     rslFunc =
             CreateObject("assign", "String" COMPILER_SEP "String" COMPILER_SEP, 0,
@@ -212,11 +220,12 @@ void defineRSLSymbols(Object * root)
     rslFunc =
         CreateObject("tf",
                      "Boolean" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0"
-                     COMPILER_SEP GENERIC_PARAM "1", 0, Function, "$GP0");
+                     COMPILER_SEP GENERIC_PARAM "1", 0, Function, "Generic_$$");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addParam(rslFunc, "Generic_$$");
     addParam(rslFunc, "Generic_$$");
+    addGenericType(rslFunc, 0, 1);
     addSymbol(root, rslFunc);
     //============= Python style conditional Functions =============
     rslFunc = CreateObject("if", "if" COMPILER_SEP "Boolean", 0, Function, "Boolean");
@@ -408,4 +417,14 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Boolean");
     addSymbol(root, rslFunc);
+
+    // ==============  List Functions ===============
+    temp4 =
+            CreateObject("List", "List" COMPILER_SEP "List" COMPILER_SEP GENERIC_PARAM "0", objBaseType, Type,
+                         IDENT_HEAP_MPTR);
+    setFlags(temp4, FLAG_EXTERNAL);
+    addParam(rslFunc, "Generic_$$");
+    //addGenericType(rslFunc, 0, 1);
+    addSymbol(root, rslFunc);
+    addSymbol(root, temp4);
 }
