@@ -72,16 +72,20 @@ typedef void *Generic_$$;
 #define for_$_Integer_$_Integer(i,a,b) for (i=a;i<b;i++) {
 #define for_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i<b;i+=c) {
 
+#define downfor_$_Integer_$_Integer(i,a,b) for (i=a;i>=b;i--) {
+#define downfor_$_Integer_$_Integer_$_Integer(i,a,b,c) for (i=a;i>=b;i-=c) {
+
+
 #define false_$_() false
 #define true_$_() true
 
-//#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (A) : ((T_==eq) ? (B) : (C)); })
-//#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (C) : ((T_==eq) ? (B) : (A)); })
+#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (A) : ((T_==eq) ? (B) : (C)); })
+#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (C) : ((T_==eq) ? (B) : (A)); })
 
-#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
-#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
+//#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
+//#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
 
-int Integer_$_Integer_$_String(String * s);
+int Integer_$_Integer_$_String(IDENT_MPTR_RAW * s_);
 
 
 float Float_$_exponent_$_Integer(float f, int i);
@@ -131,7 +135,7 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-IDENT_MPTR_RAW * args_$_Integer(Integer i, IDENT_MPTR_RAW $_mptr_in);
+IDENT_MPTR_RAW * args_$_Integer(Integer i, IDENT_MPTR_RAW * $_mptr_in);
 
 
 

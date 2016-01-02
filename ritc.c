@@ -574,7 +574,7 @@ Object *completeExpression(Object * expression)
     char buffer[BUFFLEN];
     ListString *code = expression->code;
     while (code != 0) {
-        snprintf(buffer, BUFFLEN, "%s;", code->value);
+        snprintf(buffer, BUFFLEN, "/*%s %d*/ %s;", __FILE__, __LINE__, code->value);
         prevNode[prev_idx] = addCode(current, buffer);
         code = code->next;
     }
@@ -645,6 +645,8 @@ Object *makeReturn(Object * expression)
         free(line->value);
         line->value = strdup(newCode);
     } else {
+        //remove last semicolon
+        line->value[strlen(line->value)-1]='\0';
         snprintf(newCode, BUFFLEN, IDENT_MPTR "_prepare(%s, " IDENT_MPTR "_in);\n"
                 "return " IDENT_MPTR "_in;", line->value);
         free(line->value);

@@ -316,8 +316,28 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_ASSIGNMENT);
     addParam(rslFunc, "Integer");
     addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
     addSymbol(root, rslFunc);
 
+    rslFunc =
+            CreateObject("downfor", "downfor" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0,
+                         Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_ASSIGNMENT);
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
+
+    rslFunc =
+            CreateObject("downfor",
+                         "downfor" COMPILER_SEP "Integer" COMPILER_SEP "Integer" COMPILER_SEP
+                                 "Integer", 0, Function, "Integer");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_ASSIGNMENT);
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "Integer");
+    addSymbol(root, rslFunc);
     // ==============  Print Functions ===============
     rslFunc =
             CreateObject("print", "print" COMPILER_SEP "Char", 0, Function, "Integer");
