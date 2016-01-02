@@ -8,7 +8,7 @@ isPrime -> bool(int n)
 
     #upperLimit = n.sqrt() + 1
     #i.for (3, upperLimit, 2)
-        if (n % i) == 0
+        if ((n % i) == 0)
             ->false
 
     -> true
@@ -21,8 +21,5 @@ isPrime -> bool(int n)
 #i.for (1, lim)
     if (isPrime (i))
         numPrimes += 1
-
-for(#element := list)
-    print element
 
 print ("Number of primes in the interval [0,"+lim+"]: "+numPrimes)

@@ -309,7 +309,7 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
 
     rslFunc =
-        CreateObject("for", "for" COMPILER_SEP "int" COMPILER_SEP "bool", 0,
+        CreateObject("for", "for" COMPILER_SEP "int" COMPILER_SEP "int", 0,
                      Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);
@@ -318,7 +318,7 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("for",
-                     "for" COMPILER_SEP "int" COMPILER_SEP "bool" COMPILER_SEP
+                     "for" COMPILER_SEP "int" COMPILER_SEP "int" COMPILER_SEP
                      "int", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);
