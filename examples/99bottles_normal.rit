@@ -1,4 +1,4 @@
-line -> String: Integer b, String end
+line -> String: int b, String end
     if (b>1)
         -> "" + b + " bottles " + end
     if (b==1)

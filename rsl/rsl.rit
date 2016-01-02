@@ -3,13 +3,17 @@
 Ritchie Standard Library
 
 */
+
+//#true = (1==1)
+//#false = (1==0)
+
 ##external "rsl/RSL_String.h"
 ##addsource "rsl/RSL_String.c"
 String::BaseType
-    destructor->:
+    destructor->()
         //virtual
 
-    length->Integer:
+    length->int()
         //Virtual
 //Done
 ##external ""
@@ -17,13 +21,13 @@ String::BaseType
 //##external "rsl/RSL_Array.h"
 //##addsource "rsl/RSL_Array.c"
 //Array::BaseType
-//    ::: ?s, Integer i
+//    ::: ?s, int i
 //        //virtual
 //
 //    destructor->:
 //        //virtual
 //
-//    length->Integer:
+//    length->int:
 //        //Virtual
 ////Done
 //##external ""

@@ -1,8 +1,8 @@
 Rectangle :: BaseType
-  w = Integer
-  h = Integer
+  w = int
+  h = int
 
-  ::: Integer w, Integer h
+  ::: int w, int h
     $.w = w
     $.h = h
 

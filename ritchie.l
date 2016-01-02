@@ -215,18 +215,17 @@ dtvAddsource "##addsource"
                         if (!exists) {
                           compilerDebugPrintf("lexer: unidentified identifier\n");
                           return UNMARKEDNEWIDENT;
-                        } else if (exists->type == Variable) {
+                        } else if (exists->category == Variable) {
                           compilerDebugPrintf("lexer: identifier\n");
                           return IDENT;
-                        } else if (exists->type == Function || exists->type == Constructor) {
+                        } else if (isVerb(exists)) {
                           compilerDebugPrintf("lexer: verb\n");
                           return VERB;
-                        } else if (exists->type == Type) {
+                        } else if (exists->category == Type) {
                           compilerDebugPrintf("lexer: type\n");
                           return TYPE;
                         } else {
-                          compilerDebugPrintf("lexer: unidentified identifier\n");
-                          return IDENT;
+                          criticalError(ERROR_ParseError, "lexer: unidentified identifier\n");
                         }
                       }
 
@@ -245,7 +244,7 @@ dtvAddsource "##addsource"
 {comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {ternary}       { compilerDebugPrintf("lexer: ternary\n");                                   return TERNARY; }
 {condReturn}    { compilerDebugPrintf("lexer: condReturn\n");                                return CONDRETURN; }
-{mathAssign}    { compilerDebugPrintf("leFloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{mathAssign}    { compilerDebugPrintf("lefloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 {accessor}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
 {hash}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }

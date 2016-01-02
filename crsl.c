@@ -19,17 +19,19 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, temp2);
 
     temp2 =
-        CreateObject("Boolean", "Boolean" COMPILER_SEP "BaseType", objBaseType, Type,
-                     "Boolean");
+        CreateObject("bool", "bool" COMPILER_SEP "BaseType", objBaseType, Type,
+                     "bool");
     setFlags(temp2, FLAG_EXTERNAL);
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
+
     temp2 =
-        CreateObject("Ternary", "Ternary" COMPILER_SEP "BaseType", objBaseType, Type,
-                     "Ternary");
+        CreateObject("tern", "tern" COMPILER_SEP "BaseType", objBaseType, Type,
+                     "tern");
     setFlags(temp2, FLAG_EXTERNAL);
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
+
     temp2 =
         CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", objBaseType, Type,
                      "Stream");
@@ -38,19 +40,21 @@ void defineRSLSymbols(Object * root)
 
     temp2 =
         CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type,
-                     "Number *");
+                     "Number");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
+
     temp3 =
-        CreateObject("Integer", "Integer" COMPILER_SEP "Number", temp2, Type, "Integer");
+        CreateObject("int", "int" COMPILER_SEP "Number", temp2, Type, "int");
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
-    temp3 = CreateObject("Float", "Float" COMPILER_SEP "Number", temp2, Type, "Float");
+    temp3 = CreateObject("float", "float" COMPILER_SEP "Number", temp2, Type, "float");
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
-    temp3 = CreateObject("Char", "Char" COMPILER_SEP "Number", temp2, Type, "Char");
+
+    temp3 = CreateObject("char", "char" COMPILER_SEP "Number", temp2, Type, "char");
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
@@ -92,41 +96,41 @@ void defineRSLSymbols(Object * root)
     // ==============  Exponent functions ===============
 
     rslFunc =
-        CreateObject("exponent", "Float" COMPILER_SEP "exponent" COMPILER_SEP "Integer",
-                     0, Function, "Float");
+        CreateObject("exponent", "float" COMPILER_SEP "exponent" COMPILER_SEP "int",
+                     0, Function, "float");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "float");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("exponent", "Integer" COMPILER_SEP "exponent" COMPILER_SEP "Float",
-                     0, Function, "Float");
+        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "float",
+                     0, Function, "float");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("exponent", "Float" COMPILER_SEP "exponent" COMPILER_SEP "Float", 0,
-                     Function, "Float");
+        CreateObject("exponent", "float" COMPILER_SEP "exponent" COMPILER_SEP "float", 0,
+                     Function, "float");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("exponent", "Integer" COMPILER_SEP "exponent" COMPILER_SEP "Integer",
-                     0, Function, "Integer");
+        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "int",
+                     0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
 
     // ============== Sqrt functions ==============
-    // ============== TODO sqrt(Integer) should be a float? ==============
+    // ============== TODO sqrt(int) should be a float? ==============
     rslFunc =
-        CreateObject("sqrt", "Integer" COMPILER_SEP "sqrt" COMPILER_SEP, 0, Function,
-                     "Integer");
+        CreateObject("sqrt", "int" COMPILER_SEP "sqrt" COMPILER_SEP, 0, Function,
+                     "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
 
     // ==============  String Functions ===============
@@ -161,95 +165,95 @@ void defineRSLSymbols(Object * root)
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "Integer" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+        CreateObject("plus", "int" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "Integer", 0,
+        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "int", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "Float" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+        CreateObject("plus", "float" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "Float", 0,
+        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "float", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
-            CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "Integer", 0,
+            CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
                          Function, "Char");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
 
     // ==============  Conditional Functions ===============
 
-    rslFunc = CreateObject("if", "Boolean" COMPILER_SEP "if", 0, Function, "Boolean");
+    rslFunc = CreateObject("if", "bool" COMPILER_SEP "if", 0, Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("elif", "Boolean" COMPILER_SEP "elif" COMPILER_SEP "Boolean", 0,
-                     Function, "Boolean");
+        CreateObject("elif", "bool" COMPILER_SEP "elif" COMPILER_SEP "bool", 0,
+                     Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("else", "Boolean" COMPILER_SEP "else", 0, Function, "Boolean");
+    rslFunc = CreateObject("else", "bool" COMPILER_SEP "else", 0, Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
 
     rslFunc =
         CreateObject("tf",
-                     "Boolean" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0"
+                     "bool" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0"
                      COMPILER_SEP GENERIC_PARAM "1", 0, Function, "Generic_$$");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addParam(rslFunc, "Generic_$$");
     addParam(rslFunc, "Generic_$$");
     addGenericType(rslFunc, 0, 1);
     addSymbol(root, rslFunc);
     //============= Python style conditional Functions =============
-    rslFunc = CreateObject("if", "if" COMPILER_SEP "Boolean", 0, Function, "Boolean");
+    rslFunc = CreateObject("if", "if" COMPILER_SEP "bool", 0, Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     //setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("elif", "elif" COMPILER_SEP "Boolean", 0, Function, "Boolean");
+    rslFunc = CreateObject("elif", "elif" COMPILER_SEP "bool", 0, Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     //setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("else", "else" COMPILER_SEP, 0, Function, "Boolean");
+    rslFunc = CreateObject("else", "else" COMPILER_SEP, 0, Function, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
     //setFlags(rslFunc, FLAG_SAVERESULT);
     addSymbol(root, rslFunc);
 
     //============= Ternary Functions =============
     rslFunc =
-        CreateObject("compare", "Integer" COMPILER_SEP "compare" COMPILER_SEP "Integer",
+        CreateObject("compare", "int" COMPILER_SEP "compare" COMPILER_SEP "int",
                      0, Function, "Ternary");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
 
     rslFunc =
@@ -277,138 +281,122 @@ void defineRSLSymbols(Object * root)
     addParam(rslFunc, "Generic_$$");
     addGenericType(rslFunc, 0, 1);
     addSymbol(root, rslFunc);
-    // ==============  Boolean true, false as Dummies ===============
+    // ==============  bool true, false as Dummies ===============
     // TODO: Introduce constants
-    rslFunc = CreateObject("false", "false" COMPILER_SEP, 0, Function, "Boolean");
+    rslFunc = CreateObject("false", "false", 0, Variable, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_GLOBAL);
+    setFlags(rslFunc, FLAG_NO_CODEGEN);
     addSymbol(root, rslFunc);
 
-    rslFunc = CreateObject("true", "true" COMPILER_SEP, 0, Function, "Boolean");
+    rslFunc = CreateObject("true", "true", 0, Variable, "bool");
     setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_GLOBAL);
+    setFlags(rslFunc, FLAG_NO_CODEGEN);
     addSymbol(root, rslFunc);
 
     // ==============  Looping Functions ===============
 
     rslFunc =
-        CreateObject("while", "Boolean" COMPILER_SEP "while" COMPILER_SEP, 0, Function,
+        CreateObject("while", "bool" COMPILER_SEP "while" COMPILER_SEP, 0, Function,
                      "void");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("while", "while" COMPILER_SEP "Boolean", 0, Function, "void");
+    rslFunc = CreateObject("while", "while" COMPILER_SEP "bool", 0, Function, "void");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
 
     rslFunc =
-        CreateObject("for", "for" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0,
-                     Function, "Integer");
+        CreateObject("for", "for" COMPILER_SEP "int" COMPILER_SEP "bool", 0,
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
+//    setFlags(rslFunc, FLAG_ASSIGNMENT);
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("for",
-                     "for" COMPILER_SEP "Integer" COMPILER_SEP "Integer" COMPILER_SEP
-                     "Integer", 0, Function, "Integer");
+                     "for" COMPILER_SEP "int" COMPILER_SEP "bool" COMPILER_SEP
+                     "int", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-    rslFunc =
-            CreateObject("downfor", "downfor" COMPILER_SEP "Integer" COMPILER_SEP "Integer", 0,
-                         Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addSymbol(root, rslFunc);
-
-    rslFunc =
-            CreateObject("downfor",
-                         "downfor" COMPILER_SEP "Integer" COMPILER_SEP "Integer" COMPILER_SEP
-                                 "Integer", 0, Function, "Integer");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
-    addParam(rslFunc, "Integer");
+//    setFlags(rslFunc, FLAG_ASSIGNMENT);
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "int");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     // ==============  Print Functions ===============
     rslFunc =
-            CreateObject("print", "print" COMPILER_SEP "Char", 0, Function, "Integer");
+            CreateObject("print", "print" COMPILER_SEP "Char", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("print", "print" COMPILER_SEP "Integer", 0, Function, "Integer");
+        CreateObject("print", "print" COMPILER_SEP "int", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "Float", 0, Function, "Integer");
+    rslFunc = CreateObject("print", "print" COMPILER_SEP "float", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "Integer");
+        CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "Integer", 0,
-                     Function, "Integer");
+        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "int", 0,
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "Float", 0,
-                     Function, "Integer");
+        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "float", 0,
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "String", 0,
-                     Function, "Integer");
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
 
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "Integer", 0, Function, "Integer");
+    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "int", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "Float", 0, Function, "Integer");
+    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "float", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "Integer");
+    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "Integer", 0,
-                     Function, "Integer");
+        CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "int", 0,
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "loat", 0,
-                     Function, "Integer");
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
-    addParam(rslFunc, "Float");
+    addParam(rslFunc, "float");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "String", 0,
-                     Function, "Integer");
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
@@ -416,15 +404,15 @@ void defineRSLSymbols(Object * root)
 
     // ==============  System Functions ===============
 
-    rslFunc = CreateObject("args", "args" COMPILER_SEP "Integer", 0, Function, "String");
+    rslFunc = CreateObject("args", "args" COMPILER_SEP "int", 0, Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Integer");
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
 
-    // ==============  Integer Functions ===============
+    // ==============  int Functions ===============
     rslFunc =
-        CreateObject("Integer", "Integer" COMPILER_SEP "Integer" COMPILER_SEP "String", 0,
-                     Function, "Integer");
+        CreateObject("int", "int" COMPILER_SEP "int" COMPILER_SEP "String", 0,
+                     Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
@@ -432,10 +420,10 @@ void defineRSLSymbols(Object * root)
     // ==============  Condreturn Functions ===============
     rslFunc =
         CreateObject("condreturn",
-                     "Boolean" COMPILER_SEP "condreturn" COMPILER_SEP GENERIC_PARAM "0",
+                     "bool" COMPILER_SEP "condreturn" COMPILER_SEP GENERIC_PARAM "0",
                      0, Function, "void");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Boolean");
+    addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
 
     // ==============  List Functions ===============

@@ -658,9 +658,9 @@ Also add information on how to contact you by electronic and paper mail.
 notice like this when it starts in an interactive mode:
 
     {project}  Copyright (C) {year}  {fullname}
-    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This program comes with ABSOLUTELY NO WARRANTY; for details category `show w'.
     This is free software, and you are welcome to redistribute it
-    under certain conditions; type `show c' for details.
+    under certain conditions; category `show c' for details.
 
 The hypothetical commands `show w' and `show c' should show the appropriate
 parts of the General Public License.  Of course, your program's commands

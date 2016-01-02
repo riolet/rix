@@ -1,6 +1,6 @@
 Rectangle :: BaseType
-  n1 = Integer
-  f1 = Float
+  n1 = int
+  f1 = float
   
   : printAll
     print n1 + " " + f1

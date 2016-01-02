@@ -1,9 +1,9 @@
 Node :: BaseType
-  value = Integer
+  value = int
   left = Node
   right = Node
   
-  ::: Integer v
+  ::: int v
     value = v
   
   : printPreOrder
@@ -27,7 +27,7 @@ Node :: BaseType
     right printPostOrder
     print value
   
-  : add Integer x
+  : add int x
     x < value if
       left == 0 if
         left = Node x

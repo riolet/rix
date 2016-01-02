@@ -15,7 +15,7 @@ void BetterString_$_destructor_$_(IDENT_MPTR_RAW *  b_);
 
 IDENT_MPTR_RAW * BetterString_$_split_$_Char(IDENT_MPTR_RAW *  b, char c, IDENT_MPTR_RAW * $_mptr_in);
 IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in);
-IDENT_MPTR_RAW * BetterStringList_$_getObjectAtIndex_$_Integer(IDENT_MPTR_RAW *  bList_, Integer i, IDENT_MPTR_RAW * $_mptr_in);
+IDENT_MPTR_RAW * BetterStringList_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW *  bList_, int i, IDENT_MPTR_RAW * $_mptr_in);
 void BetterStringList_$_destructor_$_(IDENT_MPTR_RAW * bList_);
 
 

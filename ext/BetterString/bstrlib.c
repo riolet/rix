@@ -1751,7 +1751,7 @@ int binsertblk(bstring b, int pos, const void *blk, int len, unsigned char fill)
     d = b->slen + len;
     l = pos + len;
     if ((d | l) < 0)
-        return BSTR_ERR;        /* Integer wrap around. */
+        return BSTR_ERR;        /* int wrap around. */
 
     /* Aliasing case */
     if (((size_t) ((unsigned char *)blk + len)) >= ((size_t) b->data) &&

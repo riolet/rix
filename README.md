@@ -23,7 +23,7 @@ The best way to introduce yourself to this language is to take a look at some of
 Features
 ========
 
-* Ritchie uses type inferencing, so the boilerplate Java statement:
+* Ritchie uses category inferencing, so the boilerplate Java statement:
 
 ```
 Point point = new Point (x,y)
@@ -34,7 +34,7 @@ Point point = new Point (x,y)
 ```
 #point = Point x, y
 ```
-Identifiers have their type inferred if they are marked as new with "#". Their types cannot be changed once set. In the above example, `point` gets type `Point`.
+Identifiers have their category inferred if they are marked as new with "#". Their types cannot be changed once set. In the above example, `point` gets category `Point`.
 
 
 * Ritchie tries to follow English linguistic constructs, so, most of Ritchie language expressions take the form:
@@ -54,7 +54,7 @@ parses as:
 | hello   | =    | "Hello" |
 
 
-* Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of Ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would type
+* Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of Ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would category
 ```
 SomeClass :: SomeBaseClass
 ```
@@ -64,7 +64,7 @@ SomeClass :: SomeBaseClass
 * We call verbs what the constructs called functions, methods or subroutines in other languages. For example:
 
 ```
-factorial -> Integer: Integer n
+factorial -> int: int n
 	#result = 1
 	#i for 1,n+1
 		result = result * i
@@ -76,14 +76,14 @@ print factorial 5
 You can also write succint one liner verbs like the one below which gives the nth Fibonacci number:
 
 ```
-fib -> Integer:  Integer n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
+fib -> int:  int n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
 
 print fib 5
 ```
 
 There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `Identifier`.
 
-* A special type of verb is a control flow verb.
+* A special category of verb is a control flow verb.
 
 `if`, `while` and `for`  in Ritchie are all such verbs. They are not keywords, as you can redefine them, although this is probably not a good idea.
 

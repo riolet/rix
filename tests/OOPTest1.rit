@@ -1,25 +1,25 @@
 Rectangle :: BaseType
 
-  width = Integer
-  height = Integer
+  width = int
+  height = int
 
-  ::: Integer width, Integer height
+  ::: int width, int height
     $.width = width
     $.height = height
 
-  area -> Integer: = width * height
+  area -> int: = width * height
 
 
 Square :: Rectangle
 
-    ::: Integer edge
+    ::: int edge
         width = edge
         height = edge
 
 NamedSquare :: Square
     name = String
 
-    ::: Integer edge, String name
+    ::: int edge, String name
         width = edge
         height = edge
         $.name = name

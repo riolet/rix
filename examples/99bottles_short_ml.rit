@@ -1,4 +1,4 @@
-bottles -> String: Integer b
+bottles -> String: int b
     -> (b<>1) gel   (b+" bottles"),
                     "1 bottle",
                     "No more bottles"

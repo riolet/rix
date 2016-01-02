@@ -24,10 +24,10 @@ BetterString::String
         //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
 
 BetterStringList::BaseType
-    getObjectAtIndex->BetterString:Integer __i__
+    getObjectAtIndex->BetterString:int __i__
         //virtual
     destructor->:
         //virtual
-    length->Integer:
+    length->int:
         //virtual
 ##external ""

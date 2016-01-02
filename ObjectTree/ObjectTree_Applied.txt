@@ -2,57 +2,57 @@ Object:
     name: "Undefined"
     fullname: "Undefined"
     parentObject: NULL
-    type: CodeBlock
-    returnType: "Integer"
+    category: CodeBlock
+    returnType: "int"
     paramTypes: NULL
     definedSymbols:
-        ... (RSL stuff.    BaseType, print, echo, Integer, Float, etc)
+        ... (RSL stuff.    BaseType, print, echo, int, float, etc)
         Object:    name: "Rectangle"
             fullname: BaseType_Rectangle
             parentScope: BaseType
-            type: Type
+            category: Type
             returnType: NULL
             paramTypes: NULL
             definedSymbols:
                 Object: name: "w"
                     fullName: "w"
                     parentScope: NULL
-                    type: Variable
-                    returnType: "Integer"
+                    category: Variable
+                    returnType: "int"
                     paramTypes: NULL
                     definedSymbols: NULL
                     code: NULL
                 Object: name: "h"
                     fullName: "h"
                     parentScope: NULL
-                    type: Variable
-                    returnType: "Integer"
+                    category: Variable
+                    returnType: "int"
                     paramTypes: NULL
                     definedSymbols: NULL
                     code: NULL
                 Object: name: "Rectangle"
-                    fullName: "Rectangle_Rectangle_Rectangle_Integer_Integer"
+                    fullName: "Rectangle_Rectangle_Rectangle_int_int"
                     parentScope: NULL    //because it's a constructor
-                    type: Constructor
+                    category: Constructor
                     returnType: "Rectangle"
-                    paramTypes: [Integer, Integer]
-                    definedSymbols: (shorthand: Integer width, Integer height, Rectangle* self)
+                    paramTypes: [int, int]
+                    definedSymbols: (shorthand: int width, int height, Rectangle* self)
                     code:
-                        "Rectangle * Rectangle_Rectangle_Rectangle_Integer_Integer(Integer width, Integer height) {"
+                        "Rectangle * Rectangle_Rectangle_Rectangle_int_int(int width, int height) {"
                         "    Rectangle * self = (Rectangle*)malloc(sizeof(Rectangle));"
                         "    self->w = width;"
                         "    self->h = height;"
                         "    return self;"
                         "}"
                 Object: name: "Area"
-                    fullName: "Integer_Rectangle_Area"
+                    fullName: "int_Rectangle_Area"
                     parentScope: "Rectangle"
-                    type: Function
-                    returnType: "Integer"
+                    category: Function
+                    returnType: "int"
                     paramTypes: NULL
                     definedSymbols: (shorthand: Rectangle* self)
                     code:
-                        "Integer Integer_Rectangle_Area(Rectangle* self) {"
+                        "int int_Rectangle_Area(Rectangle* self) {"
                         "    return self->width * self->height;"
                         "}"
             code: 
@@ -64,19 +64,19 @@ Object:
         Object:    name: "Square"
             fullname: Rectangle_Square
             parentScope: Rectangle
-            type: Type
+            category: Type
             returnType: NULL
             paramTypes: NULL
             definedSymbols:
                 Object: name: "Square"
-                    fullName: "Square_Square_Square_Integer"
+                    fullName: "Square_Square_Square_int"
                     parentScope: NULL    //because it's a constructor
-                    type: Constructor
+                    category: Constructor
                     returnType: "Square"
-                    paramTypes: [Integer, Integer]
-                    definedSymbols: (shorthand: Integer size, Square* self)
+                    paramTypes: [int, int]
+                    definedSymbols: (shorthand: int size, Square* self)
                     code:
-                        "Square * Square_Square_Square_Integer(Integer size) {"
+                        "Square * Square_Square_Square_int(int size) {"
                         "    Square * self = (Square*)malloc(sizeof(Square));"
                         "    self->parent.w = size;"
                         "    self->parent.h = size;"
@@ -87,24 +87,24 @@ Object:
                 "    Rectangle parent;"
                 "} Square;"
         Object: name: "calcTotalArea"
-            fullname: "Integer_calcTotalArea_Rectangle_Rectangle"
+            fullname: "int_calcTotalArea_Rectangle_Rectangle"
             parentScope: NULL
-            type: Function
-            returnType "Integer"
+            category: Function
+            returnType "int"
             paramTypes: ["Rectangle", "Rectangle"]
-            definedSymbols: (shorthand. Rectangle r1, Rectangle r2, Integer a1, Integer a2)
+            definedSymbols: (shorthand. Rectangle r1, Rectangle r2, int a1, int a2)
             code:
-                "Integer Integer_calcTotalArea_Rectangle_Rectangle(Rectangle* r1, Rectangle* r2) {"
+                "int int_calcTotalArea_Rectangle_Rectangle(Rectangle* r1, Rectangle* r2) {"
                 "    int a1;"
-                "    a1 = Integer_Rectangle_Area(r1);"
+                "    a1 = int_Rectangle_Area(r1);"
                 "    int a2;"
-                "    a2 = Integer_Rectangle_Area(r2);"
+                "    a2 = int_Rectangle_Area(r2);"
                 "    return a1 + a2;"
                 "}"
         Object: name: "myRect"
             fullName: "myRect"
             parentScope: NULL
-            type: Variable
+            category: Variable
             returnType: "Rectangle"
             paramTypes: NULL
             definedSymbols: NULL
@@ -112,7 +112,7 @@ Object:
         Object: name: "mySquare"
             fullName: "mySquare"
             parentScope: NULL
-            type: Variable
+            category: Variable
             returnType: "Square"
             paramTypes: NULL
             definedSymbols: NULL
@@ -120,8 +120,8 @@ Object:
         Object: name: "total"
             fullName: "total"
             parentScope: NULL
-            type: Variable
-            returnType: "Integer"
+            category: Variable
+            returnType: "int"
             paramTypes: NULL
             definedSymbols: NULL
             code: NULL
@@ -129,10 +129,10 @@ Object:
         "#include \"rsl.h\""
         "#include \"out.h\""
         "int main(void) {"
-        "    Rectangle * myRect = Rectangle_Rectangle_Rectangle_Integer_Integer(10, 5);"
-        "    Square * mySquare = Square_Square_Square_Integer(4);"
+        "    Rectangle * myRect = Rectangle_Rectangle_Rectangle_int_int(10, 5);"
+        "    Square * mySquare = Square_Square_Square_int(4);"
         "    int total;"
-        "    total = Integer_calcTotalArea_Rectangle_Rectangle(myRect, &mySquare->parent);"
+        "    total = int_calcTotalArea_Rectangle_Rectangle(myRect, &mySquare->parent);"
         "    Stream_print_String( blah blah blah );"
         "    return 0;"
         "}"
@@ -142,8 +142,8 @@ Object:
     name: "..."
     fullName: "..."
     parentScope: "..."
-    type: ... (Variable, Type, Constructor, Function, CodeBlock)
-    returnType: "..." (Integer, Rectangle, None)
+    category: ... (Variable, Type, Constructor, Function, CodeBlock)
+    returnType: "..." (int, Rectangle, None)
     paramTypes: [...]
     definedSymbols: [...]
     code: ["..."]

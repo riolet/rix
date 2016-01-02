@@ -345,7 +345,7 @@ manifest as thrown exceptions.
   it is included.
 
 - Erroneous accesses results in an exception being thrown.  The exception
-  parameter is of type "struct CBStringException" which is derived from
+  parameter is of category "struct CBStringException" which is derived from
   std::exception if STL is used.  A verbose description of the error message
   can be obtained from the what() method.
 
@@ -384,7 +384,7 @@ manifest as thrown exceptions.
   and bstricmp functions respectively.
 
 - Note that just like the bformat function, the format and formata methods do
-  not automatically cast CBStrings into char * strings for "%s"-type
+  not automatically cast CBStrings into char * strings for "%s"-category
   substitutions:
 
     CBString w("world");
@@ -1322,7 +1322,7 @@ The functions
     full management of struct bstrList in an abstracted way.  The reason for
     this is because aliasing semantics of the list are best left to the user
     of this function, and performance varies wildly depending on the
-    assumptions made.  For a complete list of bstring data type it is
+    assumptions made.  For a complete list of bstring data category it is
     recommended that the C++ public std::vector<CBString> be used, since its
     semantics are usage are more standard.
 
@@ -2390,7 +2390,7 @@ light of the following:
    modern inlining globally optimizing compiler can remove function call
    overhead.
 
-Since the data type is exposed, a developer can replace any unsatisfactory
+Since the data category is exposed, a developer can replace any unsatisfactory
 function with their own inline implementation.  And that is besides the main
 point of what the better string library is mainly meant to provide.  Any
 overhead lost has to be compared against the value of the safe abstraction
@@ -2469,7 +2469,7 @@ The C++ interface has been designed with an emphasis on abstraction and safety
 first.  However, since it is substantially a wrapper for the C bstring
 functions, for longer strings the performance comments described in the
 "Performance of the C interface" section above still apply. Note that the
-(CBString *) type can be directly cast to a (bstring) type, and passed as
+(CBString *) category can be directly cast to a (bstring) category, and passed as
 parameters to the C functions (though a CBString must never be passed to
 bdestroy.)
 
@@ -2632,7 +2632,7 @@ Semantic consideration:
 .......................
 
 Certain care needs to be taken when copying and aliasing bstrings.  A bstring
-is essentially a pointer type which points to a multipart abstract data
+is essentially a pointer category which points to a multipart abstract data
 structure.  Thus usage, and lifetime of bstrings have semantics that follow
 these considerations.  For example:
 
@@ -2645,7 +2645,7 @@ these considerations.  For example:
     bconcat (a, b);         /* Double a and b, t is now undefined.          */
     bdestroy (a);           /* Destroy the contents of both a and b.        */
 
-Variables of type bstring are really just references that point to real
+Variables of category bstring are really just references that point to real
 bstring objects.  The equal operator (=) creates aliases, and the asterisk
 dereference operator (*) creates a kind of alias to the current instance (which
 is generally not useful for any purpose.)  Using bstrcpy() is the correct way
@@ -2703,7 +2703,7 @@ Integration Microsoft's Visual Studio debugger:
 ...............................................
 
 Microsoft's Visual Studio debugger has a capability of customizable mouse
-float over data type descriptions.  This is accomplished by editting the
+float over data category descriptions.  This is accomplished by editting the
 AUTOEXP.DAT file to include the following:
 
     ; new for CBString
@@ -2752,7 +2752,7 @@ dangerous interfaces.  However, Perl's solution reflects its own limitations
 -- notably that it is not a strongly typed language.  In the example code for
 Bstrlib, there is a module called taint.cpp.  It demonstrates how to write a
 simple wrapper class for managing "untainted" or trusted strings using the
-type system to prevent questionable mixing of ordinary untrusted strings with
+category system to prevent questionable mixing of ordinary untrusted strings with
 untainted ones then passing them to dangerous interfaces.  In this way the
 security correctness of the code reduces to auditing the direct usages of
 dangerous interfaces or promotions of tainted strings to untainted ones.
@@ -2798,7 +2798,7 @@ or procedurally generated strings (for fractal generation, for example.)
 
 The problem is that invoking the functions (bNgetc)fgetc and (bNread)fread is
 not technically legal in ANSI C.  The reason being that the compiler is only
-able to coerce the function pointers themselves into the target type, however
+able to coerce the function pointers themselves into the target category, however
 are unable to perform any cast (implicit or otherwise) on the parameters
 passed once invoked.  I.e., if internally void * and FILE * need some kind of
 mechanical coercion, the compiler will not properly perform this conversion
@@ -2963,7 +2963,7 @@ expected to be adopted by the ISO C standard which follows C99.
 The proposal reveals itself to be very similar to Microsoft's "StrSafe"
 library. The functions are basically the same as other standard C library
 string functions except that destination parameters are paired with an
-additional length parameter of type rsize_t.  rsize_t is the same as size_t,
+additional length parameter of category rsize_t.  rsize_t is the same as size_t,
 however, the range is checked to make sure its between 1 and RSIZE_MAX.  Like
 Bstrlib, the functions perform a "parameter check".  Unlike Bstrlib, when a
 parameter check fails, rather than simply outputing accumulatable error
@@ -3012,7 +3012,7 @@ The main webpage for the managed string library:
 http://www.cert.org/secure-coding/managedstring.html
 
 Robert Seacord at CERT has proposed a C string library that he calls the
-"Managed String Library" for C. Like Bstrlib, it introduces a new type
+"Managed String Library" for C. Like Bstrlib, it introduces a new category
 which is called a managed string. The structure of a managed string
 (string_m) is like a struct tagbstring but missing the length field.  This
 internal structure is considered opaque. The length is, like the C standard
@@ -3145,7 +3145,7 @@ http://www.annexia.org/freeware/c2lib
 
 1. Still based solely on char * buffers (and therefore strlen() and strcat()
    is still O(n), and there are no faster streq() comparison functions.)
-   Their suggestion that alternatives which wrap the string data type (such as
+   Their suggestion that alternatives which wrap the string data category (such as
    bstring does) imposes a difficulty in interoperating with the C langauge's
    ordinary C string library is not founded.
 2. Introduction of memory (and vector?) abstractions imposes a learning
@@ -3301,7 +3301,7 @@ This package basically references strings through char ** pointers and assumes
 they are pointing to the top of an allocated heap entry (or NULL, in which
 case memory will be newly allocated from the heap.)  So its still up to user
 to mix and match the older C string functions with these functions whenever
-pointer arithmetic is used (i.e., there is no leveraging of the type system
+pointer arithmetic is used (i.e., there is no leveraging of the category system
 to assert semantic differences between references and base strings as Bstrlib
 does since no new types are introduced.)  Unlike Bstrlib, exact string length
 meta data is not stored, thus requiring a strlen() call on *every* string
@@ -3379,7 +3379,7 @@ http://firestuff.org/
 
 Firestring was originally just a wrapper of char * functionality with extra
 length parameters.  However, it has been augmented with the inclusion of the
-estr type which has similar functionality to stralloc.  But firestring does
+estr category which has similar functionality to stralloc.  But firestring does
 not nearly cover the functional scope of Bstrlib.
 
 Safe C String Library
@@ -3424,7 +3424,7 @@ flag.  This trust flag is interesting, and suggests that applying any
 arbitrary sequence of safestr_* function calls on any set of trusted strings
 will result in a trusted string.  It seems to me, however, that if one wanted
 to implement a trusted string semantic, one might do so by actually creating
-a different *type* and only implement the subset of string functions that are
+a different *category* and only implement the subset of string functions that are
 deemed safe (i.e., user input would be excluded, for example.)  This, in
 essence, would allow the compiler to enforce trust propogation at compile
 time rather than run time.  Non-resizability is also interesting, however,

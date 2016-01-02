@@ -1,18 +1,18 @@
 Rectangle :: BaseType
-  w = Integer
-  h = Integer
+  w = int
+  h = int
 
-  ::: Integer a, Integer b
+  ::: int a, int b
     w = a
     h = b
 
   : area
     print "Rectangle area is " + (w*h)
   
-  : volume Integer depth
+  : volume int depth
     print "Rectangle volume is " + (w*h*depth)
     
-  Integer : staticArea Integer w, Integer h
+  int : staticArea int w, int h
     -> w * h
 
 myInt = print 10

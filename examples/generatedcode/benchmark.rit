@@ -1,4 +1,4 @@
-Boolean : isPrime Integer n
+bool : isPrime int n
     (n < 2) if
         -> false
     (n == 2) if

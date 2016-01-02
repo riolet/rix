@@ -61,14 +61,14 @@ Object *objectIdent(char *ident);
 Object *objectNewIdent(char *ident);
 Object *objectUnmarkedNewIdent(char *ident);
 Object *objectSelfIdent(char *ident);
-Object *objectFloat(float f);
+Object *objectfloat(float f);
 Object *objectInt(int i);
 Object *objectChar(char *c);
 Object *objectPrev();
 Object *objectString(char *string);
 Object *conjugateAccessorIdent(Object *subject, char *field);
 
-float simplifyFloat(float left, char *op, float right);
+float simplifyfloat(float left, char *op, float right);
 int simplifyInt(int left, char *op, int right);
 
 #endif

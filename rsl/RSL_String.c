@@ -70,10 +70,10 @@ IDENT_MPTR_RAW * String_$_plus_$_String(IDENT_MPTR_RAW * left_, IDENT_MPTR_RAW *
     return $_mptr_in;
 }
 
-IDENT_MPTR_RAW * String_$_plus_$_Integer(IDENT_MPTR_RAW * left_, int right, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * String_$_plus_$_int(IDENT_MPTR_RAW * left_, int right, IDENT_MPTR_RAW * $_mptr_in)
 {
 
-    debugPrintf("String_$_plus_$_Integer %s -> %s\n",left_->debugName, $_mptr_in->debugName);
+    debugPrintf("String_$_plus_$_int %s -> %s\n",left_->debugName, $_mptr_in->debugName);
     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
                                                                                                     xstr($_mptr_temp));
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
@@ -94,9 +94,9 @@ IDENT_MPTR_RAW * String_$_plus_$_Integer(IDENT_MPTR_RAW * left_, int right, IDEN
     return $_mptr_in;
 }
 
-IDENT_MPTR_RAW * Integer_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
 {
-    debugPrintf("Integer_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
+    debugPrintf("int_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
                                                                                                     xstr($_mptr_temp));
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
@@ -117,7 +117,7 @@ IDENT_MPTR_RAW * Integer_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDEN
     return $_mptr_in;
 }
 
-String * String_$_plus_$_Float(String * left, float right)
+String * String_$_plus_$_float(String * left, float right)
 {
     String * newString;
     char rightStr[RSL_STRING_MAX_BUFFLEN];
@@ -130,7 +130,7 @@ String * String_$_plus_$_Float(String * left, float right)
     return newString;
 }
 
-String * Float_$_plus_$_String(float left, String * right)
+String * float_$_plus_$_String(float left, String * right)
 {
     String * newString;
     char leftStr[RSL_STRING_MAX_BUFFLEN];
@@ -143,7 +143,7 @@ String * Float_$_plus_$_String(float left, String * right)
     return newString;
 }
 
-char String_$_getObjectAtIndex_$_Integer(IDENT_MPTR_RAW * right_, int left)
+char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left)
 {
     String * right = (String *) right_->obj;
     return right->buffer[left];

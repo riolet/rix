@@ -24,22 +24,22 @@ IDENT_MPTR_RAW *  BetterString_$_BetterString_$_String(IDENT_MPTR_RAW * s_, IDEN
 //    }
 //}
 //
-//IDENT_MPTR_RAW *  BetterString_$_plus_$_Integer(IDENT_MPTR_RAW *  left, int right)
+//IDENT_MPTR_RAW *  BetterString_$_plus_$_int(IDENT_MPTR_RAW *  left, int right)
 //{
 //    return bformat("%s%i", left->data, right);
 //}
 //
-//IDENT_MPTR_RAW *  Integer_$_plus_$_BetterString(int left, IDENT_MPTR_RAW *  right)
+//IDENT_MPTR_RAW *  int_$_plus_$_BetterString(int left, IDENT_MPTR_RAW *  right)
 //{
 //    return bformat("%i%s", left, right->data);
 //}
 //
-//IDENT_MPTR_RAW *  BetterString_$_plus_$_Float(IDENT_MPTR_RAW *  left, float right)
+//IDENT_MPTR_RAW *  BetterString_$_plus_$_float(IDENT_MPTR_RAW *  left, float right)
 //{
 //    return bformat("%s%f", left->data, right);
 //}
 //
-//IDENT_MPTR_RAW *  Float_$_plus_$_BetterString(float left, IDENT_MPTR_RAW *  right)
+//IDENT_MPTR_RAW *  float_$_plus_$_BetterString(float left, IDENT_MPTR_RAW *  right)
 //{
 //    return bformat("%f%s", left, right->data);
 //}
@@ -112,9 +112,9 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
     return _$_returnAppointer($_mptr_in,result,BetterStringList_$_destructor_$_);
 }
 
-IDENT_MPTR_RAW * BetterStringList_$_getObjectAtIndex_$_Integer(IDENT_MPTR_RAW *  bList_, Integer i, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * BetterStringList_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW *  bList_, int i, IDENT_MPTR_RAW * $_mptr_in)
 {
-    debugPrintf("BetterStringList_$_getObjectAtIndex_$_Integer %i\n",i);
+    debugPrintf("BetterStringList_$_getObjectAtIndex_$_int %i\n",i);
 
     struct bstrList * bList = bList_->obj;
     return _$_returnAppointer($_mptr_in, bList->entry[i], BetterString_$_destructor_$_);

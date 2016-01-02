@@ -1,4 +1,4 @@
-someOtherFun->Integer:
+someOtherFun->int:
     #i=5
     ->i
 

@@ -1,13 +1,13 @@
-Integer: sum0
+int: sum0
   ->0
 
-Integer: sum1 Integer a
+int: sum1 int a
   ->a
 
-Integer: sum2 Integer a, Integer b
+int: sum2 int a, int b
   ->a+b
 
-Integer: sum3 Integer a, Integer b, Integer c
+int: sum3 int a, int b, int c
   print "sum3:"
   print "  arg 1: " + a
   print "  arg 2: " + b

@@ -1,11 +1,11 @@
-Integer: factorial Integer n
+int: factorial int n
 	result = 1
 	i for 1,n+1
 		result = result * i
 	->result
 
 
-Integer: sum Integer n
+int: sum int n
 	n==0 if
 		->n
 	->n + (sum (n-1))      

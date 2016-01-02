@@ -1,11 +1,11 @@
 //Does not work yet
 /*
-hanoi -> Integer: Integer n, ?s, ?a, ?e  =  (n == 1) tf (print s + " -> " + e), ((hanoi (n - 1), s, e, a) + (print s + " -> " + e)+(hanoi (n - 1), a, s, e))
+hanoi -> int: int n, ?s, ?a, ?e  =  (n == 1) tf (print s + " -> " + e), ((hanoi (n - 1), s, e, a) + (print s + " -> " + e)+(hanoi (n - 1), a, s, e))
 
-hanoi (Integer (args 1)), "A", "B", "C"
+hanoi (int (args 1)), "A", "B", "C"
 
 
-a = Array Integer,5
+a = Array int,5
 
 genericType = ?s
 

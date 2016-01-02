@@ -1,7 +1,7 @@
 Point :: BaseType
-  x = Integer
-  y = Integer
-  ::: Integer x, Integer y
+  x = int
+  y = int
+  ::: int x, int y
     $.x = x
     $.y = y
 
@@ -9,36 +9,36 @@ Point :: BaseType
     -> "[" + x + "," + y + "]"
 
 Shape :: BaseType
-  //area = Float
-  //perimeter = Float
+  //area = float
+  //perimeter = float
 
   //  At present, abstract functions are not implemented. (lol)
-  //	Boolean: contains Point point
+  //	bool: contains Point point
 
 
 Rectangle :: Shape
   topLeftHand = Point
-  width =	Integer
-  height = Integer
+  width =	int
+  height = int
 
-  area -> Integer:
+  area -> int:
     -> width * height
 
-  contains -> Boolean:  Point point
+  contains -> bool:  Point point
     -> (topLeftHand.x <=  point.x) && (topLeftHand.x + width >= point.x) && (topLeftHand.y >= point.y && topLeftHand.y - height <= point.y)
 
 Circle :: Shape
 	center = Point
-	radius = Integer
+	radius = int
 
-	::: Point center, Integer radius
+	::: Point center, int radius
 	  $.center = center
 	  $.radius = radius
 
-	area -> Float:
+	area -> float:
 		-> 3.141592 * radius ^^ 2
 
-	circumference -> Float:
+	circumference -> float:
 		-> 2 * 3.141592 * radius
 
 

@@ -21,6 +21,9 @@ FILE *outCompilerLogFile;
 #define FLAG_SAVERESULT     8
 #define FLAG_RETURNS     16
 #define FLAG_PRIMITIVE     32
+#define FLAG_GLOBAL     64
+#define FLAG_NO_CODEGEN     128
+
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
 #define IDENT_SELF "$"
@@ -57,6 +60,7 @@ typedef enum {
     NewMarkedIdent,
     NewUnmarkedIdent,
     Destructor,
+    Method
 } OBJ_TYPE;
 
 typedef struct _Object Object;
@@ -73,17 +77,17 @@ struct _ListObject {
 };
 
 struct _Object {
-    char *name;                 //symbol name     ("myInteger", "calcTotalArea ", "Rectangle")
-    char *fullname;             //symbol fullname ("myInteger", "Integer_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
+    char *name;                 //symbol name     ("myint", "calcTotalArea ", "Rectangle")
+    char *fullname;             //symbol fullname ("myint", "int_calcTotalArea_Rectangle_Rectangle", "BaseType_Rectangle")
     Object *parentClass;
     Object *parentScope;        //parent scope    (global scope, global scope, BaseType)
-    OBJ_TYPE type;              //What is this?   (Variable, Function, Class)
-    char *returnType;           //What value type?(Integer,  Integer,  NULL)
-    char *genericType;          //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
-    int genericTypeArgPos;      //What value type if the returnType is Generic?(Integer,  Integer,  NULL)
-    ListString *paramTypes;     //parameters?     (NULL,     [Integer, Integer], NULL)
-    ListObject *definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", Integer "a1", Integer "a2"], [Integer "w", Integer "h", Constructor "Rectangle", Function "Area"])
-    ListString *code;           //CodeBlock       (NULL, "Integer ...calcTotalArea...(...) {...", "typedef struct...")
+    OBJ_TYPE category;              //What is this?   (Variable, Function, Class)
+    char *returnType;           //What value category?(int,  int,  NULL)
+    char *genericType;          //What value category if the returnType is Generic?(int,  int,  NULL)
+    int genericTypeArgPos;      //What value category if the returnType is Generic?(int,  int,  NULL)
+    ListString *paramTypes;     //parameters?     (NULL,     [int, int], NULL)
+    ListObject *definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", int "a1", int "a2"], [int "w", int "h", Constructor "Rectangle", Function "Area"])
+    ListString *code;           //CodeBlock       (NULL, "int ...calcTotalArea...(...) {...", "typedef struct...")
     int flags;
 };
 
@@ -125,4 +129,5 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName);
 
 Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params);
 
+bool isVerb (Object *result);
 #endif

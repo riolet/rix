@@ -121,11 +121,11 @@ void doneClass(Object * tree)
 Object *beginFunction(char *returnType, char *funcName, Object * parameters)
 {
     if (returnType == 0) {
-        criticalError(ERROR_ParseError, "Return type mustn't be null.\n");
+        criticalError(ERROR_ParseError, "Return category mustn't be null.\n");
     }
     ListString *types = parameters->paramTypes;
     ListString *names = parameters->code;
-    //TODO: check funcName is undefined or function type
+    //TODO: check funcName is undefined or function category
     //TODO: check returnType is a valid Type
 
     char funcFullName[BUFFLEN];
@@ -133,7 +133,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
 
     //Build full name.
     // full name starts with parent class, if available
-    if (current->type == Type) {
+    if (current->category == Type) {
         funcFullName_pos +=
             snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
                      "%s" COMPILER_SEP, current->name);
@@ -166,7 +166,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     Object *parentScope;
     int i = scope_idx;
     while (i >= 0) {
-        if (scopeStack[i]->type != Type) {
+        if (scopeStack[i]->category != Type) {
             break;
         }
         i--;
@@ -180,7 +180,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     if (external) {
         setFlags(result, FLAG_EXTERNAL);
     } else {
-        if (current->type == Type) {
+        if (current->category == Type) {
             result->parentClass = current;
             char pointer[BUFFLEN];
             snprintf(pointer, BUFFLEN, "%s", current->name);
@@ -191,7 +191,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     }
     //add parameters to the function
     types = parameters->paramTypes;
-    //assuming for every type there is a name
+    //assuming for every category there is a name
     while (types != 0) {
         addSymbol(result,
                   CreateObject(names->value, names->value, 0, Variable, types->value));
@@ -214,7 +214,7 @@ void doneFunction(Object * tree)
 
 Object *beginConstructor(Object * parameters)
 {
-    if (current->type != Type) {
+    if (current->category != Type) {
         criticalError(ERROR_ParseError, "Constructor can only exist inside a class.\n");
     }
     ListString *types = parameters->paramTypes;
@@ -236,7 +236,7 @@ Object *beginConstructor(Object * parameters)
     }
 
     while (types != 0) {
-        compilerDebugPrintf("Adding type %s\n",types->value);
+        compilerDebugPrintf("Adding category %s\n",types->value);
         funcFullName_pos +=
             snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
                      COMPILER_SEP "%s", types->value);
@@ -250,7 +250,7 @@ Object *beginConstructor(Object * parameters)
     Object *parentScope;
     int i = scope_idx;
     while (i >= 0) {
-        if (scopeStack[i]->type != Type) {
+        if (scopeStack[i]->category != Type) {
             break;
         }
         i--;
@@ -267,7 +267,7 @@ Object *beginConstructor(Object * parameters)
 
     //add parameters to the function
     types = parameters->paramTypes;
-    //assuming for every type there is a name
+    //assuming for every category there is a name
     while (types != 0) {
         addSymbol(result,
                   CreateObject(names->value, names->value, 0, Variable, types->value));
@@ -324,7 +324,7 @@ Object *beginConstructor(Object * parameters)
 
             if (strcmp(oIter->value->name,IDENT_SUPER)&&strcmp(oIter->value->name,IDENT_SUPER "_"))
             {
-                if (oIter->value->type == Variable) {
+                if (oIter->value->category == Variable) {
                     Object * rType = findByName(oIter->value->returnType);
                     if (!getFlag(rType,FLAG_PRIMITIVE)) {
 
@@ -370,7 +370,7 @@ void doneConstructor(Object * tree)
 
 Object *beginDestructor(Object * parameters)
 {
-    if (current->type != Type) {
+    if (current->category != Type) {
         criticalError(ERROR_ParseError, "Destructor can only exist inside a class.\n");
     }
     ListString *types = parameters->paramTypes;
@@ -397,7 +397,7 @@ Object *beginDestructor(Object * parameters)
     Object *parentScope;
     int i = scope_idx;
     while (i >= 0) {
-        if (scopeStack[i]->type != Type) {
+        if (scopeStack[i]->category != Type) {
             break;
         }
         i--;
@@ -420,7 +420,7 @@ Object *beginDestructor(Object * parameters)
 
         if (strcmp(oIter->value->name,IDENT_SUPER "_"))
         {
-            if (oIter->value->type == Variable) {
+            if (oIter->value->category == Variable) {
                 Object * rType = findByName(oIter->value->returnType);
                 if (!getFlag(rType,FLAG_PRIMITIVE)) {
                     snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_MPTR "_in->obj)->%s);",
@@ -463,12 +463,12 @@ void doneDestructor(Object * tree)
 
 Object *funcParameters(Object * paramList, char *paramType, char *paramName)
 {
-    //TODO: check if type is actually a defined type
+    //TODO: check if category is actually a defined category
     //TODO: check paramType is a valid Type
     Object *type = findByName(paramType);
-    if (!type || type->type != Type) {
+    if (!type || type->category != Type) {
         char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "Cannot find type '%s'\n", paramType);
+        snprintf(error, BUFFLEN, "Cannot find category '%s'\n", paramType);
         criticalError(ERROR_UndefinedType, error);
     }
 
@@ -591,6 +591,7 @@ Object *finalize(Object * expression)
     }
     prevName[length + 1] = '\0';        //drop the " *" off the end if it's there
     previous[prev_idx] = strdup(prevName);
+    compilerDebugPrintf("Finalize expression %s %s\n",expression->code->value, expression->returnType);
     prevType[prev_idx] = strdup(expression->returnType);
     return expression;
 }
@@ -646,12 +647,13 @@ Object *makeReturn(Object * expression)
         line->value = strdup(newCode);
     } else {
         //remove last semicolon
-        line->value[strlen(line->value)-1]='\0';
+        if (line->value[strlen(line->value)-1]==';')
+            line->value[strlen(line->value)-1]='\0';
         snprintf(newCode, BUFFLEN, IDENT_MPTR "_prepare(%s, " IDENT_MPTR "_in);\n"
                 "return " IDENT_MPTR "_in;", line->value);
         free(line->value);
         line->value = strdup(newCode);
-        compilerDebugPrintf("Expression type %d code %s\n",expression->type,expression->code->value);
+        compilerDebugPrintf("Expression category %d code %s\n", expression->category, expression->code->value);
         setFlags(expression, FLAG_RETURNS);
     }
     return expression;
@@ -718,7 +720,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     char tempBuffer[BUFFLEN];
     int verbname_pos = 0;
 
-    if (verb->type == Type) {
+    if (verb->category == Type) {
         verbname_pos +=
             snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
                      verb->name);
@@ -772,7 +774,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         }
         if (!objects->returnType) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Parmtypes not found for %s %d.\n", objects->name,__LINE__);
+            snprintf(error, BUFFLEN, "Paramtypes not found for %s %d.\n", objects->name,__LINE__);
             criticalError(ERROR_ParseError, error);
         }
         result = CreateObject(0, 0, 0, Expression, objects->returnType);
@@ -780,7 +782,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
 
         if (!subject->returnType) {
-            if (subject->type == NewMarkedIdent) {
+            if (subject->category == NewMarkedIdent) {
                 compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->returnType);
                 Object *variable =
                     CreateObject(subject->name, subject->fullname, 0, Variable,
@@ -794,13 +796,13 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->returnType)) {
-//                if (!((strcmp(subject->returnType, "Integer")
-//                       || strcmp(subject->returnType, "Float")
-//                      ) && (strcmp(objects->paramTypes->value, "Integer")
-//                            || strcmp(objects->paramTypes->value, "Float")
+//                if (!((strcmp(subject->returnType, "int")
+//                       || strcmp(subject->returnType, "float")
+//                      ) && (strcmp(objects->paramTypes->value, "int")
+//                            || strcmp(objects->paramTypes->value, "float")
 //                      ))) {
                     char error[BUFFLEN];
-                    snprintf(error, BUFFLEN, "%s (%s) cannot be assigned type %s\n",
+                    snprintf(error, BUFFLEN, "%s (%s) cannot be assigned category %s\n",
                              subject->name, subject->returnType,
                              objects->returnType);
                     criticalError(ERROR_IncompatibleTypes, error);
@@ -812,7 +814,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
         if (!rType) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Cannot find type for %s\n",objects->returnType);
+            snprintf(error, BUFFLEN, "Cannot find category for %s\n",objects->returnType);
             criticalError(ERROR_ParseError, error);
         }
 
@@ -860,7 +862,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     }
 
     if (subject && subject->returnType == 0) {
-        if (subject->type == NewMarkedIdent) {
+        if (subject->category == NewMarkedIdent) {
             compilerDebugPrintf("NewMarkedIdent %s", subject->name);
             Object *variable = CreateObject(subject->name, subject->fullname, 0, Variable,
                                             verb->returnType);
@@ -919,7 +921,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         }
         verbname_pos +=
             snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
-    } else if (verb->type == Type) {
+    } else if (verb->category == Type) {
         verbname_pos +=
             snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
                      verb->name);
@@ -1015,7 +1017,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //search for the definition of that object
     compilerDebugPrintf("Conjugate: fullVerbName: %s\n", verbname);
     compilerDebugPrintf("Conjugate: genericVerbName: %s\n", genericVerbName);
-    if (verb->type == Type) {
+    if (verb->category == Type) {
         //look for ctor inside class
         realVerb = findByNameInScope(verb, verbname, true);
     }
@@ -1045,7 +1047,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             parent = parent->parentClass;
         }
 
-        while (!realVerb && parent && parent->type == Type) {
+        while (!realVerb && parent && parent->category == Type) {
             snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
             compilerDebugPrintf("Trying parent class: %s\n", newName);
             realVerb = findFunctionByFullName(newName);
@@ -1075,7 +1077,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             snprintf(error, BUFFLEN, "Cannot find function named %s %d.\n", verbname,__LINE__);
         criticalError(ERROR_UndefinedVerb, error);
     } else if (!realVerb) {
-        warningMsg("Cannot find verb \"%s\". Assuming \"%s\" is infix operator in C.\n",
+        compilerDebugPrintf("Cannot find verb \"%s\". Assuming \"%s\" is infix operator in C.\n",
                    verbname, verb->name);
         //must be + or / or such...
         if (!objects) {
@@ -1091,10 +1093,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         if (verb->returnType) {
             result = CreateObject(0, 0, 0, Expression, verb->returnType);
             addParam(result, verb->returnType);
-        } else if (!strcmp(subject->returnType, "Float")
-                   || !strcmp(objects->paramTypes->value, "Float")) {
-            result = CreateObject(0, 0, 0, Expression, "Float");
-            addParam(result, "Float");
+        } else if (!strcmp(subject->returnType, "float")
+                   || !strcmp(objects->paramTypes->value, "float")) {
+            result = CreateObject(0, 0, 0, Expression, "float");
+            addParam(result, "float");
         } else {
             result = CreateObject(0, 0, 0, Expression, subject->returnType);
             addParam(result, subject->returnType);
@@ -1110,9 +1112,9 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     }
     //Hack to allow if statements without codeblocks working yet.
     //TODO: remove this.
-    if (realVerb && !strcmp(realVerb->fullname, "Boolean_$_if")
-        || !strcmp(realVerb->fullname, "Boolean_$_else")
-        || !strcmp(realVerb->fullname, "Boolean_$_elif_$_Boolean")) {
+    if (realVerb && !strcmp(realVerb->fullname, "bool_$_if")
+        || !strcmp(realVerb->fullname, "bool_$_else")
+        || !strcmp(realVerb->fullname, "bool_$_elif_$_bool")) {
         return conjugateConditional(subject, realVerb, objects);
     }
     //build code line statement invoking that verb.
@@ -1121,16 +1123,16 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(",
                  realVerb->fullname);
 
-    //Get the generic return type
+    //Get the generic return category
     char *returnType;
     if (strcmp(realVerb->returnType, "Generic_$$")) {
         returnType=realVerb->returnType;
     } else {
         if (realVerb->genericType)
-            //Preset return type
+            //Preset return category
             returnType=realVerb->genericType;
         else
-            //Positional return type
+            //Positional return category
             returnType=paramTypes[realVerb->genericTypeArgPos - 1];
     }
 
@@ -1199,7 +1201,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
         char temp[BUFFLEN];
-        snprintf(temp, BUFFLEN, COMPILER_SEP "prev.pBoolean = %s", invocation);
+        snprintf(temp, BUFFLEN, COMPILER_SEP "prev.pbool = %s", invocation);
         addCode(result, temp);
     } else {
         addCode(result, invocation);
@@ -1218,30 +1220,30 @@ Object *conjugateConditional(Object * subject, Object * realverb, Object * objec
     //if statement:
     // A if
     // becomes
-    // _$_prev = A; Boolean_if(_$_prev)
-    if (!strcmp(realverb->fullname, "Boolean_$_if")) {
+    // _$_prev = A; bool_if(_$_prev)
+    if (!strcmp(realverb->fullname, "bool_$_if")) {
         snprintf(code, BUFFLEN,
-                 COMPILER_SEP "prev.pBoolean = %s; if(" COMPILER_SEP "prev.pBoolean) {",
+                 COMPILER_SEP "prev.pbool = %s; if(" COMPILER_SEP "prev.pbool) {",
                  subject->code->value);
     }
     //elif statement:
     // A elif B
     // becomes
-    // _$_prev = A; Boolean_elif_Boolean(!_$_prev && B)
-    else if (!strcmp(realverb->fullname, "Boolean_$_elif_$_Boolean")) {
+    // _$_prev = A; bool_elif_bool(!_$_prev && B)
+    else if (!strcmp(realverb->fullname, "bool_$_elif_$_bool")) {
 
         snprintf(code, BUFFLEN,
-                 COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP
-                 "prev.pBoolean && %s)", subject->code->value, realverb->fullname,
+                 COMPILER_SEP "prev.pbool = %s; %s(!" COMPILER_SEP
+                 "prev.pbool && %s)", subject->code->value, realverb->fullname,
                  objects->code->value);
     }
     //else statement:
     // A else
     // becomes
-    // _$_prev = A; Boolean_else(!_$_prev)
+    // _$_prev = A; bool_else(!_$_prev)
     else {
         snprintf(code, BUFFLEN,
-                 COMPILER_SEP "prev.pBoolean = %s; %s(!" COMPILER_SEP "prev.pBoolean)",
+                 COMPILER_SEP "prev.pbool = %s; %s(!" COMPILER_SEP "prev.pbool)",
                  subject->code->value, realverb->fullname);
     }
 
@@ -1261,14 +1263,14 @@ Object *verbMathOp(char *verb)
 Object *verbComparison(char *verb)
 {
     compilerDebugPrintf("verbComparison(%s)\n", verb);
-    Object *result = CreateObject(verb, verb, 0, Function, "Boolean");
+    Object *result = CreateObject(verb, verb, 0, Function, "bool");
     return result;
 }
 
 Object *verbTernary()
 {
     compilerDebugPrintf("verbTernary(<>)\n");
-    Object *result = CreateObject("<>", "<>", 0, Function, "Boolean");
+    Object *result = CreateObject("<>", "<>", 0, Function, "bool");
     return result;
 }
 
@@ -1289,7 +1291,7 @@ Object *verbObjAtIdx()
 Object *verbCondReturn()
 {
     compilerDebugPrintf("verbCondReturn(-->)\n");
-    Object *result = CreateObject("-->", "-->", 0, Function, "Boolean");
+    Object *result = CreateObject("-->", "-->", 0, Function, "bool");
     return result;
 }
 
@@ -1320,11 +1322,11 @@ Object *sVerbIdent(char *staticVerb)
     type = strtok(staticVerb, ".");
     field = strtok(0, ".");
 
-    //verify type exists
+    //verify category exists
     Object *oType = findByName(type);
     if (!oType) {
         char error[BUFFLEN];
-        snprintf(error, BUFFLEN, "Cannot find type %s\n", type);
+        snprintf(error, BUFFLEN, "Cannot find category %s\n", type);
         criticalError(ERROR_UndefinedVariable, error);
     }
     //build verb name
@@ -1391,15 +1393,16 @@ Object *objectNewIdent(char *ident)
 
 Object *objectUnmarkedNewIdent(char *ident)
 {
-    compilerDebugPrintf("objectNewIdent(%s)\n", ident);
+    compilerDebugPrintf("objectUnmarkedNewIdent(%s)\n", ident);
     Object *result;
     Object *identifier = findByName(ident);
 
     if (!identifier) {
+        compilerDebugPrintf("objectUnmarkedNewIdent(%s) not found\n", ident);
         result = CreateObject(ident, ident, 0, NewUnmarkedIdent, Undefined);
     } else {
         result =
-            CreateObject(identifier->name, identifier->fullname, 0, identifier->type,
+            CreateObject(identifier->name, identifier->fullname, 0, identifier->category,
                          identifier->returnType);
         addParam(result, identifier->returnType);
     }
@@ -1419,7 +1422,7 @@ Object *objectIdent(char *ident)
         criticalError(ERROR_ParseError, error);
     } else {
         result =
-            CreateObject(identifier->name, identifier->fullname, 0, identifier->type,
+            CreateObject(identifier->name, identifier->fullname, 0, identifier->category,
                          identifier->returnType);
         addParam(result, identifier->returnType);
     }
@@ -1432,8 +1435,8 @@ Object *objectSelfIdent(char *ident)
 {
     compilerDebugPrintf("objectSelfIdent(%s)\n", ident);
     //must be Function or Constructor and be inside a class
-    if ((current->type != Function && current->type != Constructor) || scope_idx == 0
-        || scopeStack[scope_idx - 1]->type != Type) {
+    if ((current->category != Function && current->category != Constructor) || scope_idx == 0
+        || scopeStack[scope_idx - 1]->category != Type) {
         criticalError(ERROR_ParseError,
                       "Cannot use self identifier ($) outside of class verbs.\n");
     }
@@ -1461,14 +1464,14 @@ Object *objectSelfIdent(char *ident)
     return result;
 }
 
-Object *objectFloat(float f)
+Object *objectfloat(float f)
 {
-    compilerDebugPrintf("objectFloat(%f)\n", f);
+    compilerDebugPrintf("objectfloat(%f)\n", f);
     char buffer[128];
     snprintf(buffer, BUFFLEN, "%f", f);
-    Object *result = CreateObject(0, 0, 0, Expression, "Float");
+    Object *result = CreateObject(0, 0, 0, Expression, "float");
     addCode(result, buffer);
-    addParam(result, "Float");
+    addParam(result, "float");
     return result;
 }
 
@@ -1477,9 +1480,9 @@ Object *objectInt(int d)
     compilerDebugPrintf("objectInt(%d)\n", d);
     char buffer[32];            // 20 = (log10(2^64))
     snprintf(buffer, 32, "%d", d);
-    Object *result = CreateObject(0, 0, 0, Expression, "Integer");
+    Object *result = CreateObject(0, 0, 0, Expression, "int");
     addCode(result, buffer);
-    addParam(result, "Integer");
+    addParam(result, "int");
     return result;
 }
 
@@ -1533,7 +1536,7 @@ Object *objectPrev()
 Object *conjugateAccessorIdent(Object *subject, char *field)
 {
 
-    if (subject->type == Type) {
+    if (subject->category == Type) {
         //build verb name
         char verbname[BUFFLEN];
         snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", subject->name, field);
@@ -1571,7 +1574,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         }
 
         Object *oField = 0;
-        //verify the type of parent has defined a variable named field
+        //verify the category of parent has defined a variable named field
         ListObject *oIter = oParentType->definedSymbols;
         while (oIter) {
             if (!strcmp(oIter->value->name, field)) {
@@ -1705,7 +1708,7 @@ int main(int argc, char **argv)
 //             "**********************************\n"
 //             "**********************************\n" ANSI_COLOR_RESET);
 
-    root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "Integer");
+    root = CreateObject("RootScope", "RootScope", 0, CodeBlock, "int");
     //addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
