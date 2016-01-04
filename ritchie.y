@@ -51,6 +51,8 @@
 %token <sval> LBRACKET
 %token <sval> RBRACKET
 %token <ival> INDENT
+%token <sval> LBRACE
+%token <sval> RBRACE
 %token <ival> UNINDENT
 %token <sval> CONDITIONLINK
 %token <sval> MATHASSIGN
@@ -64,6 +66,8 @@
 %token <sval> SELFIDENT
 %token <sval> SLCOMMENT
 %token <sval> COMPARISON
+%token <sval> LESSTHAN
+%token <sval> GREATERTHAN
 %token <ival> TERNARY
 %token <sval> CODE_INSERT
 
@@ -89,6 +93,8 @@
 %type <oval> object;
 %type <oval> arguments;
 %type <oval> arglist;
+%type <oval> typeArgList;
+
 
 %type <sval> parameterIdent;
 %type <sval> anyIdent;
@@ -112,11 +118,12 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %right ENDOFLINE INDENT
 %right PARAMCOMMA
 %right BOOLEANOP
-%right COMPARISON TERNARY
+%right COMPARISON LESSTHAN GREATERTHAN TERNARY
 %right MATH_OP
 %right ACCESSOR
 %right DESTRUCTOR
-%right LBRACKET RBRACKET
+%right LBRACKET RBRACKET LBRACE RBRACE
+//%right class_definition
 
 %%
 %start ritchie;
@@ -156,6 +163,8 @@ expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
   | expr ASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr MATHASSIGN expr  { compilerDebugPrintf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
+  | expr LESSTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
+  | expr GREATERTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr COMPARISON expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr BOOLEANOP  expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr  TERNARY   expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
@@ -170,8 +179,8 @@ expr:
 
 //  |      STATICVERB expr  { compilerDebugPrintf("parser: expr- Xo\n");   $$ = conjugate( 0, sVerbIdent($1), $2); }
 //  |      STATICVERB       { compilerDebugPrintf("parser: expr- X \n");   $$ = conjugate( 0, sVerbIdent($1),  0); }
-  |        TYPE     expr  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
-  |        TYPE           { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1),  0); }
+  |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
+  |        TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbObjAtIdx(), $3); }
   | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
@@ -188,6 +197,11 @@ arguments:
 arglist:
   expr { compilerDebugPrintf("parser: arg-(x)\n");   $$ = $1; } //1-ary
   | expr PARAMCOMMA arglist { compilerDebugPrintf("parser: arg(x,y)\n");   $$ = concatParams($1,$3); } //n-ary
+  ;
+
+typeArgList:
+  UNMARKEDNEWIDENT { compilerDebugPrintf("parser: arg-(x) %s\n",$1);   $$ = objectPlaceHolderType($1); } //1-ary
+  | UNMARKEDNEWIDENT PARAMCOMMA UNMARKEDNEWIDENT { compilerDebugPrintf("parser: arg(x,y) %s, %s\n",$1,$3);   $$ = concatParams(objectPlaceHolderType($1),objectPlaceHolderType($3)); } //n-ary
   ;
 
 
@@ -244,10 +258,12 @@ codeblock:
 
 
 class_definition:
-  UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3); }
+  UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0); }
+  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDEC TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3); }
   ;
+
 ctor_definition:
-  CTORDEC parameters { compilerDebugPrintf("parser: class-def\n"); $$ = beginConstructor($2); }
+  SELFIDENT LPAREN parameters RPAREN { compilerDebugPrintf("parser: class-def\n"); $$ = beginConstructor($3); }
   ;
 classblock:
   INDENT class_statements UNINDENT { $$ = $2; }

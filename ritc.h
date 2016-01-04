@@ -28,7 +28,7 @@ void checkPrevExists();
 void incPrev();
 void decPrev();
 
-Object *beginClass(char *className, char *parentName);
+Object *beginClass(char *className, char *parentName, Object *typeArgs);
 void doneClass(Object * tree);
 Object *beginFunction(char *returnType, char *funcName, Object * parameters);
 void doneFunction(Object * tree);
@@ -55,7 +55,7 @@ Object *verbIdent(char *verb);
 Object *verbDestructor();
 Object *verbObjAtIdx();
 Object *sVerbIdent(char *staticVerb);
-Object *verbCtor(char *type);
+Object *verbCtor(char *type, char *ytype);
 Object *parenthesize(Object * expr);
 Object *objectIdent(char *ident);
 Object *objectNewIdent(char *ident);
@@ -65,6 +65,7 @@ Object *objectfloat(float f);
 Object *objectInt(int i);
 Object *objectChar(char *c);
 Object *objectPrev();
+Object *objectPlaceHolderType(char *ident);
 Object *objectString(char *string);
 Object *conjugateAccessorIdent(Object *subject, char *field);
 

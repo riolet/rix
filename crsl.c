@@ -19,6 +19,18 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, temp2);
 
     temp2 =
+            CreateObject("Generic_YTYPE$$", "Generic_YTYPE$$" COMPILER_SEP "BaseType", objBaseType,
+                         Type, "Generic_YTYPE$$");
+    setFlags(temp2, FLAG_EXTERNAL);
+    addSymbol(root, temp2);
+
+    temp2 =
+            CreateObject("Generic_ZTYPE$$", "Generic_ZTYPE$$" COMPILER_SEP "BaseType", objBaseType,
+                         Type, "Generic_ZTYPE$$");
+    setFlags(temp2, FLAG_EXTERNAL);
+    addSymbol(root, temp2);
+
+    temp2 =
         CreateObject("bool", "bool" COMPILER_SEP "BaseType", objBaseType, Type,
                      "bool");
     setFlags(temp2, FLAG_EXTERNAL);
@@ -78,10 +90,9 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, temp4);
 
     temp4 =
-            CreateObject("List", "List" COMPILER_SEP "BaseType", objBaseType, Type,
+            CreateObject("Array", "Array" COMPILER_SEP "BaseType", objBaseType, Type,
                          IDENT_HEAP_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
-    //setFlags(temp4, FLAG_PRIMITIVE);
     addSymbol(root, temp4);
 
     // ==============  Basetype constructor ===============
@@ -426,13 +437,19 @@ void defineRSLSymbols(Object * root)
     addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
 
-    // ==============  List Functions ===============
-    temp4 =
-            CreateObject("List", "List" COMPILER_SEP "List" COMPILER_SEP GENERIC_PARAM "0", objBaseType, Type,
-                         IDENT_HEAP_MPTR);
-    setFlags(temp4, FLAG_EXTERNAL);
-    addParam(rslFunc, "Generic_$$");
-    //addGenericType(rslFunc, 0, 1);
+    // ==============  Array Functions ===============
+    rslFunc =
+            CreateObject("Array", "Array" COMPILER_SEP "Array" COMPILER_SEP "int", 0, Constructor,
+                         "Array");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    addSymbol(root, temp4);
+
+    rslFunc =
+            CreateObject("getObjectAtIndex", "Array" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
+                         Function, "Generic_YTYPE$$");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Array");
+    addParam(rslFunc, "int");
+    addSymbol(root, rslFunc);
 }

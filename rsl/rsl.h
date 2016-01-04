@@ -27,6 +27,7 @@ typedef struct {
 
 typedef struct IDENT_MPTR_RAW IDENT_MPTR_RAW;
 
+
 struct IDENT_MPTR_RAW {
     int ctr;
     IDENT_MPTR_RAW *ptr;
@@ -34,6 +35,8 @@ struct IDENT_MPTR_RAW {
     void (*destructor)(void *);
     char *debugName;
 };
+
+typedef IDENT_MPTR_RAW * IDENT_MPTR_RAW_PTR;
 
 typedef struct  {
     char *Type;
@@ -78,6 +81,7 @@ typedef void *Generic_$$;
 
 #define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (A) : ((T_==eq) ? (B) : (C)); })
 #define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (C) : ((T_==eq) ? (B) : (A)); })
+
 
 //#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
 //#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
@@ -154,4 +158,10 @@ IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, voi
 
 //List Functions
 IDENT_MPTR_RAW * List_$_List_$__$GP0 (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * $_mptr_in);
+
+#define Array_$_Array_$_int(size,IDENT_MPTR_RAW_PTR, TYPE) ({\
+     TYPE * arr = malloc(sizeof(TYPE)*size); \
+    _$_returnAppointer(IDENT_MPTR_RAW_PTR,arr,TYPE##_$_##destructor##_$_); \
+    IDENT_MPTR_RAW_PTR; })
+
 #endif

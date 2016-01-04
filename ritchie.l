@@ -79,8 +79,10 @@ mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
 assignment    "="
 return        "->"
 
+lessThan      "<"
+greaterThan   ">"
 mathAssign    "+="|"-="|"*="|"/="
-comparison    "<"|">"|"<="|">="|"=="|"!="
+comparison    "<="|">="|"=="|"!="
 ternary       "<>"
 bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
@@ -242,6 +244,8 @@ dtvAddsource "##addsource"
 
 {booleanOp}     { compilerDebugPrintf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
+{lessThan}    { compilerDebugPrintf("lexer: comparator<\n"); yylval->sval = strdup(yytext); return LESSTHAN; }
+{greaterThan}    { compilerDebugPrintf("lexer: comparator>\n"); yylval->sval = strdup(yytext); return GREATERTHAN; }
 {ternary}       { compilerDebugPrintf("lexer: ternary\n");                                   return TERNARY; }
 {condReturn}    { compilerDebugPrintf("lexer: condReturn\n");                                return CONDRETURN; }
 {mathAssign}    { compilerDebugPrintf("lefloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
@@ -258,6 +262,8 @@ dtvAddsource "##addsource"
 ")"           { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
 "["           { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
 "]"           { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"{"           { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
+"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
 .             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%

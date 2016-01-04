@@ -118,7 +118,7 @@ int addGenericType(Object * tree, char *genericType, int genericTypeArgPos)
 {
     tree->genericType = genericType ? strdup(genericType) : 0;
     tree->genericTypeArgPos = genericTypeArgPos;
-
+    return 0;
 }
 
 int addSymbol(Object * tree, Object * leaf)
