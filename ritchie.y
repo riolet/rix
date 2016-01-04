@@ -182,7 +182,8 @@ expr:
   |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
   |        TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
-  | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbObjAtIdx(), $3); }
+  | expr LBRACKET expr RBRACKET ASSIGNMENT expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$6); }
+  | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
   | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
 //  | expr ACCESSOR VERB { compilerDebugPrintf("parser: expr-.v\n");   $$ = conjugate( $1, verbIdent($3), 0); }
   | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }

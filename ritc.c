@@ -1337,10 +1337,17 @@ Object *verbDestructor()
     return result;
 }
 
-Object *verbObjAtIdx()
+Object *verbGetObjAtIdx()
 {
-    compilerDebugPrintf("verbObjAtIdx(#)\n");
+    compilerDebugPrintf("verbGetObjAtIdx(#)\n");
     Object *result = CreateObject("getObjectAtIndex", "getObjectAtIndex", 0, Function, 0);
+    return result;
+}
+
+Object *verbPutObjAtIdx()
+{
+    compilerDebugPrintf("verbPutObjAtIdx(#)\n");
+    Object *result = CreateObject("putObjectAtIndex", "putObjectAtIndex", 0, Function, 0);
     return result;
 }
 
