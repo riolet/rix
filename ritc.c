@@ -824,7 +824,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 //                      ))) {
                     char error[BUFFLEN];
                     snprintf(error, BUFFLEN, "%s (%s) cannot be assigned category %s\n",
-                             subject->name, subject->returnType,
+                             subject->code->value, subject->returnType,
                              objects->returnType);
                     criticalError(ERROR_IncompatibleTypes, error);
 //                }
@@ -1226,10 +1226,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //== Generic shenanigans ==
     //compilerDebugPrintf("Conjverb Generic type %s\n",verb->genericType);
     if (verb->genericType) {
-        if (!getFlag(rType,FLAG_PRIMITIVE)) {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
-        }
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", verb->genericType);
+//        if (!getFlag(rType,FLAG_PRIMITIVE)) {
+//            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+//        }
+//        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", verb->genericType);
         result->genericType = strdup(verb->genericType);
     }
 

@@ -50,6 +50,7 @@
 %token <sval> RPAREN
 %token <sval> LBRACKET
 %token <sval> RBRACKET
+%token <sval> RBRACKETASSIGN
 %token <ival> INDENT
 %token <sval> LBRACE
 %token <sval> RBRACE
@@ -114,7 +115,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //  %right (as opposed to %left) means,
 //    given a compound expression,
 //    evaluate from right to left.
-%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB CONDRETURN
+%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB CONDRETURN RBRACKETASSIGN
 %right ENDOFLINE INDENT
 %right PARAMCOMMA
 %right BOOLEANOP
@@ -182,7 +183,7 @@ expr:
   |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
   |        TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
-  | expr LBRACKET expr RBRACKET ASSIGNMENT expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$6); }
+  | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
   | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
 //  | expr ACCESSOR VERB { compilerDebugPrintf("parser: expr-.v\n");   $$ = conjugate( $1, verbIdent($3), 0); }

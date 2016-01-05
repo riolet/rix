@@ -259,9 +259,10 @@ dtvAddsource "##addsource"
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
 "("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
-")"           { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
-"["           { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
-"]"           { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["                             { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"]"[ \t]*{assignment}           { compilerDebugPrintf("lexer: )\n"); return RBRACKETASSIGN; }
 "{"           { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
 "}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
 .             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }

@@ -6,6 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "ObjectTree.h"
 
 
@@ -159,9 +160,29 @@ IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, voi
 //List Functions
 IDENT_MPTR_RAW * List_$_List_$__$GP0 (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * $_mptr_in);
 
-#define Array_$_Array_$_int(size,IDENT_MPTR_RAW_PTR, TYPE) ({\
-     TYPE * arr = malloc(sizeof(TYPE)*size); \
-    _$_returnAppointer(IDENT_MPTR_RAW_PTR,arr,TYPE##_$_##destructor##_$_); \
-    IDENT_MPTR_RAW_PTR; })
+void Array_$_destructor_$_ (IDENT_MPTR_RAW * a);
+
+
+enum { WORD_SIZE = sizeof(uintmax_t) * sizeof(char) };
+
+#define WORD_OFFSET(b) ((b) / WORD_SIZE)
+#define BIT_OFFSET(b)  ((b) % WORD_SIZE)
+
+#define setBit(w, i) ({w[WORD_OFFSET(i)] |= (1 << BIT_OFFSET(i));})
+#define clearBit(w, i) ({w[WORD_OFFSET(i)] &= ~(1 << BIT_OFFSET(i));})
+#define testBit(w,i) ({(w[WORD_OFFSET(i)] & (1 << BIT_OFFSET(i)))!=0;})
+
+typedef struct {
+    size_t size;
+    size_t last;
+    uintmax_t *bitArray;
+    void  *data;
+} StructArray;
+
+IDENT_MPTR_RAW * Array_$_Array_$_int(size_t size__, IDENT_MPTR_RAW * mptr);
+
+IDENT_MPTR_RAW * Array_$_putObjectAtIndex_$__$GP0_$__$GP1(IDENT_MPTR_RAW * arr,int idx,IDENT_MPTR_RAW * elem, IDENT_MPTR_RAW * mptr);
+
+IDENT_MPTR_RAW * Array_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * arr, int idx, IDENT_MPTR_RAW * mptr);
 
 #endif

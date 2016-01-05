@@ -452,4 +452,16 @@ void defineRSLSymbols(Object * root)
     addParam(rslFunc, "Array");
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
+
+    rslFunc =
+            CreateObject("putObjectAtIndex", "Array" COMPILER_SEP "putObjectAtIndex" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1", 0,
+                         Function, "Generic_YTYPE$$");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    addParam(rslFunc, "Array");
+//    addParam(rslFunc, "int");
+//    addParam(rslFunc, "Generic_YTYPE$$");
+    //TODO-Above code should work
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addSymbol(root, rslFunc);
 }
