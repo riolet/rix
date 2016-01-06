@@ -1055,8 +1055,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         realVerb = findFunctionByFullName(verbname);
     }
     //Is this a generic function
+    bool genericVerb = false;
     if (!realVerb) {
         realVerb = findFunctionByFullName(genericVerbName);
+        genericVerb = true;
     }
 
     if (!realVerb && subject) {
@@ -1192,6 +1194,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         }
     }
 
+    bool hasParams = false;
     if (objects) {
         codeIter = objects->code;
         while (codeIter) {
@@ -1207,6 +1210,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             }
             codeIter = codeIter->next;
         }
+        hasParams = true;
     }
     //== RetVar shenanigans ==
     Object * rType = findByName(realVerb->returnType);
@@ -1217,7 +1221,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         Object *retVar =
                 CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
         addSymbol(current, retVar);
-        if (subject||objects) {
+        if (hasParams) {
             invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
         }
         invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
@@ -1231,6 +1235,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 //        }
 //        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", verb->genericType);
         result->genericType = strdup(verb->genericType);
+        if (hasParams) {
+            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+        }
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
     }
 
     //Close

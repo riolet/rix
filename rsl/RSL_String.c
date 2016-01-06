@@ -13,8 +13,8 @@ void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
     if (!s->isStaticBuffer) {
         free(s->buffer);
     }
-//    _$_cleanup(s->$super);
-//    free(s->$super);
+    _$_cleanup(s->$super);
+    free(s->$super);
     free(s);
 }
 
