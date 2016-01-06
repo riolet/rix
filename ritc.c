@@ -1225,6 +1225,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
         }
         invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
+        hasParams = true;
     }
 
     //== Generic shenanigans ==
@@ -1235,10 +1236,6 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 //        }
 //        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", verb->genericType);
         result->genericType = strdup(verb->genericType);
-        if (hasParams) {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
-        }
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
     }
 
     //Close
