@@ -1067,7 +1067,8 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         char newName[BUFFLEN];
         char newSubject[BUFFLEN];
         char paramTypes[BUFFLEN][BUFFLEN];
-        int subject_idx = snprintf(newSubject, BUFFLEN,   "((%s *) (%s->obj))->",subject->returnType, subject->code->value);
+        int subject_idx = snprintf(newSubject, BUFFLEN,   "/* %d */ ((%s *) ((%s)->obj))->",__LINE__,
+                                   subject->returnType, subject->code->value);
         int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
         while (newName[offset - 1] == '*' || newName[offset - 1] == ' ') {
             offset--;
@@ -1158,8 +1159,8 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //build code line statement invoking that verb.
     invoke_pos = 0;
     invoke_pos +=
-        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s(",
-                 realVerb->fullname);
+        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ %s( ",
+                 __LINE__,realVerb->fullname);
 
     //Get the generic return category
     char *returnType;
@@ -1176,41 +1177,50 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     result = CreateObject(0, 0, 0, Expression, returnType);
 
+    bool hasParams = false;
     if (subject) {
-        if (objects)
             invoke_pos +=
-                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,",
-                         subject->code->value);
-        else
-            invoke_pos +=
-                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s",
-                         subject->code->value);
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ %s", __LINE__, subject->code->value);
+        hasParams = true;
     } else if (strstr(verb->name, COMPILER_SEP)) {
         //This is assumed to be a static verb of some class. Inject a 0 as first argument.
-        if (objects) {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "0,");
-        } else {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "0");
-        }
+        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ 0",__LINE__);
+        hasParams = true;
     }
 
-    bool hasParams = false;
+
     if (objects) {
         codeIter = objects->code;
+        paramIter = objects->paramTypes;
         while (codeIter) {
-            if (codeIter->next) {
-                invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s,",
-                             codeIter->value);
+            if (hasParams) {
+                invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+            }
+
+            if (genericVerb) {
+                Object * pType = findByName(paramIter->value);
+
+                if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
+//                    invoke_pos +=
+//                            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "(" IDENT_MPTR "* )");
+                    invoke_pos +=
+                            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ %s", __LINE__, codeIter->value);
+                    invoke_pos +=
+                            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
+                } else {
+                    invoke_pos +=
+                            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ %s", __LINE__, codeIter->value);
+                    invoke_pos +=
+                            snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
+                }
             } else {
-                //this is the last entry
                 invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s",
-                             codeIter->value);
+                        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* %d */ %s", __LINE__, codeIter->value);
             }
             codeIter = codeIter->next;
+            paramIter = paramIter->next;
+            hasParams = true;
         }
-        hasParams = true;
     }
     //== RetVar shenanigans ==
     Object * rType = findByName(realVerb->returnType);
@@ -1230,16 +1240,26 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     //== Generic shenanigans ==
     //compilerDebugPrintf("Conjverb Generic type %s\n",verb->genericType);
+
     if (verb->genericType) {
-//        if (!getFlag(rType,FLAG_PRIMITIVE)) {
+//        if (hasParams) {
 //            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
 //        }
-//        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "%s", verb->genericType);
         result->genericType = strdup(verb->genericType);
+
+        Object * pType = findByName(result->genericType);
+        if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
+        } else {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
+        }
+        invoke_pos +=
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
     }
 
-    //Close
-    invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
+
 
     if (!strcmp(realVerb->returnType, "Generic_$$")) {
         if (realVerb->genericType) {
@@ -1249,6 +1269,18 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             result->genericType = strdup(paramTypes[realVerb->genericTypeArgPos - 1]);
             addParam(result, paramTypes[realVerb->genericTypeArgPos - 1]);
         }
+        Object * pType = findByName(result->genericType);
+        if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
+        } else {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR );
+        }
     } else if (!strcmp(realVerb->returnType, "Generic_YTYPE$$")) {
         //compilerDebugPrintf("Subject %s at %d = %d\n",subject->name,__LINE__,subject);
         if (subject->genericType) {
@@ -1257,10 +1289,25 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         } else {
             compilerDebugPrintf("Subject %s has no generic type at %d\n", subject->name, __LINE__);
         }
+        Object * pType = findByName(result->genericType);
+        if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
+        } else {
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
+            invoke_pos +=
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR );
+        }
+
     } else {
         addParam(result, realVerb->returnType);
     }
 
+    //Close
+    invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
     if (realVerb && getFlag(realVerb, FLAG_SAVERESULT)) {
         char temp[BUFFLEN];
         snprintf(temp, BUFFLEN, COMPILER_SEP "prev.pbool = %s", invocation);
@@ -1710,7 +1757,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
         compilerDebugPrintf ("Parent field %s %s\n",parent, field);
-        snprintf(accessCode, BUFFLEN, "((%s *)%s->obj)->%s", parentType, parent, field);
+        snprintf(accessCode, BUFFLEN, "/* %d */ ((%s *)(%s->obj))->%s", __LINE__, parentType, parent, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
         return result;
