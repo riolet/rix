@@ -7,6 +7,16 @@
 
 #define RSL_STRING_MAX_BUFFLEN 1024
 
+struct String{
+    IDENT_MPTR_RAW * $super;
+    BaseType * $super_;
+    char *buffer;
+    size_t length;
+    size_t cap;
+    bool isStaticBuffer;
+};
+
+
 enum StringStatus
 {
     StringStatusDelete=0,

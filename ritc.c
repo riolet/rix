@@ -1237,13 +1237,17 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ")");
 
     if (!strcmp(realVerb->returnType, "Generic_$$")) {
-        if (realVerb->genericType)
+        if (realVerb->genericType) {
+            result->genericType = strdup(realVerb->genericType);
             addParam(result, realVerb->genericType);
-        else
+        } else {
+            result->genericType = strdup(paramTypes[realVerb->genericTypeArgPos - 1]);
             addParam(result, paramTypes[realVerb->genericTypeArgPos - 1]);
+        }
     } else if (!strcmp(realVerb->returnType, "Generic_YTYPE$$")) {
         //compilerDebugPrintf("Subject %s at %d = %d\n",subject->name,__LINE__,subject);
         if (subject->genericType) {
+            result->genericType = strdup(subject->genericType);
             addParam(result, subject->genericType);
         } else {
             compilerDebugPrintf("Subject %s has no generic type at %d\n", subject->name, __LINE__);
@@ -1654,6 +1658,15 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         }
 
         char *parentType = oParent->returnType;
+        if (!strcmp(parentType,"Generic_YTYPE$$")) {
+            if (subject->genericType) {
+                parentType = subject->genericType;
+                //compilerDebugPrintf("Setting gentype %s\n", parent);
+            } else {
+                errorMsg("No generic type for %s\n",parent);
+                criticalError(ERROR_ParseError,"Generic Type not found\n");
+            }
+        }
         //remove " *" from the end if present.
         int length = 0;
         while (parentType[length] != '\0' && parentType[length] != ' '

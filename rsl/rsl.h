@@ -11,12 +11,7 @@
 
 
 
-typedef struct String{
-    char *buffer;
-    size_t length;
-    size_t cap;
-    bool isStaticBuffer;
-} String;
+typedef struct String String;
 
 typedef struct {
     int object_$_id;
@@ -176,7 +171,7 @@ typedef struct {
     size_t size;
     size_t last;
     uintmax_t *bitArray;
-    void  *data;
+    void  **data;
 } StructArray;
 
 IDENT_MPTR_RAW * Array_$_Array_$_int(size_t size__, IDENT_MPTR_RAW * mptr);

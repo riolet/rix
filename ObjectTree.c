@@ -607,7 +607,7 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 
     //construct and print function header
     if (isVerb(tree) && !getFlag(tree, FLAG_EXTERNAL)) {
-        debugPrintf("Writing function %s\n",tree->fullname);
+        compilerDebugPrintf("Writing function %s\n",tree->fullname);
         writeFunction(outh, tree, indent, false);
     } else if (tree->category == Type && !getFlag(tree, FLAG_EXTERNAL)) {
         writeClass(outc, outh, tree, indent);

@@ -5,25 +5,36 @@
 #include "rsl/rsl.h"
 #include "rsl/RSL_String.h"
 
-void String_$_destructor_$_(IDENT_MPTR_RAW *s_)
+void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
 {
-    String * s = (String *) s_->obj;
+
+    String *s = (String *) _$_mptr_in->obj;
+
     if (!s->isStaticBuffer) {
         free(s->buffer);
     }
+//    _$_cleanup(s->$super);
+//    free(s->$super);
     free(s);
 }
 
-IDENT_MPTR_RAW * String_$_String_$_ (IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * String_$_String_$_ (IDENT_MPTR_RAW * _$_mptr_in)
 {
-    String * s = calloc(1, sizeof(String));
-    return  _$_returnAppointer($_mptr_in,s,String_$_destructor_$_);
+//    String * s = calloc(1, sizeof(String));
+//    return  _$_returnAppointer($_mptr_in,s,String_$_destructor_$_);
+
+    _$_HEAP_VARIABLE(_$_mptr_super);
+    String * self_ = calloc(1, sizeof(String));
+    _$_mptr * self = _$_returnAppointer(_$_mptr_in,self_,String_$_destructor_$_);
+    self_->$super= BaseType_$_BaseType_$_(_$_mptr_super);
+    self_->$super_= self_->$super->obj;
+    return self;
 }
 
 IDENT_MPTR_RAW * String_$_stringlit(char *strlit, IDENT_MPTR_RAW * $_mptr_in)
 {
     debugPrintf("String_$_stringlit %s %s\n",strlit,$_mptr_in->debugName);
-    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; 
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
     IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
