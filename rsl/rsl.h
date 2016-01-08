@@ -182,6 +182,20 @@ typedef struct {
 
 void Array_$_destructor_$_ (IDENT_MPTR_RAW * a);
 
+#define _$_Array_object_at_1(_$v$_arr__,_$v$_idx__) _$v$_arr__[_$v$_idx__]
+#define _$_Array_object_at_0(_$v$_arr__,_$v$_idx__) &_$v$_arr__[_$v$_idx__]
+
+#define _$_Array_set_object_at_0(_$v$_arrptr, _$v$_idx, _$v$_elem) ({\
+        IDENT_MPTR_RAW * _$v$_dataptr = (IDENT_MPTR_RAW *) _$v$_arrptr->data;\
+        IDENT_MPTR_RAW_assign(&_$v$_dataptr[_$v$_idx], _$v$_elem);\
+})
+
+#define _$_Array_set_object_at_1(_$v$_arrptr, _$v$_idx, _$v$_elem) ({\
+        /*--Todo-- This must get the right type */\
+        int  * _$v$_dataptr = _$v$_arrptr->data;\
+        _$v$_dataptr[_$v$_idx] = _$v$_elem;\
+        })
+
 #define Array_$_Array_$_int(_$v$_size__, _$v$_mptr, _$v$_primYtpe, _$v$_type) ({\
     StructArray  * _$v$_arr = calloc(1,sizeof(StructArray));\
     _$v$_arr->size=_$v$_size__;\
@@ -204,22 +218,14 @@ void Array_$_destructor_$_ (IDENT_MPTR_RAW * a);
         _$v$_arrptr->last=_$v$_idx;\
     }\
     setBit(_$v$_arrptr->bitArray,_$v$_idx);\
-    if (!_$v$_primElem) {\
-        IDENT_MPTR_RAW * _$v$_dataptr = (IDENT_MPTR_RAW *) _$v$_arrptr->data;\
-        IDENT_MPTR_RAW_assign(&_$v$_dataptr[_$v$_idx], _$v$_elem);\
-    } else {\
-        /*--Todo-- This must get the right type */ int  * _$v$_dataptr = _$v$_arrptr->data;\
-        _$v$_dataptr[_$v$_idx] = _$v$_elem;\
-    }\
+    xcat(_$_Array_set_object_at_,_$v$_primRet)(_$v$_arrptr, _$v$_idx, _$v$_elem);\
     _$v$_mptr;\
 })
 
-#define _$_return_data1(_$v$_arr__,_$v$_idx__) _$v$_arr__[_$v$_idx__]
-#define _$_return_data0(_$v$_arr__,_$v$_idx__) &_$v$_arr__[_$v$_idx__]
 
 #define Array_$_getObjectAtIndex_$_int(arr, idx, mptr, primRet, typeRet) ({ \
     StructArray * arrptr = (StructArray *) arr->obj;                        \
     typeRet *dataptr = (typeRet *) arrptr->data; \
-    xcat(_$_return_data,primRet)(dataptr,idx);                              \
+    xcat(_$_Array_object_at_,primRet)(dataptr,idx);                              \
 })
 #endif

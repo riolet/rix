@@ -943,12 +943,11 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                      subject->code->value);
             criticalError(ERROR_UndefinedVariable, error);
         }
+
         verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
-                     subject->returnType);
-        while (verbname[verbname_pos - 1] == '*' || verbname[verbname_pos - 1] == ' ') {
-            verbname_pos--;
-        }
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
+                         subject->returnType);
+
         verbname_pos +=
             snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
     } else if (verb->category == Type) {
@@ -1243,7 +1242,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     if (verb->genericType) {
 //        if (hasParams) {
-//            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+//            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* verb is generic */");
 //        }
         result->genericType = strdup(verb->genericType);
 
@@ -1263,18 +1262,18 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
 
     if (!strcmp(realVerb->returnType, "Generic_$$")) {
         if (realVerb->genericType) {
-            result->genericType = strdup(realVerb->genericType);
+            result->returnType = strdup(realVerb->genericType);
             addParam(result, realVerb->genericType);
         } else {
             result->genericType = strdup(paramTypes[realVerb->genericTypeArgPos - 1]);
             addParam(result, paramTypes[realVerb->genericTypeArgPos - 1]);
         }
-        Object * pType = findByName(result->genericType);
+        Object * pType = findByName(result->returnType);
         if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
             invoke_pos +=
                     snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
             invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->returnType);
         } else {
             invoke_pos +=
                     snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
@@ -1284,17 +1283,17 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     } else if (!strcmp(realVerb->returnType, "Generic_YTYPE$$")) {
         //compilerDebugPrintf("Subject %s at %d = %d\n",subject->name,__LINE__,subject);
         if (subject->genericType) {
-            result->genericType = strdup(subject->genericType);
+            result->returnType = strdup(subject->genericType);
             addParam(result, subject->genericType);
         } else {
             compilerDebugPrintf("Subject %s has no generic type at %d\n", subject->name, __LINE__);
         }
-        Object * pType = findByName(result->genericType);
+        Object * pType = findByName(result->returnType);
         if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
             invoke_pos +=
                     snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
             invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->returnType);
         } else {
             invoke_pos +=
                     snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
@@ -1315,7 +1314,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     } else {
         addCode(result, invocation);
     }
-    compilerDebugPrintf("\tConjugated: (%d) %s at \n", __LINE__, invocation);
+    compilerDebugPrintf("\tConjugated: (%d) %s  -> %s\n", __LINE__, invocation, result->returnType);
 //    compilerDebugPrintf("Result at %d = %d\n",__LINE__,result);
 //    if (result->genericType)
 //        compilerDebugPrintf("Result %d generic type %s\n",result,result->genericType);
