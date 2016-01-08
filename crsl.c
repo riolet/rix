@@ -91,8 +91,9 @@ void defineRSLSymbols(Object * root)
 
     temp4 =
             CreateObject("Array", "Array" COMPILER_SEP "BaseType", objBaseType, Type,
-                         IDENT_HEAP_MPTR);
+                         "Array");
     setFlags(temp4, FLAG_EXTERNAL);
+    setFlags(temp4, FLAG_PRIMITIVE);
     addSymbol(root, temp4);
 
     // ==============  Basetype constructor ===============

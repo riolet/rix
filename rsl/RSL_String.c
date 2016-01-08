@@ -43,7 +43,7 @@ IDENT_MPTR_RAW * String_$_stringlit(char *strlit, IDENT_MPTR_RAW * $_mptr_in)
     s->cap = strlen(strlit);
     s->length = strlen(strlit);
     s->isStaticBuffer = true;
-    debugPrintf("String_$_stringlit %s -> %s\n",$_mptr_in->debugName,s->buffer);
+    debugPrintf("String_$_stringlit %s -> %s\n",$_mptr_temp.debugName,s->buffer);
 
     //Todod pass this from the caller
     _$_mptr_prepare(&$_mptr_temp,$_mptr_in);

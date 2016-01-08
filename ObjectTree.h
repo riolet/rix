@@ -13,7 +13,7 @@
 #define xcat(a,b) cat(a,b)
 #define cat(a,b) a ## b
 
-#define debugPrintf //printf
+#define debugPrintf printf
 FILE *outCompilerLogFile;
 #define compilerDebugPrintf(...) fprintf(outCompilerLogFile,__VA_ARGS__)
 

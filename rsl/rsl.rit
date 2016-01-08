@@ -18,8 +18,8 @@ String::BaseType
 //Done
 ##external ""
 
-//##external "rsl/RSL_Array.h"
-//##addsource "rsl/RSL_Array.c"
+##external "rsl/RSL_Array.h"
+##addsource "rsl/RSL_Array.c"
 //Array::BaseType
 //    ::: ?s, int i
 //        //virtual
@@ -30,4 +30,4 @@ String::BaseType
 //    length->int:
 //        //Virtual
 ////Done
-//##external ""
+##external ""

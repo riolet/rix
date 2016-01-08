@@ -624,8 +624,19 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
             //compilerDebugPrintf("writing variable %s\n",oIter->value->name);
             if (!getFlag(oIter->value,FLAG_NO_CODEGEN)) {
                 if (getFlag(rType, FLAG_PRIMITIVE)) {
-                    fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
-                            oIter->value->fullname);
+                    if (oIter->value->genericType) {
+                        Object * gType = findByNameInScope(tree,oIter->value->genericType,false);
+                        if (getFlag(gType,FLAG_PRIMITIVE)) {
+                            fprintf(outFile, "\t_$_%s_type_(%s) %s;\n", oIter->value->returnType, oIter->value->genericType,
+                                    oIter->value->fullname);
+                        } else {
+                            fprintf(outFile, "\t_$_%s_type_(" IDENT_MPTR ") %s;\n", oIter->value->returnType,
+                                    oIter->value->fullname);
+                        }
+                    } else {
+                        fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
+                                oIter->value->fullname);
+                    }
                 } else {
                     if (!strcmp(oIter->value->returnType, IDENT_MPTR)) {
                         fprintf(outFile, "\t_$_TEMP_OBJ(%s);\n", oIter->value->fullname);
