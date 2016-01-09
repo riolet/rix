@@ -1,3 +1,5 @@
+/* These should be written in pure Ritchie */
+
 #include "ObjectTree.h"
 #include "crsl.h"
 #include "ritc.h"
@@ -45,12 +47,6 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, temp2);
 
     temp2 =
-        CreateObject("Stream", "Stream" COMPILER_SEP "BaseType", objBaseType, Type,
-                     "Stream");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-
-    temp2 =
         CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type,
                      "Number");
     setFlags(temp2, FLAG_EXTERNAL);
@@ -87,13 +83,6 @@ void defineRSLSymbols(Object * root)
             CreateObject(IDENT_HEAP_MPTR, IDENT_HEAP_MPTR COMPILER_SEP "BaseType", objBaseType, Type,
                          IDENT_HEAP_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp4);
-
-    temp4 =
-            CreateObject("Array", "Array" COMPILER_SEP "BaseType", objBaseType, Type,
-                         "Array");
-    setFlags(temp4, FLAG_EXTERNAL);
-    setFlags(temp4, FLAG_PRIMITIVE);
     addSymbol(root, temp4);
 
     // ==============  Basetype constructor ===============
@@ -358,28 +347,12 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
+
     rslFunc =
-        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "int", 0,
-                     Function, "int");
+            CreateObject("echo", "echo" COMPILER_SEP "Char", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "float", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "float");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("print", "Stream" COMPILER_SEP "print" COMPILER_SEP "String", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-
     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "int", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
@@ -390,27 +363,6 @@ void defineRSLSymbols(Object * root)
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "int", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "loat", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
-    addParam(rslFunc, "float");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("echo", "Stream" COMPILER_SEP "echo" COMPILER_SEP "String", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Stream");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
 
@@ -436,33 +388,5 @@ void defineRSLSymbols(Object * root)
                      0, Function, "void");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-
-    // ==============  Array Functions ===============
-    rslFunc =
-            CreateObject("Array", "Array" COMPILER_SEP "Array" COMPILER_SEP "int", 0, Constructor,
-                         "Array");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-
-    rslFunc =
-            CreateObject("getObjectAtIndex", "Array" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
-                         Function, "Generic_YTYPE$$");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Array");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-
-    rslFunc =
-            CreateObject("putObjectAtIndex", "Array" COMPILER_SEP "putObjectAtIndex" COMPILER_SEP GENERIC_PARAM "0" COMPILER_SEP GENERIC_PARAM "1", 0,
-                         Function, "Generic_YTYPE$$");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Array");
-//    addParam(rslFunc, "int");
-//    addParam(rslFunc, "Generic_YTYPE$$");
-    //TODO-Above code should work
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
     addSymbol(root, rslFunc);
 }

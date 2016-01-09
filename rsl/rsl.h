@@ -12,6 +12,7 @@
 
 
 typedef struct String String;
+typedef struct Stream Stream;
 
 typedef struct {
     int object_$_id;
@@ -41,7 +42,6 @@ typedef struct  {
     size_t cap;
 } List;
 
-typedef FILE *Stream;
 typedef void *UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
 typedef char Char;
@@ -95,13 +95,6 @@ float float_$_exponent_$_float(float f1, float f2);
 
 int int_$_sqrt_$_(int i);
 
-/* Print prints the param and a newline char */
-int Stream_$_print_$_String(Stream stream, IDENT_MPTR_RAW * s_);
-
-int Stream_$_print_$_int(Stream stream, int i);
-
-int Stream_$_print_$_float(Stream stream, float f);
-
 int print_$_String(IDENT_MPTR_RAW * s);
 
 int print_$_Char(char c);
@@ -111,14 +104,7 @@ int print_$_int(int i);
 
 int print_$_float(float f);
 
-/* Echo omits the newline char */
-int Stream_$_echo_$_String(Stream stream, String * s);
-
-int Stream_$_echo_$_int(Stream stream, int i);
-
-int Stream_$_echo_$_float(Stream stream, float f);
-
-int echo_$_String(String * s);
+int echo_$_String(IDENT_MPTR_RAW * s);
 
 int echo_$_int(int i);
 

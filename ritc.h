@@ -28,7 +28,7 @@ void checkPrevExists();
 void incPrev();
 void decPrev();
 
-Object *beginClass(char *className, char *parentName, Object *typeArgs);
+Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive);
 void doneClass(Object * tree);
 Object *beginFunction(char *returnType, char *funcName, Object * parameters);
 void doneFunction(Object * tree);

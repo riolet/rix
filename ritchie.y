@@ -61,7 +61,7 @@
 %token <sval> BOOLEANOP
 %token <sval> COLON
 %token <sval> CLASSDEC
-%token <sval> CTORDEC
+%token <sval> CLASSDECPRIM
 %token <sval> PARAMCOMMA
 %token <sval> RETURN
 %token <sval> SELFIDENT
@@ -260,8 +260,10 @@ codeblock:
 
 
 class_definition:
-  UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0); }
-  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDEC TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3); }
+  UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, false); }
+  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDEC TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, false); }
+  | UNMARKEDNEWIDENT CLASSDECPRIM TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, true); }
+  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDECPRIM TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, true); }
   ;
 
 ctor_definition:

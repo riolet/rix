@@ -50,7 +50,7 @@ void handleEOF()
     hitEOF = true;
 }
 
-Object *beginClass(char *className, char *parentName, Object *typeArgs)
+Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive)
 {
     if (!className || !parentName) {
         criticalError(ERROR_ParseError, "Class name mustn't be null.\n");
@@ -91,6 +91,9 @@ Object *beginClass(char *className, char *parentName, Object *typeArgs)
         }
         compilerDebugPrintf(" Paramtypes\n");
 
+    }
+    if (isPrimitive) {
+        setFlags(result,FLAG_PRIMITIVE);
     }
     addSymbol(current, result);
     scope_push(result);
@@ -204,8 +207,10 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     types = parameters->paramTypes;
     //assuming for every category there is a name
     while (types != 0) {
-        addSymbol(result,
-                  CreateObject(names->value, names->value, 0, Variable, types->value));
+        if (!external) {
+            addSymbol(result,
+                      CreateObject(names->value, names->value, 0, Variable, types->value));
+        }
         addParam(result, types->value);
         names = names->next;
         types = types->next;
@@ -280,8 +285,10 @@ Object *beginConstructor(Object * parameters)
     types = parameters->paramTypes;
     //assuming for every category there is a name
     while (types != 0) {
-        addSymbol(result,
-                  CreateObject(names->value, names->value, 0, Variable, types->value));
+        if (!external) {
+            addSymbol(result,
+                      CreateObject(names->value, names->value, 0, Variable, types->value));
+        }
         addParam(result, types->value);
         names = names->next;
         types = types->next;
@@ -293,7 +300,6 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        //_$_returnAppointer($_mptr_in,newString,String_$_destructor_$_);
         snprintf(allocator, BUFFLEN, "%s * self_ = calloc(1, sizeof(%s));\n"
                          IDENT_MPTR " * self = _$_returnAppointer(_$_mptr_in,self_,%s_$_destructor_$_);", returnType,
                  current->name,returnType);
@@ -313,9 +319,6 @@ Object *beginConstructor(Object * parameters)
             snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
                      current->parentClass->name, current->parentClass->name, retVarName);
 
-        } else {
-//            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "();",
-//                      current->parentClass->name, current->parentClass->name);
         }
         addCode(result, allocator);
 
@@ -326,10 +329,6 @@ Object *beginConstructor(Object * parameters)
         ListObject *oIter;
 
         oIter = current->definedSymbols;
-
-        //fprintf(outh, "%s %s " COMPILER_SEP "%s %s;\n", "typedef", "struct", tree->name,
-        //        tree->name);
-        //fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
 
         while (oIter != 0) {
 
@@ -351,9 +350,6 @@ Object *beginConstructor(Object * parameters)
                                  oIter->value->name, oIter->value->returnType, oIter->value->returnType, retVarName);
                         addCode(result, allocator);
 
-                    } else {
-//                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" "();",
-//                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType);
                     }
 
                 } else {
@@ -384,8 +380,6 @@ Object *beginDestructor(Object * parameters)
     if (current->category != Type) {
         criticalError(ERROR_ParseError, "Destructor can only exist inside a class.\n");
     }
-    ListString *types = parameters->paramTypes;
-    ListString *names = parameters->code;
 
     char funcFullName[BUFFLEN];
     int funcFullName_pos = 0;
@@ -394,17 +388,6 @@ Object *beginDestructor(Object * parameters)
             snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
                      "%s" COMPILER_SEP "%s" COMPILER_SEP, current->name, "destructor");
 
-    while (types != 0) {
-        funcFullName_pos +=
-                snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
-                         COMPILER_SEP "%s", types->value);
-        while (funcFullName[funcFullName_pos - 1] == ' '
-               || funcFullName[funcFullName_pos - 1] == '*') {
-            funcFullName_pos--;
-        }
-        funcFullName[funcFullName_pos] = '\0';
-        types = types->next;
-    }
     Object *parentScope;
     int i = scope_idx;
     while (i >= 0) {
@@ -415,11 +398,8 @@ Object *beginDestructor(Object * parameters)
     }
     parentScope = scopeStack[i];
 
-    char returnType[BUFFLEN];
-    snprintf(returnType, BUFFLEN, "%s", "destructor");
-
     Object *result =
-            CreateObject(current->name, funcFullName, parentScope, Function, returnType);
+            CreateObject(current->name, funcFullName, parentScope, Function, IDENT_MPTR);
     result->parentClass = current;
 
     ListObject *oIter;
@@ -428,7 +408,6 @@ Object *beginDestructor(Object * parameters)
     char deallocator[BUFFLEN];
 
     while (oIter != 0) {
-
         if (strcmp(oIter->value->name,IDENT_SUPER "_"))
         {
             if (oIter->value->category == Variable) {
@@ -440,23 +419,14 @@ Object *beginDestructor(Object * parameters)
                     snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->%s);",
                              current->returnType, oIter->value->name);
                     addCode(result, deallocator);
-                } else {
-//                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" "();",
-//                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType);
                 }
-
             } else {
                 oIter = oIter->next;
                 break;
             }
         }
         oIter = oIter->next;
-
     }
-
-    //self destruct
-//    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->" IDENT_SUPER ");",current->returnType);
-//    addCode(result, deallocator);
 
     snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj));",current->returnType);
     addCode(result, deallocator);
@@ -1806,7 +1776,7 @@ int main(int argc, char **argv)
     FILE *ritTempFile;
     bool quiet = false;
 
-    while ((c = getopt(argc, argv, "o:t")) != -1) {
+    while ((c = getopt(argc, argv, "o:tq")) != -1) {
         switch (c) {
         case 't':
             compilerDebugPrintf("hit -t arg\n");
@@ -1912,9 +1882,11 @@ int main(int argc, char **argv)
     }
     fprintf(outMakeFile, " -lm");
 
-    if (!quiet)
+    if (!quiet) {
         printf("=============  Compilation Complete!  ==============\n");
-
+        printf("Wrote source file %s, header file %s, build file %s and compilation log file %s\n",
+               oMainFileName,oHeaderFileName,oMakeFileName,oCompilerLogFileName);
+    }
 
 
     fprintf(outMainFile, "#include \"rsl/rsl.h\"\n");
@@ -1936,7 +1908,7 @@ int main(int argc, char **argv)
     fclose(outMainFile);
     fclose(outMakeFile);
     fclose(file);
-    remove("ritchie_temp_file.rit");
+    //remove("ritchie_temp_file.rit");
 
     //compilerDebugPrintf("\n%s compiled successfully.\n", ifile);
 

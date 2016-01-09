@@ -69,7 +69,7 @@ comment       \/\/.*
 colon         ":"
 paramComma    ","
 classDec      "::"
-classCtor     ":::"
+classDecPrim  ":::"
 conditionLink "?"
 selfIdent     "$"
 hash          "#"
@@ -238,7 +238,7 @@ dtvAddsource "##addsource"
 {paramComma}    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
 {colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
-{classCtor}     { compilerDebugPrintf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
+{classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
 {return}        { compilerDebugPrintf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
 {selfIdent}\.{identifier}  { compilerDebugPrintf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
 {selfIdent}     { compilerDebugPrintf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
