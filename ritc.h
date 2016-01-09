@@ -7,7 +7,7 @@
 #include "ctype.h"
 
 #define COMPILER_SEP "_$_"
-#define GENERIC_PARAM "_$GP"
+#define GENERIC_PARAM "Generic_$$"
 
 extern int yylex();
 extern int yyparse();

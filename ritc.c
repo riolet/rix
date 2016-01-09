@@ -1025,8 +1025,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                          COMPILER_SEP "%s", paramIter->value);
             genericVerbNamePos +=
                 snprintf(&genericVerbName[genericVerbNamePos],
-                         BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s%d", GENERIC_PARAM,
-                         paramNumber);
+                         BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s", GENERIC_PARAM);
             while (verbname[verbname_pos - 1] == '*' || verbname[verbname_pos - 1] == ' ') {
                 verbname_pos--;
             }

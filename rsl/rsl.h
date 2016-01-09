@@ -53,10 +53,10 @@ typedef void *Generic_$$;
 #define bool_$_elif_$_bool(A) if (A) {
 #define bool_$_else(A) if (A) {
 
-#define bool_$_tf_$__$GP0_$__$GP1(T,A,B,MPTR) (T) ? (A) : (B)
-#define bool_$_ft_$__$GP0_$__$GP1(T,A,B,MPTR) (T) ? (B) : (A)
+#define bool_$_tf_$_Generic_$$_$_Generic_$$(T,A,B,MPTR) (T) ? (A) : (B)
+#define bool_$_ft_$_Generic_$$_$_Generic_$$(T,A,B,MPTR) (T) ? (B) : (A)
 
-#define bool_$_condreturn_$__$GP0(T,B) if (T) return (B);
+#define bool_$_condreturn_$_Generic_$$_$_Generic_$$(T,B) if (T) return (B);
 
 #define if_$_bool(A) if (A) {
 #define elif_$_bool(A) else if (A) {
@@ -75,8 +75,8 @@ typedef void *Generic_$$;
 #define false_$_() false
 #define true_$_() true
 
-#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (A) : ((T_==eq) ? (B) : (C)); })
-#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (C) : ((T_==eq) ? (B) : (A)); })
+#define Ternary_$_leg_$_Generic_$$_$_Generic_$$_$_Generic_$$(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (A) : ((T_==eq) ? (B) : (C)); })
+#define Ternary_$_gel_$_Generic_$$_$_Generic_$$_$_Generic_$$(T,A,B,C,MPTR) ({ __typeof__(T) T_=(T); (T_==lt) ? (C) : ((T_==eq) ? (B) : (A)); })
 
 
 //#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
