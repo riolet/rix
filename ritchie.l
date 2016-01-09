@@ -64,7 +64,6 @@ decimal       "."{numeral}+|{numeral}+"."{numeral}+
 float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 char          \'(\\.|[^\\'])+\'
-identifier    ({alphabetic}|"_")({alphanumeric}|"_")*
 comment       \/\/.*
 
 colon         ":"
@@ -74,6 +73,8 @@ classCtor     ":::"
 conditionLink "?"
 selfIdent     "$"
 hash          "#"
+
+identifier    ({selfIdent})*({alphabetic}|"_")({alphanumeric}|"_")*({selfIdent})*
 
 mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
 assignment    "="

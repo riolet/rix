@@ -627,10 +627,10 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                     if (oIter->value->genericType) {
                         Object * gType = findByNameInScope(tree,oIter->value->genericType,false);
                         if (getFlag(gType,FLAG_PRIMITIVE)) {
-                            fprintf(outFile, "\t_$_%s_type_(%s) %s;\n", oIter->value->returnType, oIter->value->genericType,
+                            fprintf(outFile, "\t_$_%s_type_1(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType,
                                     oIter->value->fullname);
                         } else {
-                            fprintf(outFile, "\t_$_%s_type_(" IDENT_MPTR ") %s;\n", oIter->value->returnType,
+                            fprintf(outFile, "\t_$_%s_type_0(" IDENT_MPTR ")  %s;\n", oIter->value->returnType,
                                     oIter->value->fullname);
                         }
                     } else {
