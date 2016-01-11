@@ -1,0 +1,13 @@
+##external "rsl/RSL_Array.h"
+##addsource "rsl/RSL_Array.c"
+Array:::BaseType
+    $(int Array__size__)
+        //virtual
+
+    getObjectAtIndex->Generic_YTYPE$$(int Array__index__)
+        //Virtual
+
+    putObjectAtIndex->Generic_YTYPE$$(Generic_$$ Array___index___, Generic_$$ Array__elem__)
+        //Virtual
+//Done
+##external ""

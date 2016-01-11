@@ -1,6 +1,0 @@
-fib -> int:  int n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
-
-#N = int (args 1)
-
-#i for 1, N+1
-    print i + ": " + (fib i)

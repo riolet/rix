@@ -224,8 +224,8 @@ void defineRSLSymbols(Object * root)
 
     rslFunc =
         CreateObject("tf",
-                     "bool" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM "0"
-                     COMPILER_SEP GENERIC_PARAM "1", 0, Function, "Generic_$$");
+                     "bool" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM
+                     COMPILER_SEP GENERIC_PARAM, 0, Function, "Generic_$$");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "bool");
     addParam(rslFunc, "Generic_$$");
@@ -371,6 +371,10 @@ void defineRSLSymbols(Object * root)
     rslFunc = CreateObject("args", "args" COMPILER_SEP "int", 0, Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
+    addSymbol(root, rslFunc);
+
+    rslFunc = CreateObject("args", "args" COMPILER_SEP, 0, Function, "int");
+    setFlags(rslFunc, FLAG_EXTERNAL);
     addSymbol(root, rslFunc);
 
     // ==============  int Functions ===============

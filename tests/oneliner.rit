@@ -1,11 +1,3 @@
-fib -> int:  int n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
+fib -> int (int n) = (n <= 1).tf (n, fib (n-1) + fib (n-2))
 
-print fib 10
-
-factorial -> int: int n
-	#result = 1
-	#i for 1,n+1
-		result = result * i
-	-> result
-
-print factorial 5
+(args()>1).tf(print (fib(int(args(1)))), print ("Usage "+args(0)+" n"))

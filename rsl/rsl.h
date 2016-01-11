@@ -53,8 +53,8 @@ typedef void *Generic_$$;
 #define bool_$_elif_$_bool(A) if (A) {
 #define bool_$_else(A) if (A) {
 
-#define bool_$_tf_$_Generic_$$_$_Generic_$$(T,A,B,MPTR) (T) ? (A) : (B)
-#define bool_$_ft_$_Generic_$$_$_Generic_$$(T,A,B,MPTR) (T) ? (B) : (A)
+#define bool_$_tf_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR,isReturnPrim,returnType) (T) ? (A) : (B)
+#define bool_$_ft_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR,isReturnPrim,returnType) (T) ? (B) : (A)
 
 #define bool_$_condreturn_$_Generic_$$_$_Generic_$$(T,B) if (T) return (B);
 
@@ -120,7 +120,7 @@ char **_$$_argv;
 
 IDENT_MPTR_RAW * args_$_int(int i, IDENT_MPTR_RAW * $_mptr_in);
 
-
+int args_$_();
 
 void BaseType_$_destructor (IDENT_MPTR_RAW * $_mptr_in);
 

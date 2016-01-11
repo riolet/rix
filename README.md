@@ -32,7 +32,7 @@ Point point = new Point (x,y)
   becomes a short Ritchie statement:
 
 ```
-#point = Point x, y
+#point = Point (x, y)
 ```
 Identifiers have their category inferred if they are marked as new with "#". Their types cannot be changed once set. In the above example, `point` gets category `Point`.
 
@@ -54,29 +54,25 @@ parses as:
 | hello   | =    | "Hello" |
 
 
-* Ritchie has no keywords.  There are many symbols with predefined meanings, but the intention of Ritchie is to have all those symbols redefineable.  Currently Ritchie has been developed with a standard dialect of Ritchie in mind, and to that effect many symbols work as keywords might otherwise have in other languages.  For example to define a class in Ritchie, you would category
-```
-SomeClass :: SomeBaseClass
-```
-  The `::` is simply a verb that reads "become a subclass of".
+* Ritchie has no keywords.  All operators in Ritchie can be overloaded.
 
 
-* We call verbs what the constructs called functions, methods or subroutines in other languages. For example:
+* We call verbs the constructs called functions, methods or subroutines in other languages. For example:
 
 ```
-factorial -> int: int n
+factorial -> int (int n)
 	#result = 1
-	#i for 1,n+1
+	#i.for (1,n+1)
 		result = result * i
 	-> result
 
-print factorial 5
+print (factorial (5))
 ```
 
 You can also write succint one liner verbs like the one below which gives the nth Fibonacci number:
 
 ```
-fib -> int:  int n = (n <= 1) tf n, (fib (n-1)) + (fib (n-2))
+fib -> int(int n) = (n <= 1) tf (n, fib(n-1) + fib(n-2))
 
 print fib 5
 ```
