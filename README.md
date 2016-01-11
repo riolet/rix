@@ -74,7 +74,7 @@ You can also write succint one liner verbs like the one below which gives the nt
 ```
 fib -> int(int n) = (n <= 1) tf (n, fib(n-1) + fib(n-2))
 
-print fib 5
+print (fib(5))
 ```
 
 There's no assignment operator in Ritchie, but `=` is defined as an assignment verb for `Identifier`.
@@ -93,8 +93,6 @@ Get started
 2. Write your ritchie program in your favourite text editor (let's call it program.rit)
 3. Set RITCHIE_HOME `export  RITCHIE_HOME=/path/to/ritchie`
 4. Run `${RITCHIE_HOME}/ritchie.sh program.rit` and ritchie will build, execute and run the program
-
-
 
 Team
 ====

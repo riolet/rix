@@ -40,8 +40,9 @@ int readFile(char name[], FILE * ofp, int *numline)
     while (fgets(line, LINESIZE, fp)) {
         if (sscanf(line, "%s%s", word, word2) == 2 && strcmp(word, "import") == 0) {
             readFile(word2, ofp, numline);
+        } else {
             (*numline)++;
-        } else
             fprintf(ofp, "%s", line);
+        }
     }
 }

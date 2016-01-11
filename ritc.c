@@ -564,17 +564,6 @@ Object *completeExpression(Object * expression)
 
 Object *finalize(Object * expression)
 {
-    //compilerDebugPrintf("Expression %d at %d", expression,__LINE__);
-    char prevName[BUFFLEN];
-    int length =
-        snprintf(prevName, BUFFLEN, COMPILER_SEP "prev.p" "%s", expression->returnType);
-    while (prevName[length] == ' ' || prevName[length] == '*' || prevName[length] == '\0') {
-        length--;
-    }
-    prevName[length + 1] = '\0';        //drop the " *" off the end if it's there
-    previous[prev_idx] = strdup(prevName);
-    compilerDebugPrintf("Finalize expression %s %s\n",expression->code->value, expression->returnType);
-    prevType[prev_idx] = strdup(expression->returnType);
     return expression;
 }
 
@@ -781,6 +770,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
                     addSymbol(current, variable);
             } else {
                 char error[1024];
+                g_lineNum--;
                 snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
                 criticalError(ERROR_ParseError, error);
             }
@@ -1763,6 +1753,7 @@ int main(int argc, char **argv)
     extern int optind, optopt;
     FILE *ritTempFile;
     bool quiet = false;
+    g_headerLines = 0;
 
     while ((c = getopt(argc, argv, "o:tq")) != -1) {
         switch (c) {
@@ -1821,14 +1812,9 @@ int main(int argc, char **argv)
         snprintf(oCompilerLogFileName, BUFFLEN, "%s.log", ofile);
     }
 
-//    errorMsg(ANSI_COLOR_MAGENTA "\n"
-//             "**********************************\n"
-//             "**********************************\n"
-//             "**********************************\n"
-//             "**********************************\n" ANSI_COLOR_RESET);
 
     root = CreateObject("RootScope", "RootScope", 0, CodeBlock, "int");
-    //addSymbol(root, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
+
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
@@ -1845,9 +1831,12 @@ int main(int argc, char **argv)
     //Read RSL
     readFile("rsl/rsl.rit", ritTempFile, &numline);
 
-    //compilerDebugPrintf("Lines read %d\n",numline);
+    compilerDebugPrintf("Lines read %d\n",numline);
+
+    g_headerLines = numline;
     //Read mainfile
     readFile(ifile, ritTempFile, &numline);
+    //compilerDebugPrintf("Lines read %d\n",numline);
 
     fprintf(ritTempFile,"\n"); //END OF FILE GUARANTEE!
     fclose(ritTempFile);
@@ -1879,8 +1868,6 @@ int main(int argc, char **argv)
 
     fprintf(outMainFile, "#include \"rsl/rsl.h\"\n");
     fprintf(outMainFile, "#include \"%s\"\n", oHeaderFileName);
-    //fprintf(outMainFile,"int _$$_argc;\n");
-    //fprintf(outMainFile,"char **_$$_argv;\n");
     fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n");
     fprintf(outMainFile, "    _$$_argc=_$$_argc_;\n");
     fprintf(outMainFile, "    _$$_argv=_$$_argv_;\n");
