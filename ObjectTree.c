@@ -286,9 +286,9 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
     if (!result && scope->parentClass) {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->category == Variable) {
-            //Prepend "self->" to fullName
             char newFullName[BUFFLEN];
-            snprintf(newFullName, BUFFLEN, "((%s *) (self->obj))->%s /* %s %d %s */", scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
+            snprintf(newFullName, BUFFLEN, "((%s *) (" IDENT_SELF_SELF "->obj))->%s /* %s %d %s */",
+                     scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->category,
@@ -360,7 +360,7 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
 
         } else if (result && result->category == Variable) {
             char newFullName[BUFFLEN];
-            snprintf(newFullName, BUFFLEN, "/* %s %d */ ((%s * )(self->obj))->%s", __FILE__, __LINE__, scope->returnType, result->fullname);
+            snprintf(newFullName, BUFFLEN, "/* %s %d */ ((%s * )(" IDENT_SELF_SELF "->obj))->%s", __FILE__, __LINE__, scope->returnType, result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
             Object *temp =
                 CreateObject(result->name, newFullName, result->parentScope, result->category,

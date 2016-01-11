@@ -199,7 +199,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
             char pointer[BUFFLEN];
             snprintf(pointer, BUFFLEN, "%s", current->name);
             addParam(result, pointer);
-            addSymbol(result, CreateObject("self", "self", 0, Variable, pointer));
+            addSymbol(result, CreateObject(IDENT_SELF_SELF, IDENT_SELF_SELF, 0, Variable, pointer));
             //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
         }
     }
@@ -300,9 +300,9 @@ Object *beginConstructor(Object * parameters)
     } else {
         //Add allocation code
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s * self_ = calloc(1, sizeof(%s));\n"
-                         IDENT_MPTR " * self = _$_returnAppointer(_$_mptr_in,self_,%s_$_destructor_$_);", returnType,
-                 current->name,returnType);
+        snprintf(allocator, BUFFLEN, "%s * " IDENT_SELF_SELF "_ = calloc(1, sizeof(%s));\n"
+                         IDENT_MPTR " * " IDENT_SELF_SELF " = _$_returnAppointer(_$_mptr_in," IDENT_SELF_SELF "_,%s_$_destructor_$_);",
+                 returnType, current->name,returnType);
         addCode(result, allocator);
 
 
@@ -316,13 +316,13 @@ Object *beginConstructor(Object * parameters)
 
             //Todo: Handle heap variables
 
-            snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
+            snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
                      current->parentClass->name, current->parentClass->name, retVarName);
 
         }
         addCode(result, allocator);
 
-        snprintf(allocator, BUFFLEN, "self_->" IDENT_SUPER "_= self_->"IDENT_SUPER"->obj;");
+        snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "_= " IDENT_SELF_SELF "_->"IDENT_SUPER"->obj;");
         addCode(result, allocator);
 
         //Add field allocators
@@ -346,7 +346,7 @@ Object *beginConstructor(Object * parameters)
                         addSymbol(result, retVar);
 
                         //Todo: Handle heap variables
-                        snprintf(allocator, BUFFLEN, "self_->%s= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
+                        snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->%s= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
                                  oIter->value->name, oIter->value->returnType, oIter->value->returnType, retVarName);
                         addCode(result, allocator);
 
@@ -370,7 +370,7 @@ Object *beginConstructor(Object * parameters)
 void doneConstructor(Object * tree)
 {
     if (!external) {
-        addCode(current, "return self;");
+        addCode(current, "return " IDENT_SELF_SELF ";");
     }
     scope_pop();
 }
@@ -1548,25 +1548,13 @@ Object *objectSelfIdent(char *ident)
     }
 
     Object *result;
-    Object *identifier;
 
-    if (strlen(ident) == 1) {
-        //must be $ by itself.
-        result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx - 1]->returnType);
-        addParam(result, scopeStack[scope_idx - 1]->returnType);
-        char code[BUFFLEN];
-        snprintf(code,BUFFLEN, "((%s *) (self->obj))",current->returnType);
-        addCode(result, code);
-    } else {
-        ident += 2;             // bypass the "$."
-        identifier = findByNameInScope(scopeStack[scope_idx - 1], ident, false);
+    result = CreateObject(0, 0, 0, Expression, scopeStack[scope_idx - 1]->returnType);
+    addParam(result, scopeStack[scope_idx - 1]->returnType);
+    char code[BUFFLEN];
+    snprintf(code,BUFFLEN, IDENT_SELF_SELF);
+    addCode(result, code);
 
-        result = CreateObject(ident, ident, 0, Variable, identifier->returnType);
-        addParam(result, identifier->returnType);
-        char code[BUFFLEN];
-        snprintf(code, BUFFLEN, "((%s *) (self->obj))->%s", current->returnType,ident);
-        addCode(result, code);
-    }
     return result;
 }
 
@@ -1657,79 +1645,79 @@ Object *objectPlaceHolderType(char *ident)
 
 Object *conjugateAccessorIdent(Object *subject, char *field)
 {
-
-    if (subject->category == Type) {
-        //build verb name
-        char verbname[BUFFLEN];
-        snprintf(verbname, BUFFLEN, "%s" COMPILER_SEP "%s", subject->name, field);
-        Object *result = CreateObject(verbname, verbname, 0, Function, 0);
-        return result;
-    } else {
-
         //verify parent is defined
-        char *parent = subject->code->value;
-        compilerDebugPrintf("Parent %s\n", parent);
+        char *subCodeValue = subject->code->value;
+        compilerDebugPrintf("conjugateAccessorIdent subject->code->value %s\n", subCodeValue);
 
-        Object *oParent = subject;
-        if (!oParent) {
+        //Object *oParent = subject;
+        if (!subject) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Cannot find object named %s\n", parent);
+            snprintf(error, BUFFLEN, "Cannot find object named %s\n", subCodeValue);
             criticalError(ERROR_UndefinedVariable, error);
         }
 
-        char *parentType = oParent->returnType;
-        if (!strcmp(parentType,"Generic_YTYPE$$")) {
+        char *returnType = subject->returnType;
+        if (!strcmp(returnType,"Generic_YTYPE$$")) {
             if (subject->genericType) {
-                parentType = subject->genericType;
+                returnType = subject->genericType;
                 //compilerDebugPrintf("Setting gentype %s\n", parent);
             } else {
-                errorMsg("No generic type for %s\n",parent);
+                errorMsg("No generic type for %s\n",subCodeValue);
                 criticalError(ERROR_ParseError,"Generic Type not found\n");
             }
         }
-        //remove " *" from the end if present.
-        int length = 0;
-        while (parentType[length] != '\0' && parentType[length] != ' '
-               && parentType[length] != '*') {
-            length++;
-        }
-        parentType[length] = '\0';
 
-        Object *oParentType = findByName(parentType);
-        if (!oParentType) {
-            char error[BUFFLEN];
-            snprintf(error, BUFFLEN,
-                     "Cannot find \"%s\" class description for object %s\n", parentType,
-                     parent);
-            criticalError(ERROR_UndefinedVariable, error);
-        }
+        Object *oReturnType = findByName(returnType);
 
         Object *oField = 0;
-        //verify the category of parent has defined a variable named field
-        ListObject *oIter = oParentType->definedSymbols;
-        while (oIter) {
-            if (!strcmp(oIter->value->name, field)) {
-                oField = oIter->value;
+
+        char newSubject[BUFFLEN];
+
+        int subject_idx =0;
+        subject_idx = snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx,  "((%s *)( %s->obj))", returnType,
+                               subCodeValue);
+
+
+        //Todo - Make sure inheritance works with generics
+        Object * parent = oReturnType;
+        bool firstRound = true;
+        while (!oField && parent) {
+            compilerDebugPrintf("Trying parent class: %s\n", parent->name);
+            ListObject *oIter = parent->definedSymbols;
+            while (oIter) {
+                if (!strcmp(oIter->value->name, field)) {
+                    oField = oIter->value;
+                    break;
+                }
+                oIter = oIter->next;
+            }
+
+            if (!oField) {
+                subject_idx +=
+                        snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "->" IDENT_SUPER "_");
+                parent = parent->parentClass;
+            } else {
                 break;
             }
-            oIter = oIter->next;
         }
 
         if (!oField) {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "%s %s has no member named %s->\n", parentType,
-                     parent, field);
+            snprintf(error, BUFFLEN, "%s %s has no member named %s\n", returnType,
+                     subCodeValue, field);
             criticalError(ERROR_UndefinedVariable, error);
         }
 
+
         Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
         char accessCode[BUFFLEN];
-        compilerDebugPrintf ("Parent field %s %s\n",parent, field);
-        snprintf(accessCode, BUFFLEN, "/* %d */ ((%s *)(%s->obj))->%s", __LINE__, parentType, parent, field);
+        compilerDebugPrintf ("Parent field %s %s\n",subCodeValue, field);
+        snprintf(accessCode, BUFFLEN, "/* %d */ (%s)->%s", __LINE__, newSubject, field);
+        //snprintf(accessCode, BUFFLEN, "/* %d */ ((%s *)(%s))->%s", __LINE__, parent->returnType, newSubject, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
         return result;
-    }
+
 }
 
 Object *findByName(char *name)

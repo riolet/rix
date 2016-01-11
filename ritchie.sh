@@ -8,4 +8,4 @@ if [ $? -eq 0 ]; then
 fi
 shift
 ./${RITCHIE_FILE}.out $@
-rm ${RITCHIE_FILE}.out ${RITCHIE_FILE}.c ${RITCHIE_FILE}.h ${RITCHIE_FILE}.sh
+rm ${RITCHIE_FILE}.out ${RITCHIE_FILE}.c ${RITCHIE_FILE}.h ${RITCHIE_FILE}.sh ${RITCHIE_FILE}.log

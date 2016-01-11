@@ -56,6 +56,7 @@
 %token <sval> RBRACE
 %token <ival> UNINDENT
 %token <sval> CONDITIONLINK
+%token <sval> UNARYNEGATE
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
 %token <sval> BOOLEANOP
@@ -100,11 +101,9 @@
 %type <sval> parameterIdent;
 %type <sval> anyIdent;
 %type <sval> anyIdentOrVerb;
-//%type <sval> function_type_entry;
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
-//void yyerror(const char* msg);
 %}
 
 //  Precedence for the following tokens.
@@ -115,15 +114,17 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //  %right (as opposed to %left) means,
 //    given a compound expression,
 //    evaluate from right to left.
-%right ASSIGNMENT MATHASSIGN VERB TYPE STATICVERB CONDRETURN RBRACKETASSIGN
-%right ENDOFLINE INDENT
-%right PARAMCOMMA
-%right BOOLEANOP
-%right COMPARISON LESSTHAN GREATERTHAN TERNARY
-%right MATH_OP
-%right ACCESSOR
-%right DESTRUCTOR
-%right LBRACKET RBRACKET LBRACE RBRACE
+%right ASSIGNMENT MATHASSIGN
+%left VERB TYPE STATICVERB CONDRETURN RBRACKETASSIGN
+%left ENDOFLINE INDENT
+%left PARAMCOMMA
+%left BOOLEANOP
+%left COMPARISON LESSTHAN GREATERTHAN TERNARY
+%left MATH_OP
+%left UNARYNEGATE
+%left ACCESSOR
+%left DESTRUCTOR
+%left LBRACKET RBRACKET LBRACE RBRACE
 //%right class_definition
 
 %%
@@ -171,15 +172,9 @@ expr:
   | expr  TERNARY   expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
   | expr  CONDRETURN   expr  { compilerDebugPrintf("parser: expr-crt\n");   $$ = conjugate($1,  verbCondReturn(), $3); }
   | expr  MATH_OP   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
-
-//  | expr   VERB     expr  { compilerDebugPrintf("parser: expr-svo\n");   $$ = conjugate($1,  verbIdent($2), $3); }
-//  | expr   VERB           { compilerDebugPrintf("parser: expr-sv \n");   $$ = conjugate($1,  verbIdent($2),  0); }
-
+  | expr  UNARYNEGATE   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
+  | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
-//  |        VERB                { compilerDebugPrintf("parser: expr- v \n");   $$ = conjugate( 0,  verbIdent($1),  0); }
-
-//  |      STATICVERB expr  { compilerDebugPrintf("parser: expr- Xo\n");   $$ = conjugate( 0, sVerbIdent($1), $2); }
-//  |      STATICVERB       { compilerDebugPrintf("parser: expr- X \n");   $$ = conjugate( 0, sVerbIdent($1),  0); }
   |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
   |        TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }

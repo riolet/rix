@@ -76,7 +76,9 @@ hash          "#"
 
 identifier    ({selfIdent})*({alphabetic}|"_")({alphanumeric}|"_")*({selfIdent})*
 
-mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
+unaryNegate   "-"
+
+mathOp        "+"|"*"|"/"|"^^"|"%"
 assignment    "="
 return        "->"
 
@@ -240,8 +242,10 @@ dtvAddsource "##addsource"
 {classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
 {return}        { compilerDebugPrintf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
-{selfIdent}\.{identifier}  { compilerDebugPrintf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
+
 {selfIdent}     { compilerDebugPrintf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
+
+{unaryNegate}   { compilerDebugPrintf("lexer: Unary Negate\n");  yylval->sval = strdup(yytext); return UNARYNEGATE;  }
 
 {booleanOp}     { compilerDebugPrintf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }

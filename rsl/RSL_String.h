@@ -43,9 +43,9 @@ IDENT_MPTR_RAW * String_$_plus_$_int(IDENT_MPTR_RAW * left_, int right, IDENT_MP
 
 IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in);
 
-String *String_$_plus_$_float(String *left, float right);
+IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDENT_MPTR_RAW * $_mptr_in);
 
-String *float_$_plus_$_String(float left, String *right);
+IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in);
 
 char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left);
 

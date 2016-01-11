@@ -128,32 +128,52 @@ IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MP
     return $_mptr_in;
 }
 
-String * String_$_plus_$_float(String * left, float right)
+IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDENT_MPTR_RAW * $_mptr_in)
 {
-    String * newString;
+
+    debugPrintf("String_$_plus_$_int %s -> %s\n",left_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                              xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+    String * s = s_->obj;
+    String * left = left_->obj;
+
     char rightStr[RSL_STRING_MAX_BUFFLEN];
     int right_length = snprintf(rightStr, RSL_STRING_MAX_BUFFLEN, "%f", right);
-    newString->buffer = malloc(left->length + right_length + 1);
-    memcpy(newString->buffer, left->buffer, left->length);
-    memcpy(newString->buffer + left->length, rightStr, right_length);
-    newString->length = left->length + right_length;
-    newString->buffer[newString->length] = 0;
-    return newString;
+
+    s->buffer = malloc(left->length + right_length + 1);
+    memcpy(s->buffer, left->buffer, left->length);
+    memcpy(s->buffer + left->length, rightStr, right_length);
+    s->length = left->length + right_length;
+    s->buffer[s->length] = 0;
+    s->isStaticBuffer = false;
+
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
 }
 
-String * float_$_plus_$_String(float left, String * right)
+IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
 {
-    String * newString;
+    debugPrintf("int_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
+                                                                                              xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+    String * s = s_->obj;
+    String * right = right_->obj;
+
     char leftStr[RSL_STRING_MAX_BUFFLEN];
     int left_length = snprintf(leftStr, RSL_STRING_MAX_BUFFLEN, "%f", left);
-    newString->buffer = malloc(right->length + left_length + 1);
-    memcpy(newString->buffer + left_length, right->buffer, right->length);
-    memcpy(newString->buffer, leftStr, left_length);
-    newString->length = right->length + left_length;
-    newString->buffer[newString->length] = 0;
-    return newString;
-}
 
+    s->buffer = malloc(right->length + left_length + 1);
+    memcpy(s->buffer, leftStr, left_length);
+    memcpy(s->buffer + left_length, right->buffer, right->length);
+    s->length = right->length + left_length;
+    s->buffer[s->length] = 0;
+    s->isStaticBuffer = false;
+
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
+}
 char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left)
 {
     String * right = (String *) right_->obj;

@@ -29,6 +29,7 @@ FILE *outCompilerLogFile;
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
 #define IDENT_SELF "$"
+#define IDENT_SELF_SELF "$self"
 #define IDENT_SUPER "$super"
 #define IDENT_MPTR_RAW _$_mptr
 #define IDENT_HEAP_MPTR_RAW _$_heap_mptr

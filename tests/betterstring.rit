@@ -1,5 +1,0 @@
-import "ext/BetterString/BetterString.rit"
-
-#string = "Hi"
-#betterString = BetterString string
-print (betterString getString)

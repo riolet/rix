@@ -1,9 +1,0 @@
-Rectangle :: BaseType
-  n1 = int
-  f1 = float
-  
-  : printAll
-    print n1 + " " + f1
-
-print "definitions worked"
-
