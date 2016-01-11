@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#compiler path
-compiler="../ritc"
-
-if [ -n "$1" ]; then
-  bash -c "$compiler $1 &>output.out"
-fi
-

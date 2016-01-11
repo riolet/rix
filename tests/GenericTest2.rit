@@ -1,0 +1,8 @@
+import "rsl/Vector.rit"
+#a = Vector{String}(100)
+
+#i.for (0,10)
+    a[i] = "i = " + i + " -> " + (i+2).sqrt()
+
+i.for (4,9)
+    print (a[i])

@@ -1,22 +1,32 @@
 Rectangle :: BaseType
-  w = Integer
-  h = Integer
+  w = int
+  h = int
   
-  ::: Integer w, Integer h
+  $(int w, int h)
     $.w = w
     $.h = h
   
-  Integer : area
-    -> w * h
+  area->int() = w * h
 
-Square :: Rectangle
-  ::: Integer edge
-    w = edge
-    h = edge
+  perimeter->int() = ( w + h ) *2
 
 
-r = Rectangle 5, 10
-s = Square 16
+NamedRectangle :: Rectangle
 
-print r area
-print s area
+  name = String
+
+  $(int w, int h, String name)
+    $.w = w
+    $.h = h
+    $.name = name
+
+  nameArea->String() = "NamedRectangle "+ name + " has an area of "+$.area()
+
+
+#r = Rectangle (5, 10)
+#s = NamedRectangle (3, 4, "Great")
+
+print (s.name)
+print (r.area() + " " + r.perimeter())
+print (s.name + " " + s.area())
+print (s.nameArea())

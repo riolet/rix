@@ -1,4 +1,4 @@
-line -> String: Integer b, String end
+line -> String(int b, String end)
     if (b>1)
         -> "" + b + " bottles " + end
     if (b==1)
@@ -6,9 +6,10 @@ line -> String: Integer b, String end
     -> "No more bottles " + end
 
 #i = 99
+
 while (i>0)
-    print line i, "of beer on the wall,"
-    print line i, "of beer,"
-    print "Take one down, pass it around,"
-    print line i-1, "of beer on the wall.\n"
-    i-=1
+    print (line (i, "of beer on the wall,"))
+    print (line (i, "of beer,"))
+    print ("Take one down, pass it around,")
+    print (line (i-1, "of beer on the wall.\n"))
+    i -= 1

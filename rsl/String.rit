@@ -1,0 +1,7 @@
+##external "rsl/RSL_String.h"
+##addsource "rsl/RSL_String.c"
+String::BaseType
+    length->int()
+        //Virtual
+//Done
+##external ""

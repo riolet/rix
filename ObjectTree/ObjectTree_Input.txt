@@ -1,20 +1,20 @@
 Rectangle :: BaseType
-  w = Integer
-  h = Integer
-  Rectangle :: Rectangle Integer width, Integer height
+  w = int
+  h = int
+  Rectangle :: Rectangle int width, int height
     $.w = width
     $.h = height
     -> $
-  Integer:Area
+  int:Area
     -> w * h
 
 Square :: Rectangle
-  Square :: Square Integer size
+  Square :: Square int size
     $.w = size
     $.h = size
     -> $
 
-Integer : calcTotalArea Rectangle r1, Rectangle r2
+int : calcTotalArea Rectangle r1, Rectangle r2
   a1 = r1.Area
   a2 = r2.Area
   -> a1 + a2

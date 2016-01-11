@@ -19,16 +19,16 @@ Check out ritchie at http://www.github.com/riolet/ritchie
     <style id="char"              _name="Character"             map-to="def:character"/>
     <style id="keyword"           _name="Keyword"               map-to="def:keyword"/>
     <style id="operator"          _name="Operator"              map-to="def:operator"/>
-    <style id="type"              _name="Data Type"             map-to="def:type"/>
-    <!--<style id="storage-class"     _name="Storage Class"         map-to="def:type"/>-->
+    <style id="category"              _name="Data Type"             map-to="def:category"/>
+    <!--<style id="storage-class"     _name="Storage Class"         map-to="def:category"/>-->
     <style id="printf"            _name="printf Conversion"     map-to="def:special-char"/>
     <style id="print"             _name="printf Conversion"     map-to="def:special-char"/>
     <style id="escaped-character" _name="Escaped Character"     map-to="def:special-char"/>
-    <style id="floating-point"    _name="Floating point number" map-to="def:floating-point"/>
+    <style id="floating-point"    _name="floating point number" map-to="def:floating-point"/>
     <style id="decimal"           _name="Decimal number"        map-to="def:decimal"/>
     <style id="octal"             _name="Octal number"          map-to="def:base-n-integer"/>
     <style id="hexadecimal"       _name="Hexadecimal number"    map-to="def:base-n-integer"/>
-    <style id="boolean"           _name="Boolean value"         map-to="def:boolean"/>
+    <style id="boolean"           _name="bool value"         map-to="def:boolean"/>
     <style id="standard-stream"   _name="Standard stream"       map-to="def:constant"/>
     <style id="signal-name"       _name="Signal name"           map-to="def:constant"/>
     <style id="error"             _name="Error"                 map-to="def:error"/>
@@ -217,7 +217,7 @@ Check out ritchie at http://www.github.com/riolet/ritchie
       <keyword>sizeof</keyword>
     </context>
 
-    <context id="types" style-ref="type">
+    <context id="types" style-ref="category">
       <keyword>_Bool</keyword>
       <keyword>_Complex</keyword>
       <keyword>_Imaginary</keyword>
@@ -238,9 +238,9 @@ Check out ritchie at http://www.github.com/riolet/ritchie
       <keyword>void</keyword>
       <keyword>wchar_t</keyword>
       <keyword>wint_t</keyword>
-      <keyword>Float</keyword>
+      <keyword>float</keyword>
       <keyword>BaseType</keyword>
-      <keyword>Integer</keyword>
+      <keyword>int</keyword>
       <keyword>Number</keyword>
       <keyword>String</keyword>
     </context>

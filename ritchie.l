@@ -60,33 +60,42 @@ alphabetic    [a-zA-Z]
 numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
-decimal       {numeral}*+"."{numeral}*
+decimal       "."{numeral}+|{numeral}+"."{numeral}+
 float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
-identifier    {alphabetic}{alphanumeric}*
+char          \'(\\.|[^\\'])+\'
 comment       \/\/.*
 
 colon         ":"
 paramComma    ","
 classDec      "::"
-classCtor     ":::"
+classDecPrim  ":::"
 conditionLink "?"
 selfIdent     "$"
 hash          "#"
 
-mathOp        "+"|"-"|"*"|"/"|"^^"|"%"
+identifier    ({selfIdent})*({alphabetic}|"_")({alphanumeric}|"_")*({selfIdent})*
+
+unaryNegate   "-"
+
+mathOp        "+"|"*"|"/"|"^^"|"%"
 assignment    "="
 return        "->"
 
+lessThan      "<"
+greaterThan   ">"
 mathAssign    "+="|"-="|"*="|"/="
-comparison    "<"|">"|"<="|">="|"=="|"!="
+comparison    "<="|">="|"=="|"!="
 ternary       "<>"
 bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
 condReturn    "-->"
 implies       "==>"
+accessor      "."
 
+dtvExternal  "##external"
+dtvAddsource "##addsource"
 %%
         int indent_caller = normal;
 
@@ -114,7 +123,7 @@ implies       "==>"
                             BEGIN(indent_caller);
                         }
 
-                        printf("lexer: EOF OUTDENT\n");
+                        compilerDebugPrintf("lexer: EOF OUTDENT\n");
                         decPrev(); //for tracking last-statement.
                         return UNINDENT;
                     } else {
@@ -134,13 +143,13 @@ implies       "==>"
                     // increase by one level at a time. Remember how many
                     // spaces this level has and emit an indentation token.
                     if(g_current_line_indent > stack_top()) {
-                        printf("lexer: INDENT\n");
+                        compilerDebugPrintf("lexer: INDENT\n");
                         stack_push(g_current_line_indent);
                         BEGIN(indent_caller);
                         incPrev(); //for tracking last-statement.
                         return INDENT;
                     } else if(g_current_line_indent < stack_top()) {
-                        printf("lexer: OUTDENT\n");
+                        compilerDebugPrintf("lexer: OUTDENT\n");
                         // Outdenting is the most difficult, as we might need to
                         // outdent multiple times at once, but flex doesn't allow
                         // emitting multiple tokens at once! So we fake this by
@@ -177,7 +186,7 @@ implies       "==>"
                     }
                 }
 
-<normal>\n    { printf("EOL\n");
+<normal>\n    { compilerDebugPrintf("EOL\n");
                 g_current_line_indent = 0;
                 indent_caller = YY_START;
                 BEGIN(indent);
@@ -186,16 +195,17 @@ implies       "==>"
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
 "`"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
-{comment}     { printf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
-{string}      { printf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
-{integer}     { printf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
-{float}       { printf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
-{mathOp}      { printf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+{comment}     { compilerDebugPrintf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
+{string}      { compilerDebugPrintf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
+{integer}     { compilerDebugPrintf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
+{char}     { compilerDebugPrintf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
+{float}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
+{mathOp}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 
 {hash}{identifier}  {   char* first = strtok(yytext, "#");
                         Object* exists = findByName(first);
                         if (!exists) {
-                          printf("lexer: new identifier %s\n",first);
+                          compilerDebugPrintf("lexer: new identifier %s\n",first);
                           yylval->sval = strdup(first);
                           return NEWIDENT;
                         } else {
@@ -208,68 +218,64 @@ implies       "==>"
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
                         if (!exists) {
-                          printf("lexer: unidentified identifier\n");
+                          compilerDebugPrintf("lexer: unidentified identifier\n");
                           return UNMARKEDNEWIDENT;
-                        } else if (exists->type == Variable) {
-                          printf("lexer: identifier\n");
+                        } else if (exists->category == Variable) {
+                          compilerDebugPrintf("lexer: identifier\n");
                           return IDENT;
-                        } else if (exists->type == Function || exists->type == Constructor) {
-                          printf("lexer: verb\n");
+                        } else if (isVerb(exists)) {
+                          compilerDebugPrintf("lexer: verb\n");
                           return VERB;
-                        } else if (exists->type == Type) {
-                          printf("lexer: type\n");
+                        } else if (exists->category == Type) {
+                          compilerDebugPrintf("lexer: type\n");
                           return TYPE;
                         } else {
-                          printf("lexer: unidentified identifier\n");
-                          return IDENT;
+                          criticalError(ERROR_ParseError, "lexer: unidentified identifier\n");
                         }
                       }
 
-{identifier}\.{identifier} {
-                      printf("lexer: field access\n");
-                      yylval->sval = strdup(yytext);
-                      char* first = strtok(yytext, ".");
-                      Object* exists = findByName(first);
-                      if (!exists) {
-                        char error[1024];
-                        snprintf(error, 1024, "Cannot find static verb %s.%s\n", first, strtok(0, "."));
-                        criticalError(ERROR_ParseError, error);
-                      } else if (exists->type == Type) {
-                        return STATICVERB;
-                      } else {
-                        return FIELD;
-                      }
-                      }
+{assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
+{conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{assignment}    { printf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
-{conditionLink} { printf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
+{paramComma}    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
+{colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
+{classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
+{classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
+{return}        { compilerDebugPrintf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
 
-{paramComma}    { printf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); handleComma(); return PARAMCOMMA; }
-{colon}         { printf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
-{classDec}      { printf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
-{classCtor}     { printf("lexer: CtorDec\n");    yylval->sval = strdup(yytext); return CTORDEC; }
-{return}        { printf("lexer: Return\n");     yylval->sval = strdup(yytext); return RETURN; }
-{selfIdent}\.{identifier}  { printf("lexer: self.Ident\n");  yylval->sval = strdup(yytext); return SELFIDENT; }
-{selfIdent}     { printf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
+{selfIdent}     { compilerDebugPrintf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
 
-{booleanOp}     { printf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
-{comparison}    { printf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
-{ternary}       { printf("lexer: ternary\n");                                   return TERNARY; }
-{condReturn}    { printf("lexer: condReturn\n");                                return CONDRETURN; }
-{mathAssign}    { printf("lexer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{unaryNegate}   { compilerDebugPrintf("lexer: Unary Negate\n");  yylval->sval = strdup(yytext); return UNARYNEGATE;  }
+
+{booleanOp}     { compilerDebugPrintf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+{comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
+{lessThan}    { compilerDebugPrintf("lexer: comparator<\n"); yylval->sval = strdup(yytext); return LESSTHAN; }
+{greaterThan}    { compilerDebugPrintf("lexer: comparator>\n"); yylval->sval = strdup(yytext); return GREATERTHAN; }
+{ternary}       { compilerDebugPrintf("lexer: ternary\n");                                   return TERNARY; }
+{condReturn}    { compilerDebugPrintf("lexer: condReturn\n");                                return CONDRETURN; }
+{mathAssign}    { compilerDebugPrintf("lefloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
+{accessor}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
+
+{hash}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }
+
+{dtvExternal}   { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
+{dtvAddsource}  { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-"("           { printf("lexer: (\n"); return LPAREN; }
-")"           { printf("lexer: )\n"); return RPAREN; }
-"["           { printf("lexer: (\n"); return LBRACKET; }
-"]"           { printf("lexer: )\n"); return RBRACKET; }
-.             { printf("Unknown symbol encountered: '%s'\n", yytext); }
+"("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
+")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["                             { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"]"[ \t]*{assignment}           { compilerDebugPrintf("lexer: )\n"); return RBRACKETASSIGN; }
+"{"           { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
+"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
+.             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%
 
 char* handleCodeInsert(void) {
-	 printf("lexer: code insert\n");
+	 compilerDebugPrintf("lexer: code insert\n");
 	 int c;
 	 int index  = 0;
 	 char * ci = (char*)malloc(INSERT_BUFF_LEN);
@@ -287,7 +293,7 @@ char* handleCodeInsert(void) {
 }
 
 void* handleComma(void) {
-	 printf("lexer: eating spaces between commas\n");
+	 compilerDebugPrintf("lexer: eating spaces between commas\n");
 	 int c;
 	 while ( c = input()) {
         if ( c !=  '\t' || c != ' ') {

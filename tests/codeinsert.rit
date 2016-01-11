@@ -1,8 +1,8 @@
-i = 5
-j = 7
-k = 0
+#i = 5
+#j = 7
+#k = 0
 `
-k=i^j;
+k=i*j;
 printf("%i\n",k);
 `
-print k
+print (k)

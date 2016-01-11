@@ -1,0 +1,17 @@
+import "ext/BetterString/BetterString.rit"
+#line = "Whereas recognition of the inherent dignity and of the equal and inalienable rights"
+#bs = BetterString line
+#s = bs toString
+print s
+
+#blist = bs split ' '
+#i for 0, blist.length
+    print blist[i].toString
+
+#count = 0
+#loop for 0, 1
+    count += ((bs split "of") length)
+print count
+
+i for 0, blist.length
+    print blist[i].toString

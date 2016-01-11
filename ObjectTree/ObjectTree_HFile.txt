@@ -3,28 +3,28 @@ typedef struct {
   int w;
   int h;
 } Rectangle;
-Rectangle * Rectangle_Rectangle_Rectangle_Integer_Integer(Integer width, Integer height) {
+Rectangle * Rectangle_Rectangle_Rectangle_int_int(int width, int height) {
   Rectangle * self = (Rectangle*)malloc(sizeof(Rectangle));
   self->w = width;
   self->h = height;
   return self;
 }
-Integer Integer_Rectangle_Area(Rectangle* self) {
+int int_Rectangle_Area(Rectangle* self) {
   return self->w * self->h;
 }
 typedef struct {
   Rectangle parent;
 } Square;
-Square * Square_Square_Square_Integer(Integer size) {
+Square * Square_Square_Square_int(int size) {
   Square * self = (Square*)malloc(sizeof(Square));
   self->parent.w = size;
   self->parent.h = size;
   return self;
 }
-Integer Integer_calcTotalArea_Rectangle_Rectangle(Rectangle* r1, Rectangle* r2) {
+int int_calcTotalArea_Rectangle_Rectangle(Rectangle* r1, Rectangle* r2) {
   int a1;
-  a1 = Integer_Rectangle_Area(r1);
+  a1 = int_Rectangle_Area(r1);
   int a2;
-  a2 = Integer_Rectangle_Area(r2);
+  a2 = int_Rectangle_Area(r2);
   return a1 + a2;
 }

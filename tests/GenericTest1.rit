@@ -1,0 +1,31 @@
+//#define
+
+//print ((1<>2) gel "A","B","C")
+Point::BaseType
+    x = int
+    y = int
+
+    $(int x, int y)
+        $.x = x
+        $.y = y
+
+#a = Array{String}(5)
+#b = a
+a[0] = "Hello"
+a[1] = "World"
+a[4] = "!"
+#j.for(0,2)
+    print(b[j])
+
+#p = Array{Point}(5)
+#i.for(0,5)
+    p[i]=Point(i,i+1)
+
+i.for(0,5)
+    print(p[i].x+" "+p[i].y)
+
+#intarray = Array{int}(2)
+intarray[0] = 123
+intarray[1] = 2
+print (intarray[0]+intarray[1])
+#x = "Hi"

@@ -1,0 +1,18 @@
+/*
+
+Ritchie Standard Library
+
+*/
+##external "rsl/RSL_Vector.h"
+##addsource "rsl/RSL_Vector.c"
+Vector::BaseType
+    $(int Vector__size__)
+        //virtual
+
+    getObjectAtIndex->Generic_YTYPE$$(int Vector__index__)
+        //Virtual
+
+    putObjectAtIndex->Generic_YTYPE$$(Generic_$$ Vector___index___, Generic_$$ Vector__elem__)
+        //Virtual
+//Done
+##external ""
