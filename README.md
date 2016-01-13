@@ -72,7 +72,7 @@ print (factorial (5))
 You can also write succint one liner verbs like the one below which gives the nth Fibonacci number:
 
 ```
-fib -> int(int n) = (n <= 1) tf (n, fib(n-1) + fib(n-2))
+fib -> int(int n) = (n <= 1).tf (n, fib(n-1) + fib(n-2))
 
 print (fib(5))
 ```
