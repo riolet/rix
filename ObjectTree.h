@@ -104,6 +104,7 @@ int addParam(Object * tree, char *type);
 int addGenericType(Object * tree, char *genericType, int genericTypeArgPos);
 int addSymbol(Object * tree, Object * leaf);
 ListString *addCode(Object * tree, char *line);
+ListString *pushCode(Object * tree, char *line);
 int setFlags(Object * tree, int flags);
 int getFlag(Object * tree, int flag);
 int setParentClass(Object * tree, Object * parentClass);

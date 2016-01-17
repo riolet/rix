@@ -70,6 +70,8 @@ Object *objectPlaceHolderType(char *ident);
 Object *objectString(char *string);
 Object *conjugateAccessorIdent(Object *subject, char *field);
 
+Object *createCodeBlock(Object * expression);
+
 float simplifyfloat(float left, char *op, float right);
 int simplifyInt(int left, char *op, int right);
 

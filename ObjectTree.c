@@ -148,6 +148,58 @@ int addSymbol(Object * tree, Object * leaf)
     return 0;
 }
 
+ListString *pushCode(Object * tree, char *line)
+{
+    ListString *node = malloc(sizeof(ListString));
+    if (node == 0) {
+        warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
+        return 0;
+    }
+
+    node->value = strdup(line);
+
+
+    if (node->value == 0) {
+        warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
+        return 0;
+    }
+
+    if (tree->code == 0) {
+        tree->code = node;
+        return node;
+    }
+
+    node->next  = tree->code;
+    tree->code = node;
+    return node;
+}
+
+ListString *insertCode(Object * tree, char *line)
+{
+    ListString *node = malloc(sizeof(ListString));
+    if (node == 0) {
+        warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
+        return 0;
+    }
+
+    node->value = strdup(line);
+
+
+    if (node->value == 0) {
+        warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
+        return 0;
+    }
+
+    if (tree->code == 0) {
+        tree->code = node;
+        return node;
+    }
+
+    node->next  = tree->code;
+    tree->code = node;
+    return node;
+}
+
 ListString *addCode(Object * tree, char *line)
 {
     ListString *node = malloc(sizeof(ListString));

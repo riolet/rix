@@ -87,6 +87,7 @@
 %type <oval> class_statement;
 %type <oval> parameters;
 %type <oval> codeblock;
+%type <oval> funcblock;
 %type <oval> classblock;
 %type <oval> function_definition;
 %type <oval> class_definition;
@@ -147,13 +148,24 @@ simple_statement:
   | function_definition ASSIGNMENT statement ENDOFLINE {
           compilerDebugPrintf("parser: s_s-func - Funliner Defined! %s\n", $1->fullname);
           makeReturn($3); doneFunction($1); }
-  | function_definition ENDOFLINE codeblock {
+  | function_definition ENDOFLINE funcblock {
           compilerDebugPrintf("parser: s_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }
   | CODE_INSERT ENDOFLINE     { compilerDebugPrintf("parser: code-insert\n"); $$ = injectC($1);  }
   | class_definition ENDOFLINE classblock {
           compilerDebugPrintf("parser: s_s-class - Class Defined! %s\n", $1->fullname);
           doneClass($1); }
+//Todo-Proper handling of codeblocks
+//Verb calls with Codeblocks
+//  |        VERB     arguments ENDOFLINE codeblock { compilerDebugPrintf("parser: expr- vo-cb\n");   $$ = completeExpression(conjugate( 0,  verbIdent($1), $2)); }
+//  |        TYPE     arguments ENDOFLINE codeblock { compilerDebugPrintf("parser: expr-sto-cb\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
+//  | expr ACCESSOR VERB arguments ENDOFLINE codeblock { compilerDebugPrintf("parser: expr-.vo-cb\n");   $$ = conjugate( $1, verbIdent($3), $4); }
+//  | TYPE LBRACE TYPE RBRACE arguments  ENDOFLINE codeblock { compilerDebugPrintf("parser: expr-sto-cb\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
+////Verb calls without Codeblocks
+//  |        VERB     arguments ENDOFLINE  { compilerDebugPrintf("parser: expr- vo-nocb\n");   $$ = completeExpression(conjugate( 0,  verbIdent($1), $2)); }
+//  |        TYPE     arguments ENDOFLINE  { compilerDebugPrintf("parser: expr-sto-noccb\n");   $$ = completeExpression(conjugate( 0,   verbCtor($1,0), $2)); }
+//  | expr ACCESSOR VERB arguments ENDOFLINE  { compilerDebugPrintf("parser: expr-.vo-noccb\n");   $$ = completeExpression(conjugate( $1, verbIdent($3), $4)); }
+//  | TYPE LBRACE TYPE RBRACE arguments  ENDOFLINE  { compilerDebugPrintf("parser: expr-sto-noccb\n");   $$ = completeExpression(conjugate( 0,   verbCtor($1,$3), $5)); }
   ;
 
 statement:
@@ -161,6 +173,7 @@ statement:
   | RETURN expr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
   | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
   ;
+
 expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
   | expr ASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
@@ -176,18 +189,18 @@ expr:
   | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
   |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
-  |        TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
+  | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
+  | TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
   | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
-//  | expr ACCESSOR VERB { compilerDebugPrintf("parser: expr-.v\n");   $$ = conjugate( $1, verbIdent($3), 0); }
-  | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
   ;
 
 arguments:
-  LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
+   %empty { compilerDebugPrintf("parser: arg\n");   $$ = 0; } //0-ary
+  | LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
   | LPAREN arglist RPAREN { compilerDebugPrintf("parser: arg(...)\n");   $$ = $2; } //n-ary
   ;
 
@@ -232,11 +245,6 @@ function_definition:
   | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
   ;
 
-//function_type_entry:
-//  TYPE                                  { compilerDebugPrintf("parser: TYPE\n"); $$ = $1; }
-//  |NEWIDENT                             { compilerDebugPrintf("parser: NEWIDENT\n"); $$ = $1; }
-//  ;
-
 parameters:
   %empty                                { compilerDebugPrintf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
   | TYPE parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
@@ -248,7 +256,13 @@ parameterIdent:
   |UNMARKEDNEWIDENT                     { compilerDebugPrintf("parser: UNMARKEDNEWIDENT\n"); $$ = $1; }
   ;
 
+funcblock:
+  INDENT statements UNINDENT { compilerDebugPrintf("parser: codeblock\n"); $$ = $2; }
+  ;
+
 codeblock:
+//Todo-Proper handling of codeblocks
+//  INDENT statements UNINDENT { compilerDebugPrintf("parser: codeblock\n"); $$ = createCodeBlock($2); }
   INDENT statements UNINDENT { compilerDebugPrintf("parser: codeblock\n"); $$ = $2; }
   ;
 
