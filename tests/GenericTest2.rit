@@ -1,8 +1,35 @@
 import "rsl/Vector.rit"
-#a = Vector{String}(100)
 
+
+printSpaceLeft->String(Vector v)
+    -> (v.length() + "/" + v.capacity())
+
+
+#a = Vector{String}(100)
 #i.for (0,10)
     a[i] = "i = " + i + " -> " + (i+2).sqrt()
 
 i.for (4,9)
     print (a[i])
+
+print ("a is " + printSpaceLeft(a))
+
+if (a.isNull(9))
+    print ("No element at index 9")
+else
+    print ("Element exists at index 9")
+
+
+#b = Vector{int}(100)
+i.for (0,8)
+    b[i] = i
+
+i.for (4,9)
+    print (b[i])
+
+print ("b is " + printSpaceLeft(b))
+
+if (b.isNull(9))
+    print ("No element at index 9")
+else
+    print ("Element exists at index 9")

@@ -9,7 +9,7 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
 
 typedef struct {
     size_t size;
-    size_t last;
+    size_t length;
     uintmax_t *bitVector;
     void  *data;
     bool isPrimitive;
@@ -27,14 +27,14 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
 
 #define _$_Vector_set_object_at_1(_$v$_arrptr, _$v$_idx, _$v$_elem) ({\
         /*--Todo-- This must get the right type */\
-        int  * _$v$_dataptr = _$v$_arrptr->data;\
+        typeof(_$v$_elem) * _$v$_dataptr = _$v$_arrptr->data;\
         _$v$_dataptr[_$v$_idx] = _$v$_elem;\
         })
 
 #define Vector_$_Vector_$_int(_$v$_size__, _$v$_mptr, _$v$_primYtpe, _$v$_type) ({\
     StructVector  * _$v$_arr = calloc(1,sizeof(StructVector));\
     _$v$_arr->size=_$v$_size__;\
-    _$v$_arr->last=0;\
+    _$v$_arr->length=0;\
     _$v$_arr->bitVector=calloc((_$v$_size__/WORD_SIZE)+1,sizeof(uintmax_t));\
     if (!_$v$_primYtpe) {\
         _$v$_arr->data = (void *) calloc(_$v$_size__, sizeof(IDENT_MPTR_RAW));\
@@ -50,8 +50,8 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
 #define Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$v$_arr, _$v$_idx, _$v$_primIdx, _$v$_elem, _$v$_primElem,\
                                                     _$v$_mptr, _$v$_primRet, _$v$_typeRet) ({\
     StructVector * _$v$_arrptr = (StructVector *) _$v$_arr->obj;\
-    if (_$v$_idx>_$v$_arrptr->last) {\
-        _$v$_arrptr->last=_$v$_idx;\
+    if (_$v$_idx>_$v$_arrptr->length) {\
+        _$v$_arrptr->length=_$v$_idx;\
     }\
     setBit(_$v$_arrptr->bitVector,_$v$_idx);\
     xcat(_$_Vector_set_object_at_,_$v$_primRet)(_$v$_arrptr, _$v$_idx, _$v$_elem);\
@@ -63,6 +63,21 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
     StructVector * arrptr = (StructVector *) arr->obj;                        \
     typeRet *dataptr = (typeRet *) arrptr->data; \
     xcat(_$_Vector_object_at_,primRet)(dataptr,idx);                              \
+})
+
+#define Vector_$_isNull_$_int(_$v$_arr, _$v$_idx) ({ \
+    StructVector * _$v$_arrptr = (StructVector *) _$v$_arr->obj;    \
+    !testBit(_$v$_arrptr->bitVector, _$v$_idx);                                   \
+})
+
+#define Vector_$_length_$_(_$v$_arr) ({   \
+    StructVector * _$v$_arrptr = (StructVector *) _$v$_arr->obj;\
+    _$v$_arrptr->length;                        \
+})
+
+#define Vector_$_capacity_$_(_$v$_arr) ({  \
+    StructVector * _$v$_arrptr = (StructVector *) _$v$_arr->obj;\
+    _$v$_arrptr->size;                         \
 })
 
 #endif

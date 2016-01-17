@@ -33,6 +33,7 @@ ListString *prevNode[MAXSCOPE];
 int prev_idx = 0;
 bool external = false;
 int retVarNumber = 0;
+int codeBlockNumber = 0;
 
 Object *scope_pop()
 {
@@ -560,6 +561,17 @@ Object *completeExpression(Object * expression)
         code = code->next;
     }
     return current;
+}
+
+Object *createCodeBlock(Object * expression)
+{
+    if (expression == 0) {
+        warningMsg("expression was null\n");
+        return 0;
+    }
+    prevNode[prev_idx] = pushCode(expression, "({");
+    prevNode[prev_idx] = addCode(expression, "});");
+    return expression;
 }
 
 Object *finalize(Object * expression)

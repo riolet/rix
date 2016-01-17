@@ -20,7 +20,7 @@ Imagine we were tasked with writing a program that displays all the Fibonacci nu
         #i.for (1, N+1)
             print (i + ": " + fib (i))
 
-    else()
+    else
         print ("Usage "+args(0)+" N")
 
 `fib -> int(int n)` declares the verb (a function in this case) `fib` that returns an `int` and taking an `int` as a parameter.
@@ -47,10 +47,10 @@ The Python language equivalent of this would be:
 
 `print` prints the parameter to standard output, and `i + ": " + (fib i)` concatenates `int i`, `String ": "` and `int (fib i)`.
 
-If the user hasn't supplied an argument, it just prints the usage. Do you notice that in Ritchie else() is a verb. Ritchie has no keywords.
+If the user hasn't supplied an argument, it just prints the usage. As Ritchie has no keywords, `if`, `else` and `for` are also verbs.
 
-How can we improve our Fibonacci program?
------------------------------------------------------
+How can we make a more succint version of our Fibonacci program?
+----------------------------------------------------------------
 
 We can replace the standard `fib` function above with a single expression function (SEF):
 
@@ -64,7 +64,7 @@ The `int` category's `<=` verb returns a `bool` category object, which is true i
 
 
 How do we do *99 bottles of beer* in Ritchie?
--------------------------------------------------------
+---------------------------------------------
 Here's the (in)famous 99 bottles of beer program in Ritchie.
 
 	line -> String(int b, String end)

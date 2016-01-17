@@ -7,11 +7,11 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a)
     debugPrintf("\nCleaning up array \n");
     StructVector * arrptr = (StructVector *) a->obj;
     IDENT_MPTR_RAW * dataptr = (IDENT_MPTR_RAW *) arrptr->data;
-    debugPrintf("Array last %d size %d\n",(int) arrptr->last,(int) arrptr->size);
+    debugPrintf("Array last %d size %d\n",(int) arrptr->length,(int) arrptr->size);
 
     int i;
     if (!arrptr->isPrimitive) {
-        for (i = 0; i <= arrptr->last; i++) {
+        for (i = 0; i <= arrptr->length; i++) {
             if (testBit(arrptr->bitVector, i)) {
                 debugPrintf("Clean at %d\n", i);
                 _$_cleanup(&dataptr[i]);
