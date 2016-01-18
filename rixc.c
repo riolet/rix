@@ -1801,7 +1801,7 @@ int main(int argc, char **argv)
 
     if (ifile == NULL) {
         errorMsg("No file to compile\n");
-//      file = fopen("helloworld.rit", "r");
+//      file = fopen("helloworld.rix", "r");
         criticalError(ERROR_ParseError, "No file to compile specified");
     } else {
         file = fopen(ifile, "r");
@@ -1831,7 +1831,7 @@ int main(int argc, char **argv)
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
-    ritTempFile = fopen("rix_temp_file.rit", "w");
+    ritTempFile = fopen("rix_temp_file.rix", "w");
     if (ritTempFile == 0) {
         perror("fopen");
         return 1;
@@ -1841,7 +1841,7 @@ int main(int argc, char **argv)
     compilerDebugPrintf("%s\n", ifile);
 
     //Read RSL
-    readFile("rsl/rsl.rit", ritTempFile, &numline);
+    readFile("rsl/rsl.rix", ritTempFile, &numline);
 
     compilerDebugPrintf("Lines read %d\n",numline);
 
@@ -1853,7 +1853,7 @@ int main(int argc, char **argv)
     fprintf(ritTempFile,"\n"); //END OF FILE GUARANTEE!
     fclose(ritTempFile);
 
-    file = fopen("rix_temp_file.rit", "r+");
+    file = fopen("rix_temp_file.rix", "r+");
 
     yyin = file;
 
@@ -1895,7 +1895,7 @@ int main(int argc, char **argv)
     fclose(outMainFile);
     fclose(outMakeFile);
     fclose(file);
-    //remove("rix_temp_file.rit");
+    //remove("rix_temp_file.rix");
 
     //compilerDebugPrintf("\n%s compiled successfully.\n", ifile);
 
