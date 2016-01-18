@@ -1,0 +1,32 @@
+Rectangle :: BaseType
+  w = int
+  h = int
+  
+  $(int w, int h)
+    $.w = w
+    $.h = h
+  
+  area->int() = w * h
+
+  perimeter->int() = ( w + h ) *2
+
+
+NamedRectangle :: Rectangle
+
+  name = String
+
+  $(int w, int h, String name)
+    $.w = w
+    $.h = h
+    $.name = name
+
+  nameArea->String() = "NamedRectangle "+ name + " has an area of "+$.area()
+
+
+#r = Rectangle (5, 10)
+#s = NamedRectangle (3, 4, "Great")
+
+print (s.name)
+print (r.area() + " " + r.perimeter())
+print (s.name + " " + s.area())
+print (s.nameArea())

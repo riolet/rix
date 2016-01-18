@@ -1,0 +1,24 @@
+Rectangle :: BaseType
+
+  width = int
+  height = int
+
+  ::: int width, int height
+    $.width = width
+    $.height = height
+
+  area -> int: = width * height
+
+
+Square :: Rectangle
+
+  ::: int edge
+    width = edge
+    height = edge
+
+
+#r = Rectangle 5, 10
+#s = Square 16
+
+print ("Rectange area " + (r area))
+print ("Square Area " + (s area))

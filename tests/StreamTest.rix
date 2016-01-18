@@ -1,0 +1,3 @@
+#a = Stream ("testfile.text","w")
+a.echo ("The word is: ")
+a.print ("Hello World!")

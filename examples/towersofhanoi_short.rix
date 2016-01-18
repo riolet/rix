@@ -1,0 +1,3 @@
+hanoi -> int(int n, String s, String a, String e)  =  (n == 1).tf (print (s + " -> " + e), hanoi (n - 1, s, e, a) + print (s + " -> " + e) + hanoi (n - 1, a, s, e))
+
+(args()>1).tf(hanoi (int (args(1)), "A", "B", "C"),print ("Usage "+args(0)+" N"))

@@ -1,0 +1,29 @@
+##external "rsl/RSL_Stream.h"
+##addsource "rsl/RSL_Stream.c"
+Stream::BaseType
+    $()
+        //virtual
+
+    $(String filename, String mode)
+        //virtual
+
+    print->int(String s2)
+        //virtual
+
+    print->int(int i2)
+        //virtual
+
+    print->int(float f2)
+        //virtual
+
+    echo->int(String s2)
+        //virtual
+
+    echo->int(int i2)
+        //virtual
+
+    echo->int(float f2)
+        //virtual
+
+//Done
+##external ""

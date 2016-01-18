@@ -1,0 +1,14 @@
+#i.for (1,13)
+	echo ("\t"+i)
+print ("")
+
+i.for (0,100)
+	echo ("-")
+print ("")
+
+i.for (1,13)
+	echo (""+i+"|")
+	#j.for (1,13)
+		(j<i).tf(echo ("\t"), echo ("\t"+(i*j)))
+	print ("")
+

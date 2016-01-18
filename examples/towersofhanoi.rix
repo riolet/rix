@@ -1,0 +1,12 @@
+hanoi -> int(int n, String start, String aux, String end)
+    if (n == 1)
+        print (start + " -> " + end)
+    else ()
+        hanoi (n - 1, start, end, aux)
+        print (start + " -> " + end)
+        hanoi (n - 1, aux, start, end)
+
+if (args()>1)
+    hanoi (int (args(1)), "A", "B", "C")
+else()
+    print ("Usage "+args(0)+" N")

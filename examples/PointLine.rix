@@ -1,0 +1,20 @@
+Point :: BaseType
+  x = int
+  y = int
+  
+  $(int x, int y)
+    $.x=x
+    $.y=y
+
+Line :: BaseType
+  a = Point
+  b = Point
+  
+  $(Point a, Point b)
+    $.a=a
+    $.b=b
+
+  length->float() = (((a.x-b.x)^^2) + ((a.y-b.y)^^2)) ^^ 0.5
+
+#myLine = Line (Point (3, 0), Point (0, 4))
+print ("Length of my line is: " + myLine.length())

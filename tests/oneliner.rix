@@ -1,0 +1,3 @@
+fib -> int (int n) = (n <= 1).tf (n, fib (n-1) + fib (n-2))
+
+(args()>1).tf(print (fib(int(args(1)))), print ("Usage "+args(0)+" n"))

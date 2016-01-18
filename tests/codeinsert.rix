@@ -1,0 +1,8 @@
+#i = 5
+#j = 7
+#k = 0
+`
+k=i*j;
+printf("%i\n",k);
+`
+print (k)

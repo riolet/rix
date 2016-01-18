@@ -1,0 +1,23 @@
+#a = 1.0
+#b = 0.0
+#c = -1.0
+#d = (#e = 3.14159265358979)
+#f = 1.2345678e15 
+#g = 1.2345678E15 
+#h = .5
+
+
+#temp=c
+c=b
+b=a
+a=temp
+
+
+print( "a = " + a)
+print( "b = " + b)
+print( "c = " + c)
+print( "d = " + d)
+print( "e = " + e)
+print( "f = " + f)
+print( "g = " + g)
+print( "h = " + h)

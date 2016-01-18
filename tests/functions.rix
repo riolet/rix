@@ -1,0 +1,29 @@
+f1->int()
+  ->0
+
+f2->int(int a)
+  ->a
+
+sum->int(int a, int b)
+  ->a+b
+
+sum3->int(int a, int b, int c)
+  print( "sum3:")
+  print( "  arg 1: " + a)
+  print( "  arg 2: " + b)
+  print( "  arg 3: " + c)
+  ->a+b+c
+
+returnVoid->()
+  print( "returnVoid")
+
+
+
+print( "sum0: " + f1())
+print( "sum1: " + f2(100))
+print( "sum2: " + sum(100, 200))
+print( "  returned: " + sum3 (100, 200, 300))
+print( "func(func(), func()): " + sum (sum (10, 20), sum (300, 400)))
+echo( "returnVoid: ")
+returnVoid()
+

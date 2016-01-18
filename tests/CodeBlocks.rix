@@ -1,0 +1,8 @@
+print ("Hi")
+#a=5
+if (a==1)
+    echo ("cond is: ")
+    print ("True")
+else
+    echo ("Cond is: ")
+    print ("False")

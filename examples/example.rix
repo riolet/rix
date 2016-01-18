@@ -1,0 +1,24 @@
+int: factorial int n
+	result = 1
+	i for 1,n+1
+		result = result * i
+	->result
+
+
+int: sum int n
+	n==0 if
+		->n
+	->n + (sum (n-1))      
+
+hello="Hello"
+world="World"
+helloWorld=hello+" "+world
+print helloWorld
+
+num=5
+f=f1=f2=5.5^^2
+echo "f2 is "+f2
+f3=(((2*3)+1)*4)^^3
+print " and f3 is "+f3
+print "Factorial of "+num + " is " + factorial num
+print "Sum of first "+num + " integers is " + sum num
