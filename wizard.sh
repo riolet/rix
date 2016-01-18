@@ -11,18 +11,18 @@ bash comp.sh
 echo -e "\e[1m\e[32m[OK]\e[0m"
 echo " "
 echo -----------------------------------------------------------------
-echo -e "\e[1m\e[32mCompiling Ritchie Compiler\e[0m"
+echo -e "\e[1m\e[32mCompiling Rix Compiler\e[0m"
 echo " "
 echo -e "\e[1m\e[32m[OK]\e[0m"
 echo -----------------------------------------------------------------
 
-#gcc -W -Wall -pedantic -std=c99 ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
-gcc preproc.c ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c -lfl -o ritc
+#gcc -W -Wall -pedantic -std=c99 ObjectTree.c rix.tab.c lex.yy.c rixc.c errors.c -lfl -o rixc
+gcc preproc.c ObjectTree.c rix.tab.c lex.yy.c rixc.c errors.c -lfl -o rixc
 
-if [ -f ritc ]
+if [ -f rixc ]
 	then
 		echo " "
-		echo -e "\e[5m\e[33m>Ritchie File to Compile\e[0m"
+		echo -e "\e[5m\e[33m>Rix File to Compile\e[0m"
 		#find . -category f -name "*.rit"
 		ls *.rit
 		echo -e "\e[32m"
@@ -30,9 +30,9 @@ if [ -f ritc ]
 		echo -e "\e[0m"
 		if [ "$d" = "y" ]
 			then 
-				./ritc -t $file
+				./rixc -t $file
 			else
-				./ritc $file
+				./rixc $file
 		fi
 		if [ -f out.c ]
 			then

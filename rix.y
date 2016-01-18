@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ObjectTree.h"
-#include "ritc.h"
+#include "rixc.h"
 #include "errors.h"
 
 #define YYPARSE_PARAM scanner
@@ -79,7 +79,7 @@
 %token <sval> DTV_EXTERNAL
 %token <sval> DTV_ADDSOURCE
 
-%type <oval> ritchie;
+%type <oval> rix;
 %type <oval> statements;
 %type <oval> statement;
 %type <oval> simple_statement;
@@ -129,10 +129,10 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //%right class_definition
 
 %%
-%start ritchie;
-ritchie:
-	statements   { compilerDebugPrintf("parser: ritchie-stmts\n"); $$ = $1; }
-	| ENDOFFILE  { compilerDebugPrintf("parser: ritchie-EOF\n"); $$ = 0; handleEOF(); }
+%start rix;
+rix:
+	statements   { compilerDebugPrintf("parser: rix-stmts\n"); $$ = $1; }
+	| ENDOFFILE  { compilerDebugPrintf("parser: rix-EOF\n"); $$ = 0; handleEOF(); }
 	;
 statements:
   simple_statement              { compilerDebugPrintf("parser: stmts-s_s\n"); $$ = $1; }

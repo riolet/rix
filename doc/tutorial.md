@@ -1,12 +1,12 @@
-Ritchie Tutorial
+Rix Tutorial
 ===================
 
 
-In this Tutorial, we'll learn how to write a useful program using Ritchie.
+In this Tutorial, we'll learn how to write a useful program using Rix.
 
 ----------
 
-What does a simple program in Ritchie language look like?
+What does a simple program in Rix language look like?
 ----------------------------------------------------------------------
 The Fibonacci Sequence is the series of numbers: 1, 1, 2, 3, 5, 8, 13, 21, 34, ... where the next number is found by adding the two previous numbers. By convention, the first two numbers are set to 1.
 
@@ -25,11 +25,11 @@ Imagine we were tasked with writing a program that displays all the Fibonacci nu
 
 `fib -> int(int n)` declares the verb (a function in this case) `fib` that returns an `int` and taking an `int` as a parameter.
 
-If `n <= 1` then `fib` returns `n`, otherwise, `fib` recursively returns `fib(n-1) + fib(n-2)`.  Notice here that Ritchie, like Python is white space is sensitive, so code blocks are marked by indentation.
+If `n <= 1` then `fib` returns `n`, otherwise, `fib` recursively returns `fib(n-1) + fib(n-2)`.  Notice here that Rix, like Python is white space is sensitive, so code blocks are marked by indentation.
 
 Then, in the main body of the program, we check if there are more than one argument (the first argument, argument 0, is always the path to the executable), get the first command line argument using `args 1`, create a new integer object using that, and assign it to a new variable `N`. The `#` before an identifier indicates that we're declaring a new variable.
 
-Ritchie is a statically typed language, so `N` needs a category. But we don't need to specify `N`'s category in advance, as Ritchie compiler uses category inferencing to figure out what category `N` needs to be, which happens to be `int` in this case.
+Rix is a statically typed language, so `N` needs a category. But we don't need to specify `N`'s category in advance, as Rix compiler uses category inferencing to figure out what category `N` needs to be, which happens to be `int` in this case.
 
 `#i for 1, N+1` is applied to the code block `print (i + ": " + (fib i))` immediately following the `for` verb. We have declared a new variable called `i` that `for` uses as an index, and `i` will go from `i=1` to `i<N+1`.
 
@@ -47,7 +47,7 @@ The Python language equivalent of this would be:
 
 `print` prints the parameter to standard output, and `i + ": " + (fib i)` concatenates `int i`, `String ": "` and `int (fib i)`.
 
-If the user hasn't supplied an argument, it just prints the usage. As Ritchie has no keywords, `if`, `else` and `for` are also verbs.
+If the user hasn't supplied an argument, it just prints the usage. As Rix has no keywords, `if`, `else` and `for` are also verbs.
 
 How can we make a more succint version of our Fibonacci program?
 ----------------------------------------------------------------
@@ -63,9 +63,9 @@ The `int` category's `<=` verb returns a `bool` category object, which is true i
 `bool` category's `tf` verb, where `tf` stands for **t**rue or **f**alse, returns the first parameter if the `bool` subject is `true`, and the second if the `bool` subject is false. The verb `tf` takes two generic parameters, and returns the category of the first parameter.
 
 
-How do we do *99 bottles of beer* in Ritchie?
+How do we do *99 bottles of beer* in Rix?
 ---------------------------------------------
-Here's the (in)famous 99 bottles of beer program in Ritchie.
+Here's the (in)famous 99 bottles of beer program in Rix.
 
 	line -> String(int b, String end)
 	    if (b>1)
@@ -108,10 +108,10 @@ The Ternary comparison (b<>1) returns either less than `lt`, equals `eq` or grea
 Now our function has been reduced to a single return expression. We can make it even tighter using a single expression function.
 
 
-How do we do object oriented programming with Ritchie?
+How do we do object oriented programming with Rix?
 ---------------------------------------------------------------------
 
-Here's a simple objected oriented program in Ritchie:
+Here's a simple objected oriented program in Rix:
 
 	Rectangle :: BaseType
 	  w = int
@@ -161,7 +161,7 @@ We can simply make `NamedRectangle` a subtype of `Rectangle`.  We only need to c
 What's the whole Subject Verb Objects (SOV) business?
 ------------------------------------------------------------------
 
-Every expression in Ritchie tries to follow the English language word order in the linguistic form:
+Every expression in Rix tries to follow the English language word order in the linguistic form:
 `Subject Verb Objects`
 
 `Subject` is optional, and `Objects` can be zero or more, and are comma separated.
@@ -172,4 +172,4 @@ So, `2.35 + 1` is evaluated as
 |---------|------|---------|
 | 2.35  | +   | 1 |
 
-The subject is a  `float`, and the object is an `int`. Ritchie calls `float` category's `+` verb which takes an `int`  as a parameter.
+The subject is a  `float`, and the object is an `int`. Rix calls `float` category's `+` verb which takes an `int`  as a parameter.

@@ -1,7 +1,7 @@
 #include "preproc.h"
 #include "ObjectTree.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "errors.h"
 
@@ -18,21 +18,21 @@ int readFile(char name[], FILE * ofp, int *numline)
         name++;
     }
     if ((fp = fopen(name, "r")) == 0) {
-        compilerDebugPrintf("Cannot find import file %s in working directory. Trying RITCHIE_HOME\n",
+        compilerDebugPrintf("Cannot find import file %s in working directory. Trying RIX_HOME\n",
                name);
-        const char *RITCHIE_HOME = getenv("RITCHIE_HOME");
+        const char *RIX_HOME = getenv("RIX_HOME");
         char importPath[BUFFLEN];
-        if (RITCHIE_HOME != 0) {
-            snprintf(importPath, BUFFLEN, "%s/%s", RITCHIE_HOME, name);
+        if (RIX_HOME != 0) {
+            snprintf(importPath, BUFFLEN, "%s/%s", RIX_HOME, name);
             if ((fp = fopen(importPath, "r")) == 0) {
                 printf
-                    ("Cannot find import file %s in working directory or RITCHIE_HOME\n",
+                    ("Cannot find import file %s in working directory or RIX_HOME\n",
                      importPath);
                 perror("open");
                 return 1;
             }
         } else {
-            criticalError(0, "RITCHIE_HOME not set.\n");
+            criticalError(0, "RIX_HOME not set.\n");
             perror("open");
             return 1;
         }

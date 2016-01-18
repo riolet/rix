@@ -1,13 +1,13 @@
-all: ritc
+all: rixc
 
-ritchie.tab.c ritchie.tab.h:	ritchie.y
-	bison -d ritchie.y
+rix.tab.c rix.tab.h:	rix.y
+	bison -d rix.y
 
-lex.yy.c: ritchie.l ritchie.tab.h
-	flex ritchie.l
+lex.yy.c: rix.l rix.tab.h
+	flex rix.l
 
-ritc: lex.yy.c ritchie.tab.c ritchie.tab.h
-	gcc -ggdb preproc.c ObjectTree.c ritchie.tab.c lex.yy.c ritc.c errors.c crsl.c -lfl -o ritc
+rixc: lex.yy.c rix.tab.c rix.tab.h
+	gcc -ggdb preproc.c ObjectTree.c rix.tab.c lex.yy.c rixc.c errors.c crsl.c -lfl -o rixc
 
 clean:
-	rm ritc ritchie.tab.c lex.yy.c ritchie.tab.h
+	rm rixc rix.tab.c lex.yy.c rix.tab.h

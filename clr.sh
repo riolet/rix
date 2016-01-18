@@ -1,8 +1,8 @@
 
-if [ -f ritc ]
+if [ -f rixc ]
 	then	
-		echo Clearing: ritc --           preventing unexpected test results
-		rm ritc
+		echo Clearing: rixc --           preventing unexpected test results
+		rm rixc
 fi
 
 if [ -f lex.yy.c ]
@@ -11,16 +11,16 @@ if [ -f lex.yy.c ]
 		rm lex.yy.c
 fi
 
-if [ -f ritchie.tab.c ]
+if [ -f rix.tab.c ]
 	then	
-		echo Clearing: ritchie.tab.c --  bison output
-		rm ritchie.tab.c
+		echo Clearing: rix.tab.c --  bison output
+		rm rix.tab.c
 fi
 
-if [ -f ritchie.tab.h ]
+if [ -f rix.tab.h ]
 	then	
-		echo Clearing: ritchie.tab.h --  bison output
-		rm ritchie.tab.h
+		echo Clearing: rix.tab.h --  bison output
+		rm rix.tab.h
 fi
 
 if [ -f out.c ]
