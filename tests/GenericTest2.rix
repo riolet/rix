@@ -1,9 +1,6 @@
-import "rsl/Vector.rix"
+import ("rsl/Vector.rix")
 
-
-printSpaceLeft->String(Vector v)
-    -> (v.length() + "/" + v.capacity())
-
+loadFactor->String(Vector v) = (v.length() + "/" + v.capacity())
 
 #a = Vector{String}(100)
 #i.for (0,10)
@@ -12,7 +9,7 @@ printSpaceLeft->String(Vector v)
 i.for (4,9)
     print (a[i])
 
-print ("a is " + printSpaceLeft(a))
+print ("a is " + loadFactor(a))
 
 if (a.isNull(9))
     print ("No element at index 9")
@@ -27,7 +24,9 @@ i.for (0,8)
 i.for (4,9)
     print (b[i])
 
-print ("b is " + printSpaceLeft(b))
+#bLoadFactor = loadFactor(b)
+
+print ("b is " + bLoadFactor)
 
 if (b.isNull(9))
     print ("No element at index 9")

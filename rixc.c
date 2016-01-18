@@ -1895,7 +1895,7 @@ int main(int argc, char **argv)
     fclose(outMainFile);
     fclose(outMakeFile);
     fclose(file);
-    //remove("rix_temp_file.rix");
+    remove("rix_temp_file.rix");
 
     //compilerDebugPrintf("\n%s compiled successfully.\n", ifile);
 

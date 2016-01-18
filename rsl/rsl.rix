@@ -4,6 +4,6 @@ Rix Standard Library - Default Includes
 
 */
 
-import "rsl/Array.rix"
-import "rsl/String.rix"
-import "rsl/Stream.rix"
+import ("rsl/Array.rix")
+import ("rsl/String.rix")
+import ("rsl/Stream.rix")

@@ -1,6 +1,3 @@
-//#define
-
-//print ((1<>2) gel "A","B","C")
 Point::BaseType
     x = int
     y = int
@@ -11,9 +8,11 @@ Point::BaseType
 
 #a = Array{String}(5)
 #b = a
+
 a[0] = "Hello"
 a[1] = "World"
 a[4] = "!"
+
 #j.for(0,2)
     print(b[j])
 
@@ -28,4 +27,3 @@ i.for(0,5)
 intarray[0] = 123
 intarray[1] = 2
 print (intarray[0]+intarray[1])
-#x = "Hi"
