@@ -44,7 +44,7 @@ New identifiers have are marked as new with "#", and Rix will infer their type f
 
   Subject Verb Object
 
-  The following phrase:
+  The following statements:
 
 ```
 hello = "Hello"
