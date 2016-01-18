@@ -1,0 +1,125 @@
+oneliner.rit
+Cannot find import file rsl/rsl.rit in working directory. Trying RIX_HOME
+Cannot find import file rsl/Array.rit in working directory. Trying RIX_HOME
+Cannot find import file rsl/String.rit in working directory. Trying RIX_HOME
+Cannot find import file rsl/Stream.rit in working directory. Trying RIX_HOME
+Lines read 55
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Array.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Array.c"
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: CtorDecPrim
+lexer: type
+parser: class-def
+External class 1
+EOL
+lexer: INDENT
+lexer: self
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: class-def
+Doing constructor Array_$_Array
+Adding category int
+Adding ctor Array_$_Array_$_int
+External ctor 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Constructor Defined! Array_$_Array_$_int
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Array_$_getObjectAtIndex_$_int
+lexer: unidentified identifier
+lexer: Return
+parser: UNMARKEDNEWIDENT
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: ParamComma
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: paramN
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Array_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$
+EOL
+parser: c_s-eol
+empty EOL
+lexer: OUTDENT
+parser: s_s-class - Class Defined! Array_$_BaseType
+parser: stmts-stmt,s_s
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: string
+parser: object-unmarked-new-identifer
+objectUnmarkedNewIdent(import)
+objectUnmarkedNewIdent(import) not found
+parser: expr-obj
+parser: stmt-expr
+Finalize expression import (null)

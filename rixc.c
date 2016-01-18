@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "ritc.h"
+#include "rixc.h"
 #include "crsl.h"
 
 
@@ -681,7 +681,7 @@ void decPrev()
     prev_idx--;
     if (prev_idx < 0) {
         criticalError(ERROR_ParseError,
-                      "previous result tracker went below 0. (decPrev, ritc.c)\n");
+                      "previous result tracker went below 0. (decPrev, rixc.c)\n");
     }
 }
 
@@ -1448,7 +1448,7 @@ Object *parenthesize(Object * expr)
     char line[BUFFLEN];
     if (expr == 0) {
         criticalError(ERROR_ParseError,
-                      "Object* expr was void in parenthesize. (ritc.c)\n");
+                      "Object* expr was void in parenthesize. (rixc.c)\n");
     }
 
     Object *parenthesized =
@@ -1457,7 +1457,7 @@ Object *parenthesize(Object * expr)
 
     if (expr->code == 0) {
         criticalError(ERROR_ParseError,
-                      "Cannot put parentheses around nothing. (ritc.c)\n");
+                      "Cannot put parentheses around nothing. (rixc.c)\n");
     }
 
     snprintf(line, BUFFLEN, "(%s)", expr->code->value);
@@ -1747,7 +1747,7 @@ Object * directive(char *key, char *value) {
     if (!strcmp(key,"##addsource")) {
         //No error checking
         external = true;
-        fprintf(outMakeFile, "${RITCHIE_HOME}/%s ",value);
+        fprintf(outMakeFile, "${RIX_HOME}/%s ",value);
     }
     Object *result = CreateObject(0, 0, 0, Expression, "void");
     return result;
@@ -1831,7 +1831,7 @@ int main(int argc, char **argv)
     current = scopeStack[scope_idx];
     defineRSLSymbols(root);
 
-    ritTempFile = fopen("ritchie_temp_file.rit", "w");
+    ritTempFile = fopen("rix_temp_file.rit", "w");
     if (ritTempFile == 0) {
         perror("fopen");
         return 1;
@@ -1853,7 +1853,7 @@ int main(int argc, char **argv)
     fprintf(ritTempFile,"\n"); //END OF FILE GUARANTEE!
     fclose(ritTempFile);
 
-    file = fopen("ritchie_temp_file.rit", "r+");
+    file = fopen("rix_temp_file.rit", "r+");
 
     yyin = file;
 
@@ -1862,8 +1862,8 @@ int main(int argc, char **argv)
     outMakeFile = fopen(oMakeFileName, "w");
 
 
-    fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/ritchie -ggdb -o %s.out "
-            "%s.c ${RITCHIE_HOME}/rsl/rsl.c ${RITCHIE_HOME}/errors.c ", ofile, ofile);
+    fprintf(outMakeFile, "gcc -lm -I /home/rohana/Projects/rix -ggdb -o %s.out "
+            "%s.c ${RIX_HOME}/rsl/rsl.c ${RIX_HOME}/errors.c ", ofile, ofile);
     //getln();
     hitEOF = false;
     while (!hitEOF) {
@@ -1895,7 +1895,7 @@ int main(int argc, char **argv)
     fclose(outMainFile);
     fclose(outMakeFile);
     fclose(file);
-    //remove("ritchie_temp_file.rit");
+    //remove("rix_temp_file.rit");
 
     //compilerDebugPrintf("\n%s compiled successfully.\n", ifile);
 

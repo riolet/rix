@@ -1,8 +1,8 @@
-/* These should be written in pure Ritchie */
+/* These should be written in pure Rix */
 
 #include "ObjectTree.h"
 #include "crsl.h"
-#include "ritc.h"
+#include "rixc.h"
 
 void defineRSLSymbols(Object * root)
 {

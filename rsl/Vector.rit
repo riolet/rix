@@ -1,6 +1,6 @@
 /*
 
-Ritchie Standard Library
+Rix Standard Library
 
 */
 ##external "rsl/RSL_Vector.h"

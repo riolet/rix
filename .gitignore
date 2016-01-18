@@ -26,10 +26,14 @@
 *~
 *.tab.c
 *.tab.h
+rixc
 ritc
+rix_temp_file.rit
+*.output
 
 out.c
 out.h
+out.sh
 
 # Misc
 *.swp

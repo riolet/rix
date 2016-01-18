@@ -1,15 +1,15 @@
-if [ -f ritchie.y ] 
+if [ -f rix.y ] 
 	then
-		echo Compiling: ritchie.y
-		bison -d ritchie.y
+		echo Compiling: rix.y
+		bison -d rix.y
 	else 
-		echo ritchie.y not found
+		echo rix.y not found
 fi
 
-if [ -f ritchie.l ]
+if [ -f rix.l ]
 	then	
-		echo Compiling: ritchie.l
-		flex ritchie.l
+		echo Compiling: rix.l
+		flex rix.l
 	else 
-		echo ritchie.l not found
+		echo rix.l not found
 fi

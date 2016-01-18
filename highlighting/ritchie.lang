@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-This is a ritchie language highlighting file based off of the C language.
-Check out ritchie at http://www.github.com/riolet/ritchie
+This is a rix language highlighting file based off of the C language.
+Check out rix at http://www.github.com/riolet/rix
 -->
-<language id="rit" _name="Ritchie" version="2.0" _section="Source">
+<language id="rit" _name="Rix" version="2.0" _section="Source">
   <metadata>
     <property name="mimetypes">text/x-c;text/x-csrc;image/x-xpixmap</property>
     <property name="globs">*.rit</property>
@@ -32,7 +32,7 @@ Check out ritchie at http://www.github.com/riolet/ritchie
     <style id="standard-stream"   _name="Standard stream"       map-to="def:constant"/>
     <style id="signal-name"       _name="Signal name"           map-to="def:constant"/>
     <style id="error"             _name="Error"                 map-to="def:error"/>
-    <style id="functrit"          _name="Funct Ritchie"         map-to="def:keyword"/>
+    <style id="functrit"          _name="Funct Rix"         map-to="def:keyword"/>
   </styles>
 
   <definitions>
@@ -184,7 +184,7 @@ Check out ritchie at http://www.github.com/riolet/ritchie
       </match>
     </context>
     
-   <!-- Detect Ritchie Function name -->
+   <!-- Detect Rix Function name -->
     <context id="functrit" style-ref="functrit">
       <match extended="true">
          
