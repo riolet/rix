@@ -1,4 +1,4 @@
-import "ext/BetterString/BetterString.rit"
+import "ext/BetterString/BetterString.rix"
 #line = "Whereas recognition of the inherent dignity and of the equal and inalienable rights"
 #bs = BetterString line
 #s = bs toString

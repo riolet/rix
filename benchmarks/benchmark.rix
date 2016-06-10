@@ -1,4 +1,8 @@
-isPrimeThreeOrMore -> bool (int n)
+isPrime -> bool(int n)
+    if (n < 2)
+        -> false
+    if (n == 2)
+        -> true
     if (n % 2 == 0)
         -> false
 
@@ -9,7 +13,6 @@ isPrimeThreeOrMore -> bool (int n)
 
     -> true
 
-isPrime -> bool(int n) = (n<>2).leg (false, true, isPrimeThreeOrMore(n))
 
 #lim = 2000000
 #numPrimes = 0

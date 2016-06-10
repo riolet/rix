@@ -38,11 +38,24 @@ int readFile(char name[], FILE * ofp, int *numline)
         }
     }
     while (fgets(line, LINESIZE, fp)) {
-        if (sscanf(line, "%s%s", word, word2) == 2 && strcmp(word, "import") == 0) {
-            readFile(word2, ofp, numline);
-        } else {
-            (*numline)++;
-            fprintf(ofp, "%s", line);
+        char * importPos = strstr(line, "import");
+        if(importPos != NULL) {
+            char * openParenPos = strchr(importPos, '(');
+            if (openParenPos!=NULL) {
+                char *word2 = malloc(BUFFLEN);
+                char *cursor = openParenPos + 1;
+                int i = 0;
+                while (*(cursor + i) != ')') {
+                    word2[i] = *(cursor + i);
+                    i++;
+                }
+                word[i] = '\0';
+                readFile(word2, ofp, numline);
+                continue;
+            }
         }
+        (*numline)++;
+        fprintf(ofp, "%s", line);
+
     }
 }

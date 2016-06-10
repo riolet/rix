@@ -6,7 +6,7 @@ Check out rix at http://www.github.com/riolet/rix
 <language id="rit" _name="Rix" version="2.0" _section="Source">
   <metadata>
     <property name="mimetypes">text/x-c;text/x-csrc;image/x-xpixmap</property>
-    <property name="globs">*.rit</property>
+    <property name="globs">*.rix</property>
     <property name="line-comment-start">//</property>
   </metadata>
 
