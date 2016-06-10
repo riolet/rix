@@ -1,24 +1,20 @@
-Rectangle :: BaseType
+Point :: BaseType
+  x = int
+  y = int
+  
+  $(int x, int y)
+    $.x=x
+    $.y=y
 
-  width = int
-  height = int
+Line :: BaseType
+  a = Point
+  b = Point
+  
+  $(Point a, Point b)
+    $.a=a
+    $.b=b
 
-  ::: int width, int height
-    $.width = width
-    $.height = height
+  length->float() = (((a.x-b.x)^^2) + ((a.y-b.y)^^2)) ^^ 0.5
 
-  area -> int: = width * height
-
-
-Square :: Rectangle
-
-  ::: int edge
-    width = edge
-    height = edge
-
-
-#r = Rectangle 5, 10
-#s = Square 16
-
-print ("Rectange area " + (r area))
-print ("Square Area " + (s area))
+#myLine = Line (Point (3, 0), Point (0, 4))
+print ("Length of my line is: " + myLine.length())
