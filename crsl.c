@@ -4,7 +4,7 @@
 #include "crsl.h"
 #include "rixc.h"
 
-void defineRSLSymbols(Object * root)
+void defineRSLSymbols(Object * root, bool waferSupport)
 {
     Object *objBaseType, *temp2, *temp3, *temp4, *temp5, *rslFunc;
 
@@ -393,4 +393,20 @@ void defineRSLSymbols(Object * root)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "bool");
     addSymbol(root, rslFunc);
+
+    if (waferSupport) {
+        // ==============  bool true, false as Dummies ===============
+        // TODO: Introduce constants
+        rslFunc = CreateObject("request", "request", 0, Variable, "Request");
+        setFlags(rslFunc, FLAG_EXTERNAL);
+        setFlags(rslFunc, FLAG_GLOBAL);
+        setFlags(rslFunc, FLAG_NO_CODEGEN);
+        addSymbol(root, rslFunc);
+
+        rslFunc = CreateObject("response", "response", 0, Variable, "Response");
+        setFlags(rslFunc, FLAG_EXTERNAL);
+        setFlags(rslFunc, FLAG_GLOBAL);
+        setFlags(rslFunc, FLAG_NO_CODEGEN);
+        addSymbol(root, rslFunc);
+    }
 }

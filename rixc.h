@@ -5,6 +5,7 @@
 #include "preproc.h"
 #include "errors.h"
 #include "ctype.h"
+#include "crsl.h"
 
 #define COMPILER_SEP "_$_"
 #define GENERIC_PARAM "Generic_$$"
@@ -13,7 +14,7 @@ extern int yylex();
 extern int yyparse();
 extern FILE *yyin;
 
-void defineRSLSymbols(Object *);
+//void defineRSLSymbols(Object *);
 
 Object *findByName(char *name);
 Object *findFunctionByFullName(char *name);

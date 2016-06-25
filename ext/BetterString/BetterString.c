@@ -112,6 +112,16 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
     return _$_returnAppointer($_mptr_in,result,BetterStringList_$_destructor_$_);
 }
 
+IDENT_MPTR_RAW * BetterString_$_splits_$_Char(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
+{
+    const_bstring b = b_->obj;
+    String * s = s_->obj;
+    bstring sBstring = bfromcstr(s->buffer);
+    struct bstrList * result = bsplits(b,sBstring);
+    bdestroy(sBstring);
+    return _$_returnAppointer($_mptr_in,result,BetterStringList_$_destructor_$_);
+}
+
 IDENT_MPTR_RAW * BetterStringList_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW *  bList_, int i, IDENT_MPTR_RAW * $_mptr_in)
 {
     debugPrintf("BetterStringList_$_getObjectAtIndex_$_int %i\n",i);

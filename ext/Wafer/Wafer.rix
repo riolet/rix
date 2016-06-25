@@ -1,0 +1,33 @@
+##external "ext/Wafer/wafer.h"
+##addsource "ext/Wafer/wafer.c"
+##external "ext/Wafer/waferapi.h"
+##addsource "ext/Wafer/waferapi.c"
+##external "ext/Wafer/Wafer_.h"
+##addsource "ext/Wafer/Wafer_.c"
+
+Request::BaseType
+    getGet->String()
+        //virtual
+    getPost->String()
+        //virtual
+
+Response::BaseType
+    print->int(String s2)
+        //virtual
+
+    print->int(int i2)
+        //virtual
+
+    print->int(float f2)
+        //virtual
+
+    echo->int(String s2)
+        //virtual
+
+    echo->int(int i2)
+        //virtual
+
+    echo->int(float f2)
+        //virtual
+
+##external ""

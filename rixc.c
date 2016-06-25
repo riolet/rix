@@ -1757,7 +1757,7 @@ int main(int argc, char **argv)
 {
     int c, i, fd, old_stdout;
     int errflg = 0;
-    int printTreeBool = 0;
+    bool printTreeBool = false;
     int numline = 0;
     char *ifile = NULL;
     char *ofile = NULL;
@@ -1766,16 +1766,20 @@ int main(int argc, char **argv)
     FILE *ritTempFile;
     bool quiet = false;
     g_headerLines = 0;
-
-    while ((c = getopt(argc, argv, "o:tq")) != -1) {
+    bool waferSupport = false;
+    while ((c = getopt(argc, argv, "o:tqW")) != -1) {
         switch (c) {
         case 't':
             compilerDebugPrintf("hit -t arg\n");
-            printTreeBool = 1;
+            printTreeBool = true;
             break;
 
         case 'o':
             ofile = optarg;
+            break;
+
+        case 'W':
+            waferSupport = true;
             break;
 
         case ':':              /* -f or -o without operand */
@@ -1783,8 +1787,8 @@ int main(int argc, char **argv)
             errflg++;
             break;
 
-            case 'q':
-                quiet = true;
+        case 'q':
+            quiet = true;
         };
     }
 
@@ -1829,7 +1833,7 @@ int main(int argc, char **argv)
 
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
-    defineRSLSymbols(root);
+    defineRSLSymbols(root, waferSupport);
 
     ritTempFile = fopen("rix_temp_file.rix", "w");
     if (ritTempFile == 0) {
@@ -1880,9 +1884,17 @@ int main(int argc, char **argv)
 
     fprintf(outMainFile, "#include \"rsl/rsl.h\"\n");
     fprintf(outMainFile, "#include \"%s\"\n", oHeaderFileName);
-    fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n");
-    fprintf(outMainFile, "    _$$_argc=_$$_argc_;\n");
-    fprintf(outMainFile, "    _$$_argv=_$$_argv_;\n");
+
+    if (waferSupport)
+        fprintf(outMainFile, "void server(Request * __$$__request, Response * __$$__response) {\n"
+                             "\t_$_U_VARIABLE(request);\n"
+                             "\t_$_U_VARIABLE(response);\n"
+                             "\tRequest_$_Request_$_(__$$__request, request);\n"
+                             "\tResponse_$_Response_$_(__$$__response, response);\n");
+    else
+        fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n"
+                             "    _$$_argc=_$$_argc_;\n"
+                             "    _$$_argv=_$$_argv_;\n");
 
     writeTree(outMainFile, outHeaderFile, root);
     if (printTreeBool == 1) {

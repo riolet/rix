@@ -47,6 +47,7 @@ FILE *outCompilerLogFile;
 
 #define _$_TEMP_OBJ(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) x; IDENT_MPTR_INITIALIZE_RAW (&x,xstr(x));
 #define _$_VARIABLE(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup_var))) * x = alloca(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
+#define _$_U_VARIABLE(x) _$_mptr * x = alloca(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
 #define _$_HEAP_VARIABLE(x) _$_mptr * x = malloc(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
 
 

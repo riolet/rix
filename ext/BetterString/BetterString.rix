@@ -1,33 +1,27 @@
 ##external "ext/BetterString/BetterString.h"
 ##addsource "ext/BetterString/BetterString.c"
 ##addsource "ext/BetterString/bstrlib.c"
+import ("rsl/Vector.rix")
 BetterString::String
-    :::String string
+    $(String string)
         //virtual
 
-    toString->String:
+    toString->String()
         //virtual
 
-    toLower->BetterString:
+    toLower->BetterString()
         //virtual
 
-    toUpper->BetterString:
+    toUpper->BetterString()
         //virtual
 
-    destructor->:
-        //virtual
-
-    split->#BetterStringList:Char __c__
+    split->Vector (Char __c__)
         //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
 
-    split->#BetterStringList:String __s__
+    split->Vector (String __s__)
         //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
 
-BetterStringList::BaseType
-    getObjectAtIndex->BetterString:int __i__
-        //virtual
-    destructor->:
-        //virtual
-    length->int:
-        //virtual
+    splits->Vector (String __s__)
+        //extern struct bstrList * bsplit (bstring str, unsigned char splitChar);
+        
 ##external ""
