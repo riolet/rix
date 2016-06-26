@@ -732,6 +732,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 
     compilerDebugPrintf ("Looking up category %s\n",tree->returnType);
 
+
     if (rType) {
         compilerDebugPrintf("Line%d %s\n",__LINE__, tree->fullname);
         if (getFlag(rType, FLAG_PRIMITIVE)) {

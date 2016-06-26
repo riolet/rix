@@ -89,7 +89,8 @@ struct _Object {
     OBJ_TYPE category;              //What is this?   (Variable, Function, Class)
     char *returnType;           //What value category?(int,  int,  NULL)
     char *genericType;          //What value category if the returnType is Generic?(int,  int,  NULL)
-    int genericTypeArgPos;      //What value category if the returnType is Generic?(int,  int,  NULL)
+    int genericTypeArgPos;      //What position of the returnType is Generic?(int,  int,  NULL)
+    char *resolvedSpecificType;       //Generic type resolved as specific
     ListString *paramTypes;     //parameters?     (NULL,     [int, int], NULL)
     ListObject *definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", int "a1", int "a2"], [int "w", int "h", Constructor "Rectangle", Function "Area"])
     ListString *code;           //CodeBlock       (NULL, "int ...calcTotalArea...(...) {...", "typedef struct...")

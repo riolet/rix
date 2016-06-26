@@ -1,4 +1,11 @@
 #include "ext/BetterString/BetterString.h"
+#include "rsl/RSL_Vector.h"
+
+IDENT_MPTR_RAW * BetterString_$_BetterString_$_BetterString_$_  (BetterString * b, IDENT_MPTR_RAW * $_mptr_in)
+{
+    return _$_returnAppointer($_mptr_in,b,BetterString_$_destructor_$_);
+}
+
 
 IDENT_MPTR_RAW * BetterString_$_BetterString_$_ (IDENT_MPTR_RAW * $_mptr_in)
 {
@@ -96,10 +103,29 @@ void BetterString_$_destructor_$_(IDENT_MPTR_RAW *  b_)
     }
 }
 
-IDENT_MPTR_RAW * BetterString_$_split_$_Char(IDENT_MPTR_RAW *  b_, char c, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * BetterString_$_split_$_char(IDENT_MPTR_RAW *  b_, char c, IDENT_MPTR_RAW * $_mptr_in)
 {
+    _$_VARIABLE(_$_temp_vector);
+    _$_VARIABLE(_$_temp_vector_item);
+    _$_VARIABLE(_$_temp_betterstring);
     const_bstring b = b_->obj;
-    return _$_returnAppointer($_mptr_in,bsplit(b,c),BetterStringList_$_destructor_$_);
+    struct bstrList * result = bsplit(b,c);
+    //printf("Parts %d ",result->qty);
+    Vector_$_Vector_$_int(result->qty, _$_temp_vector, false, BetterString);
+    /*
+    Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$v$_arr, _$v$_idx, _$v$_primIdx, _$v$_elem, _$v$_primElem,\
+                                                    _$v$_mptr, _$v$_primRet, _$v$_typeRet)    */
+    int i;
+
+    for (i=0;i<result->qty;i++) {
+        BetterString_$_BetterString_$_BetterString_$_(bstrcpy(result->entry[i]),_$_temp_betterstring);
+        Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$_temp_vector, i, true,
+                                                            _$_temp_betterstring,
+                                                            false, _$_temp_vector_item, false, _$_mptr);
+    }
+    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    bstrListDestroy(result);
+    return $_mptr_in;
 }
 
 IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
@@ -108,11 +134,31 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
     String * s = s_->obj;
     bstring sBstring = bfromcstr(s->buffer);
     struct bstrList * result = bsplitstr(b,sBstring);
+
+    _$_VARIABLE(_$_temp_vector);
+    _$_VARIABLE(_$_temp_vector_item);
+    _$_VARIABLE(_$_temp_betterstring);
+
+    //printf("Parts %d ",result->qty);
+    Vector_$_Vector_$_int(result->qty, _$_temp_vector, false, BetterString);
+    /*
+    Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$v$_arr, _$v$_idx, _$v$_primIdx, _$v$_elem, _$v$_primElem,\
+                                                    _$v$_mptr, _$v$_primRet, _$v$_typeRet)    */
+    int i;
+
+    for (i=0;i<result->qty;i++) {
+        BetterString_$_BetterString_$_BetterString_$_(bstrcpy(result->entry[i]),_$_temp_betterstring);
+        Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$_temp_vector, i, true,
+                                                            _$_temp_betterstring,
+                                                            false, _$_temp_vector_item, false, _$_mptr);
+    }
+    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
     bdestroy(sBstring);
-    return _$_returnAppointer($_mptr_in,result,BetterStringList_$_destructor_$_);
+    bstrListDestroy(result);
+    return $_mptr_in;
 }
 
-IDENT_MPTR_RAW * BetterString_$_splits_$_Char(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW * BetterString_$_splits_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
 {
     const_bstring b = b_->obj;
     String * s = s_->obj;
