@@ -133,7 +133,7 @@ void doneClass(Object * tree)
     scope_pop();
 }
 
-Object *beginFunction(char *returnType, char *funcName, Object * parameters)
+Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificType, Object * parameters)
 {
     if (returnType == 0) {
         criticalError(ERROR_ParseError, "Return category mustn't be null.\n");
@@ -206,7 +206,7 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
     }
     //add parameters to the function
     types = parameters->paramTypes;
-    //assuming for every category there is a name
+    //assuming for every Type there is a name
     while (types != 0) {
         if (!external) {
             addSymbol(result,
@@ -217,6 +217,11 @@ Object *beginFunction(char *returnType, char *funcName, Object * parameters)
         types = types->next;
     }
 
+    //If the return type is a generic type...
+    if (resolvedSpecificType) {
+        compilerDebugPrintf("Setting generic ytype (%s)\n", resolvedSpecificType);
+        result->resolvedSpecificType=resolvedSpecificType;
+    }
 
     addSymbol(parentScope, result);
     scope_push(result);
@@ -1029,6 +1034,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     if (!realVerb) {
         realVerb = findFunctionByFullName(genericVerbName);
         genericVerb = true;
+        compilerDebugPrintf("%s is a Generic Verb\n",genericVerbName);
     }
 
     if (!realVerb && subject) {
@@ -1211,27 +1217,30 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //== Generic shenanigans ==
     //compilerDebugPrintf("Conjverb Generic type %s\n",verb->genericType);
 
-    if (verb->genericType) {
-//        if (hasParams) {
-//            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "/* verb is generic */");
-//        }
-        result->genericType = strdup(verb->genericType);
+    if (verb->resolvedSpecificType) {
+        result->genericType = strdup(verb->resolvedSpecificType);
+    } else if (verb->genericType) {
+            result->genericType = strdup(verb->genericType);
 
-        Object * pType = findByName(result->genericType);
-        if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
+            if (hasParams) {
+                invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+            }
+
+            Object *pType = findByName(result->genericType);
+            if (pType && getFlag(pType, FLAG_PRIMITIVE)) {
+                invoke_pos +=
+                        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "true");
+            } else {
+                invoke_pos +=
+                        snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "false");
+            }
             invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
-        } else {
-            invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
-        }
-        invoke_pos +=
-                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s",result->genericType);
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->genericType);
     }
 
 
 
-    if (!strcmp(realVerb->returnType, "Generic_$$")) {
+    if (!strcmp(realVerb->returnType, GENERIC_PARAM)) {
         if (realVerb->genericType) {
             result->returnType = strdup(realVerb->genericType);
             addParam(result, realVerb->genericType);
@@ -1426,7 +1435,7 @@ Object *sVerbIdent(char *staticVerb)
     return result;
 }
 
-Object *verbCtor(char *type, char *ytype)
+Object *verbCtor(char *type, char *genericType)
 {
     compilerDebugPrintf("verbCtor(%s)\n", type);
     Object *result = findByName(type);
@@ -1435,9 +1444,9 @@ Object *verbCtor(char *type, char *ytype)
         sprintf(error, "Cannot find Class \"%s\".\n", type);
         criticalError(ERROR_UndefinedVerb, error);
     }
-    if (ytype) {
-        compilerDebugPrintf("Setting generic ytype (%s)\n", ytype);
-        result->genericType=ytype;
+    if (genericType) {
+        compilerDebugPrintf("Setting generic ytype (%s)\n", genericType);
+        result->genericType=genericType;
     }
     return result;
 }
@@ -1587,9 +1596,9 @@ Object *objectChar(char *c)
     compilerDebugPrintf("objectInt(%c)\n", c[1]);
     char buffer[4];            // 20 = (log10(2^64))
     snprintf(buffer, 4, "%s", c);
-    Object *result = CreateObject(0, 0, 0, Expression, "Char");
+    Object *result = CreateObject(0, 0, 0, Expression, "char");
     addCode(result, buffer);
-    addParam(result, "Char");
+    addParam(result, "char");
     return result;
 }
 

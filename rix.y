@@ -241,8 +241,9 @@ anyIdentOrVerb:
   ;
 
 function_definition:
-  anyIdentOrVerb RETURN TYPE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def\n"); $$ = beginFunction($3, $1, $5); }
-  | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction("void", $1, $4); }
+  anyIdentOrVerb RETURN TYPE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def\n"); $$ = beginFunction($1, $3, 0, $5); }
+  | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction($1, "void", 0, $4); }
+  | anyIdentOrVerb RETURN TYPE LBRACE TYPE RBRACE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def-gen\n"); $$ = beginFunction($1, $3, $5, $8); }
   ;
 
 parameters:

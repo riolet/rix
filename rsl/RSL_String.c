@@ -85,8 +85,8 @@ IDENT_MPTR_RAW * String_$_plus_$_int(IDENT_MPTR_RAW * left_, int right, IDENT_MP
 {
 
     debugPrintf("String_$_plus_$_int %s -> %s\n",left_->debugName, $_mptr_in->debugName);
-    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
-                                                                                                    xstr($_mptr_temp));
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
+    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
     String * left = left_->obj;

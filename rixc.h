@@ -31,7 +31,7 @@ void decPrev();
 
 Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive);
 void doneClass(Object * tree);
-Object *beginFunction(char *returnType, char *funcName, Object * parameters);
+Object *beginFunction(char *funcName, char *returnType, char *returnGenericType, Object * parameters);
 void doneFunction(Object * tree);
 Object *beginConstructor(Object * parameters);
 void doneConstructor(Object * tree);

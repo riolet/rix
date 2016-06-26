@@ -195,7 +195,7 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, rslFunc);
     rslFunc =
             CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
-                         Function, "Char");
+                         Function, "char");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
     addParam(rslFunc, "int");
@@ -329,7 +329,7 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, rslFunc);
     // ==============  Print Functions ===============
     rslFunc =
-            CreateObject("print", "print" COMPILER_SEP "Char", 0, Function, "int");
+            CreateObject("print", "print" COMPILER_SEP "char", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
@@ -349,7 +349,7 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, rslFunc);
 
     rslFunc =
-            CreateObject("echo", "echo" COMPILER_SEP "Char", 0, Function, "int");
+            CreateObject("echo", "echo" COMPILER_SEP "char", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);

@@ -44,7 +44,7 @@ typedef struct  {
 
 typedef void *UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
-typedef char Char;
+//typedef char Char;
 typedef enum { lt = -1, eq = 0, gt = 1 } Ternary;
 typedef void *System;
 typedef void *Generic_$$;
