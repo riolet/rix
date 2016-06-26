@@ -50,8 +50,8 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
 #define Vector_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$v$_arr, _$v$_idx, _$v$_primIdx, _$v$_elem, _$v$_primElem,\
                                                     _$v$_mptr, _$v$_primRet, _$v$_typeRet) ({\
     StructVector * _$v$_arrptr = (StructVector *) _$v$_arr->obj;\
-    if (_$v$_idx>_$v$_arrptr->length) {\
-        _$v$_arrptr->length=_$v$_idx;\
+    if (_$v$_idx+1>_$v$_arrptr->length) {\
+        _$v$_arrptr->length=_$v$_idx+1;\
     }\
     setBit(_$v$_arrptr->bitVector,_$v$_idx);\
     xcat(_$_Vector_set_object_at_,_$v$_primRet)(_$v$_arrptr, _$v$_idx, _$v$_elem);\
