@@ -1,6 +1,6 @@
 [![Build Status](https://drone.io/github.com/riolet/rix/status.png)](https://drone.io/github.com/riolet/rix/latest)
 
-![Rix Language logo](https://riolet.com/wp-content/uploads/2016/06/logo7_6464.png)Rix Language
+![Rix Language logo](https://raw.githubusercontent.com/riolet/rix/master/doc/assets/rix_logo_64_64.png)Rix Language
 ================
 
 Rix is an expressive and efficient language for the C ecosystem. Rix uses C libraries natively and generates easy to understand C code.
