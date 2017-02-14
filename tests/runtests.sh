@@ -1,5 +1,4 @@
-RIX_HOME=$(dirname `pwd`)
-echo $RIX_HOME
+export RIX_HOME=$(dirname `pwd`)
 for i in *.expected
 do 
 	IFS='.' read -ra PARTS <<< $i
