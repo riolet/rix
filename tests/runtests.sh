@@ -4,7 +4,7 @@ for i in *.expected
 do 
 	IFS='.' read -ra PARTS <<< $i
 	echo "Building ${PARTS[0]}.rix"
-	${RIX_HOME}rixbuild.sh ${PARTS[0]}.rix
+	${RIX_HOME}/rixbuild.sh ${PARTS[0]}.rix
 	if [ -f ${PARTS[0]}.arg ]
 	then
 		echo "cat ${PARTS[0]}.arg |xargs ./${PARTS[0]}.rix.out > ${PARTS[0]}.actual"
