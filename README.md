@@ -1,5 +1,4 @@
-[![Build Status](https://drone.io/github.com/riolet/rix/status.png)](https://drone.io/github.com/riolet/rix/latest)
-
+[![Build Status](https://jenkins-rix.hotbed.io/buildStatus/icon?job=rix-rix)](https://jenkins-rix.hotbed.io/job/rix-rix)
 ![Rix Language logo](https://raw.githubusercontent.com/riolet/rix/master/doc/assets/rix_logo_64_64.png)Rix Language
 ================
 
