@@ -1,6 +1,6 @@
 node('gcc') {
   stage("Checkout") {
-    git url: "https://github.com/riolet/rix", branch: "master"
+    checkout scm 
   }
   stage("Build") {
     sh "make"
