@@ -1,4 +1,4 @@
-RIX_HOME=dirname `pwd`
+RIX_HOME=$(dirname `pwd`)
 echo $RIX_HOME
 for i in *.expected
 do 
