@@ -1,3 +1,0 @@
-#c = "abcdef"
-#i.for (0, c.length())
-    print (c[i])

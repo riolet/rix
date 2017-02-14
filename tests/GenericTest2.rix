@@ -9,7 +9,7 @@ loadFactor->String(Vector v) = (v.length() + "/" + v.capacity())
 i.for (4,9)
     print (a[i])
 
-print ("a is " + loadFactor(a))
+print ("a is at load " + loadFactor(a))
 
 if (a.isNull(9))
     print ("No element at index 9")

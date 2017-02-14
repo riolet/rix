@@ -24,9 +24,9 @@ NamedRectangle :: Rectangle
 
 
 #r = Rectangle (5, 10)
-#s = NamedRectangle (3, 4, "Great")
+#s = NamedRectangle (3, 4, "Cornelius")
 
-print (s.name)
-print (r.area() + " " + r.perimeter())
-print (s.name + " " + s.area())
+print ("My name is " + s.name)
+print ("My area is " + r.area() + " and perimeter is " + r.perimeter())
+print (s.name +"'s" + " area is " + s.area())
 print (s.nameArea())
