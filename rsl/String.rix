@@ -3,5 +3,9 @@
 String::BaseType
     length->int()
         //Virtual
+    lower->String()
+        //Virtual
+    upper->String()
+        //Virtual
 //Done
 ##external ""

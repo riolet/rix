@@ -50,4 +50,9 @@ IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDEN
 char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left);
 
 int String_$_length_$_(IDENT_MPTR_RAW *  string);
+
+IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in);
+
+IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in);
+
 #endif

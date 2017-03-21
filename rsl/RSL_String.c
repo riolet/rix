@@ -185,3 +185,51 @@ int String_$_length_$_(IDENT_MPTR_RAW *  s_)
     String * s = s_ ->obj;
     return s->length;
 }
+
+IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in)
+{
+    debugPrintf("String_$_lower %s -> %s\n",right_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
+    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+    String * s = s_->obj;
+    String * right = right_->obj;
+
+    s->buffer = malloc(right->length + 1);
+
+
+    for(int i = 0; right->buffer[i]; i++){
+      s->buffer[i] = tolower(right->buffer[i]);
+    }
+
+    s->length = right->length;
+    s->buffer[s->length] = 0;
+    s->isStaticBuffer = false;
+
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
+}
+
+IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in)
+{
+    debugPrintf("String_$_lower %s -> %s\n",right_->debugName, $_mptr_in->debugName);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
+    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
+    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+    String * s = s_->obj;
+    String * right = right_->obj;
+
+    s->buffer = malloc(right->length + 1);
+
+
+    for(int i = 0; right->buffer[i]; i++){
+      s->buffer[i] = toupper(right->buffer[i]);
+    }
+
+    s->length = right->length;
+    s->buffer[s->length] = 0;
+    s->isStaticBuffer = false;
+
+    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    return $_mptr_in;
+}
