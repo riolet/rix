@@ -198,7 +198,8 @@ IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
     s->buffer = malloc(right->length + 1);
 
 
-    for(int i = 0; right->buffer[i]; i++){
+    int i;
+    for(i = 0; right->buffer[i]; i++){
       s->buffer[i] = tolower(right->buffer[i]);
     }
 
@@ -221,8 +222,8 @@ IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
 
     s->buffer = malloc(right->length + 1);
 
-
-    for(int i = 0; right->buffer[i]; i++){
+    int i;
+    for(i = 0; right->buffer[i]; i++){
       s->buffer[i] = toupper(right->buffer[i]);
     }
 
