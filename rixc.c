@@ -1875,7 +1875,7 @@ int main(int argc, char **argv)
     outMakeFile = fopen(oMakeFileName, "w");
 
 
-    fprintf(outMakeFile, "gcc -lm -I ${RIX_HOME} -ggdb -o %s.out "
+    fprintf(outMakeFile, "gcc -Wno-implicit-function-declaration -lm -I ${RIX_HOME} -ggdb -o %s.out "
             "%s.c ${RIX_HOME}/rsl/rsl.c ${RIX_HOME}/errors.c ", ofile, ofile);
     //getln();
     hitEOF = false;
