@@ -49,7 +49,7 @@ The Python language equivalent of this would be:
 
 If the user hasn't supplied an argument, it just prints the usage. As Rix has no keywords, `if`, `else` and `for` are also verbs.
 
-How can we make a more succint version of our Fibonacci program?
+How can we make a more succinct version of our Fibonacci program?
 ----------------------------------------------------------------
 
 We can replace the standard `fib` function above with a single expression function (SEF):
