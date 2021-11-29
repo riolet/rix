@@ -696,6 +696,24 @@ Object *injectC(char *code)
     return 0;
 }
 
+Object *conjugateNewVarAssignment(Object * ident, Object * verb, Object * objects)
+{
+    if (ident == 0) {
+        criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
+    }
+    Object* exists = findByName(ident);
+    if (!exists) {
+        Object * newIdent = objectNewIdent(ident);
+        Object * verb = verbAssignment("=");
+        return conjugateAssign(newIdent, verb, objects);
+    } else {
+        char error[1024];
+        snprintf(error, 1024, "Trying to recreate identifier %s\n", ident);
+        criticalError(ERROR_ParseError, error);
+    }
+}
+
+
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 {
     if (subject == 0) {
@@ -1922,3 +1940,12 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+Object *concatGenerics(Object * existing, Object * newGeneric) {
+
+}
+
+Object *genericOfGeneric(Object * parent, Object * child) {
+
+}
+

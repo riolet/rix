@@ -46,6 +46,7 @@
 %token <sval> TYPE
 %token <sval> MATH_OP
 %token <sval> ASSIGNMENT
+%token <sval> NEWVARASSIGNMENT
 %token <sval> LPAREN
 %token <sval> RPAREN
 %token <sval> LBRACKET
@@ -97,11 +98,12 @@
 %type <oval> arguments;
 %type <oval> arglist;
 %type <oval> typeArgList;
-
+%type <oval> genericType;
 
 %type <sval> parameterIdent;
 %type <sval> anyIdent;
 %type <sval> anyIdentOrVerb;
+
 
 %{
 void yyerror(YYLTYPE *locp, const char* msg);
@@ -176,6 +178,7 @@ statement:
 
 expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
+  | UNMARKEDNEWIDENT NEWVARASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
   | expr ASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr MATHASSIGN expr  { compilerDebugPrintf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr LESSTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
@@ -190,12 +193,18 @@ expr:
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
   |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
   | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
-  | TYPE LBRACE TYPE RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
+  | TYPE LBRACE genericType RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
   | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
+  ;
+
+genericType:
+  TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = $1; } //1-ary
+  | TYPE LBRACE genericType RBRACE arguments{ compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric($1,$3); } //1-ary
+  | TYPE PARAMCOMMA genericType { compilerDebugPrintf("Multitype of Generic\n");   $$ = concatGenerics($1,$3); } //1-ary
   ;
 
 arguments:
@@ -243,7 +252,7 @@ anyIdentOrVerb:
 function_definition:
   anyIdentOrVerb RETURN TYPE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def\n"); $$ = beginFunction($1, $3, 0, $5); }
   | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction($1, "void", 0, $4); }
-  | anyIdentOrVerb RETURN TYPE LBRACE TYPE RBRACE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def-gen\n"); $$ = beginFunction($1, $3, $5, $8); }
+  | anyIdentOrVerb RETURN TYPE LBRACE genericType RBRACE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def-gen\n"); $$ = beginFunction($1, $3, $5, $8); }
   ;
 
 parameters:
@@ -288,7 +297,7 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
-  | UNMARKEDNEWIDENT ASSIGNMENT TYPE ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($1, $3); }
+  | TYPE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
   | function_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }

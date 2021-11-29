@@ -76,6 +76,7 @@ struct _ListString {
     char *value;
     ListString *next;
 };
+
 struct _ListObject {
     Object *value;
     ListObject *next;

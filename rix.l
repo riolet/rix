@@ -80,6 +80,7 @@ unaryNegate   "-"
 
 mathOp        "+"|"*"|"/"|"^^"|"%"
 assignment    "="
+newVarassignment ":="
 return        "->"
 
 lessThan      "<"
@@ -194,7 +195,7 @@ dtvAddsource "##addsource"
 
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
-"`"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
+"```"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
 {comment}     { compilerDebugPrintf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { compilerDebugPrintf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { compilerDebugPrintf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
@@ -213,7 +214,7 @@ dtvAddsource "##addsource"
                           snprintf(error, 1024, "Trying to recreate identifier %s\n", first);
                           criticalError(ERROR_ParseError, error);
                         }
-                      }
+                      }                     
 
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);
@@ -234,6 +235,7 @@ dtvAddsource "##addsource"
                         }
                       }
 
+{newVarassignment} { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return NEWVARASSIGNMENT; }
 {assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 

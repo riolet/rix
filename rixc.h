@@ -42,11 +42,13 @@ Object *funcParameters(Object * tree, char *paramType, char *paramName);
 Object *concatParams(Object * existing, Object * newParam);
 Object *declareVariable(char *name, char *type);
 
+Object *conjugateNewVarAssignment(Object * subject, Object * verb, Object * objects);
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects);
 Object *conjugate(Object * lhs, Object * verb, Object * rhs);
 Object *conjugateConditional(Object * lhs, Object * verb, Object * rhs);
 Object *injectC(char *code);
 
+Object *verbNewVarAssignment(char *verb);
 Object *verbAssignment(char *verb);
 Object *verbMathOp(char *verb);
 Object *verbComparison(char *verb);
@@ -76,4 +78,6 @@ Object *createCodeBlock(Object * expression);
 float simplifyfloat(float left, char *op, float right);
 int simplifyInt(int left, char *op, int right);
 
+Object *concatGenerics(Object * existing, Object * newGeneric);
+Object *genericOfGeneric(Object * parent, Object * child);
 #endif
