@@ -80,4 +80,7 @@ int simplifyInt(int left, char *op, int right);
 
 Object *concatGenerics(Object * existing, Object * newGeneric);
 Object *genericOfGeneric(Object * parent, Object * child);
+
+Object *beginClass_R (char *className, char *parentName, Object *typeArgs, bool isPrimitive);
+
 #endif

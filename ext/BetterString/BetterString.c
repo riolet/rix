@@ -58,9 +58,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     debugPrintf("Creating string  from %s and storing in %s\n",b_->debugName,$_mptr_in->debugName);
     BetterString * b = b_->obj;
 
-    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
-    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
-
+    _$_TEMP_OBJ($_mptr_temp);
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
 
     String *s = (String *) s_->obj;
