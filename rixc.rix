@@ -1,0 +1,4 @@
+##external "rixc.rix_.h"
+##external ""
+thisIsRidiculous->String(String a)    
+    ->a
