@@ -1794,7 +1794,8 @@ int main(int argc, char **argv)
     bool quiet = false;
     g_headerLines = 0;
     bool waferSupport = false;
-    while ((c = getopt(argc, argv, "o:tqW")) != -1) {
+    bool isLibrary = false;
+    while ((c = getopt(argc, argv, "o:tqWL")) != -1) {
         switch (c) {
         case 't':
             compilerDebugPrintf("hit -t arg\n");
@@ -1808,7 +1809,11 @@ int main(int argc, char **argv)
         case 'W':
             waferSupport = true;
             break;
-
+            
+        case 'L':
+            isLibrary = true;
+            break;
+            
         case ':':              /* -f or -o without operand */
             fprintf(stderr, "Option -%c requires an operand\n", optopt);
             errflg++;
@@ -1918,6 +1923,8 @@ int main(int argc, char **argv)
                              "\t_$_U_VARIABLE(response);\n"
                              "\tRequest_$_Request_$_(__$$__request, request);\n"
                              "\tResponse_$_Response_$_(__$$__response, response);\n");
+    else if (isLibrary)
+        fprintf(outMainFile, "");                             
     else
         fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n"
                              "    _$$_argc=_$$_argc_;\n"
@@ -1928,8 +1935,10 @@ int main(int argc, char **argv)
 
         printTreeToFile(root, 0, "./treeOutput.txt");
     }
-
-    fprintf(outMainFile, "  return 0;\n}\n");
+    
+	if (!isLibrary)
+		fprintf(outMainFile, "  return 0;\n}\n");
+		
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(outMakeFile);
