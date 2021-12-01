@@ -8,7 +8,7 @@ void Array_$_destructor_$_ (StructArray ** a)
     int i;
     for (i = 0; i <= (*a)->last; i++) {
         if (testBit((*a)->bitArray, i)) {
-            debugPrintf("Cleaning at %d\n", i);
+            debugPrintf("Cleaning array element[%d]\n", i);
             _$_cleanup(&(*a)->data[i]);
         } else {
             debugPrintf("Nothing to clean at %d\n", i);

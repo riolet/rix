@@ -1,0 +1,20 @@
+##external "ext/List/List.h"
+##addsource "ext/List/List.c"
+##addsource "ext/List/cliblist.c"
+##addsource "ext/List/list_node.c"
+##addsource "ext/List/list_iterator.c"
+
+List:::BaseType
+    $()
+        //Virtual
+
+    append->List(Generic_$$ value)
+        //Virtual
+
+    contains->bool(Generic_$$ value)
+        //Virtual
+
+    foreach->(Generic_$$ value)
+        //Virtual
+
+##external ""

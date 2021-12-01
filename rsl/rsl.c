@@ -6,9 +6,9 @@
 #include "rsl/RSL_String.h"
 #include "rsl/RSL_Stream.h"
 
-int int_$_int_$_String(IDENT_MPTR_RAW * s_)
+int int_$_int_$_String(IDENT_MPTR_RAW *s_)
 {
-    String * s = s_->obj;
+    String *s = s_->obj;
     return atoi(s->buffer);
 }
 
@@ -37,10 +37,9 @@ int int_$_sqrt_$_(int i)
     return (int)sqrt(i);
 }
 
-
-int print_$_String(IDENT_MPTR_RAW * s_)
+int print_$_String(IDENT_MPTR_RAW *s_)
 {
-    String * s = (String *) s_->obj;
+    String *s = (String *)s_->obj;
     int result = fwrite(s->buffer, sizeof(char), s->length, stdout) + fputc('\n', stdout);
     return result;
 }
@@ -49,7 +48,6 @@ int print_$_Char(char c)
 {
     return fprintf(stdout, "%c\n", c);
 }
-
 
 int print_$_int(int i)
 {
@@ -61,9 +59,9 @@ int print_$_float(float f)
     return fprintf(stdout, "%f\n", f);
 }
 
-int echo_$_String(IDENT_MPTR_RAW * s_)
+int echo_$_String(IDENT_MPTR_RAW *s_)
 {
-    String * s = (String *) s_->obj;
+    String *s = (String *)s_->obj;
     int result = fwrite(s->buffer, sizeof(char), s->length, stdout);
     return result;
 }
@@ -80,11 +78,16 @@ int echo_float(float f)
 
 Ternary int_$_compare_$_int(int a, int b)
 {
-    if (a < b) {
+    if (a < b)
+    {
         return lt;
-    } else if (a == b) {
+    }
+    else if (a == b)
+    {
         return eq;
-    } else {
+    }
+    else
+    {
         return gt;
     }
 }
@@ -92,11 +95,16 @@ Ternary int_$_compare_$_int(int a, int b)
 String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, String b,
                                                  String c)
 {
-    if (ternary == lt) {
+    if (ternary == lt)
+    {
         return a;
-    } else if (ternary == eq) {
+    }
+    else if (ternary == eq)
+    {
         return b;
-    } else if (ternary == gt) {
+    }
+    else if (ternary == gt)
+    {
         return c;
     }
 }
@@ -104,7 +112,7 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-IDENT_MPTR_RAW * args_$_int(int i, IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW *args_$_int(int i, IDENT_MPTR_RAW *$_mptr_in)
 {
     return String_$_stringlit(_$$_argv[i], $_mptr_in);
 }
@@ -114,27 +122,32 @@ int args_$_()
     return _$$_argc;
 }
 
-void BaseType_$_destructor (IDENT_MPTR_RAW * $_mptr_in)
+void BaseType_$_destructor(IDENT_MPTR_RAW *$_mptr_in)
 {
     free($_mptr_in->obj);
 }
 
-IDENT_MPTR_RAW * BaseType_$_BaseType_$_ (IDENT_MPTR_RAW * $_mptr_in)
+IDENT_MPTR_RAW *BaseType_$_BaseType_$_(IDENT_MPTR_RAW *$_mptr_in)
 {
-    BaseType * b = calloc(1,sizeof(BaseType));
-    _$_returnAppointer($_mptr_in,b,BaseType_$_destructor);
+    BaseType *b = calloc(1, sizeof(BaseType));
+    _$_returnAppointer($_mptr_in, b, BaseType_$_destructor);
 }
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b)
+IDENT_MPTR_RAW *IDENT_MPTR_RAW_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
 {
-    debugPrintf("Assigning %s = %s:",a->debugName, b->debugName);
+    debugPrintf("Assigning %s = %s:", a->debugName, b->debugName);
 
-    if (a->obj) {
-        debugPrintf("%s %d is being recycled\n",a->debugName,a->ctr);
-        _$_cleanup (a);
+    if (a->obj)
+    {
+        debugPrintf("%s %d is being recycled\n", a->debugName, a->ctr);
+        if (a->ctr>0) {
+            debugPrintf("%s preserving the object because %d\n", a->debugName, a->ctr);
+            _$_cleanup_object(a);
+        }
     } else {
-        debugPrintf("assigned %s to %s\n",a->debugName,b->debugName);
-    }
+        debugPrintf("%s %d is does not need recycling\n", a->debugName, a->ctr);
+    }    
+    debugPrintf("assigned %s to %s\n", a->debugName, b->debugName);
 
     b->ctr++;
     a->ctr = 0;
@@ -145,10 +158,10 @@ IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b)
     return a;
 }
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b)
+IDENT_MPTR_RAW *IDENT_MPTR_RAW_point(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
 {
 
-    debugPrintf("Pointing to %s to %s\n",a->debugName,b->debugName);
+    debugPrintf("Pointing to %s to %s\n", a->debugName, b->debugName);
     b->ctr++;
 
     a->ptr = b;
@@ -156,73 +169,108 @@ IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b)
     a->ctr = 0;
 }
 
-void _$_mptr_prepare(IDENT_MPTR_RAW * expr, IDENT_MPTR_RAW * mptr)
+void _$_mptr_prepare(IDENT_MPTR_RAW *expr, IDENT_MPTR_RAW *mptr)
 {
-    debugPrintf("Returning %s as %s\n",expr->debugName, mptr->debugName);
-    IDENT_MPTR_RAW_assign(mptr,expr);
+    debugPrintf("Returning %s as %s\n", expr->debugName, mptr->debugName);
+    IDENT_MPTR_RAW_assign(mptr, expr);
 }
 
+char *snprintfauto(const char *format, ...)
+{
+    va_list arg;
+    long done;
+    va_start(arg, format);
+    size_t needed = vsnprintf(NULL,0, format, arg) + 1;
+    char *buffer = malloc(needed);
+    vsprintf(buffer, format, arg);
+    va_end(arg);
+    return buffer;
+}
 
-void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW * mptr, char *name)
+void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW *mptr, char *name)
 {
     mptr->ctr = 0;
     mptr->ptr = 0;
     mptr->obj = 0;
     mptr->destructor = 0;
-    mptr->debugName=name;
+    char *buffer = malloc(1024);
+    size_t needed = snprintf(buffer,1000, "%s %llu", name,(long long unsigned int)mptr);
+    mptr->debugName = buffer;
 }
 
-void _$_cleanup (IDENT_MPTR_RAW *p)
+void _$_cleanup_object(IDENT_MPTR_RAW *p)
 {
-    debugPrintf ("Cleaning up temp %d %s : ",p->ctr,p->debugName);
+    if (p->obj)
+    {
+        void (*destructor)(void *) = p->destructor;
+        if (p->destructor)
+        {
+            debugPrintf("%s has destructor\n", p->debugName);
+            destructor(p);
+        }
+        else
+        {
+            errorMsg("%s has no destructor\n", p->debugName);
+            criticalError(ERROR_RuntimeError, "No destructor found");
+        }
+        p->obj = 0;
+        debugPrintf("Gone !\n");
+    }
+    else
+    {
+        debugPrintf("Already Cleaned !\n");
+    }
+}
 
-    if (p->ctr > 0) {
+void _$_cleanup(IDENT_MPTR_RAW *p)
+{
+    debugPrintf("Cleaning up temp %d %s : ", p->ctr, p->debugName);
+
+    if (p->ctr > 0)
+    {
         debugPrintf("Survives !\n");
-    } else {
-        if (p->ptr == 0) {
-            if (p->obj) {
-                void (*destructor)(void *) = p->destructor;
-                if (p->destructor) {
-                    debugPrintf("%s has destructor\n",p->debugName);
-                    destructor(p);
-                } else {
-                    errorMsg("%s has no destructor\n",p->debugName);
-                    criticalError(ERROR_RuntimeError,"No destructor found");
-                }
-                p->obj = 0;
-                debugPrintf("Gone !\n");
-            } else {
+    }
+    else
+    {
+        if (p->ptr == 0)
+        {
+            if (p->obj)
+            {
+                _$_cleanup_object(p);
+            }
+            else
+            {
                 debugPrintf("Already Cleaned !\n");
             }
-        } else {
-            IDENT_MPTR_RAW * next = p->ptr;
+        }
+        else
+        {
+            IDENT_MPTR_RAW *next = p->ptr;
             debugPrintf("Check up stream -> ");
             next->ctr--;
             _$_cleanup(next);
         }
+        debugPrintf("Done cleaning up temp %d %s : ", p->ctr, p->debugName);
     }
 }
 
-void _$_cleanup_var (IDENT_MPTR_RAW **p)
+void _$_cleanup_var(IDENT_MPTR_RAW **p)
 {
-    debugPrintf ("Cleaning up var %d %s => ",(*p)->ctr, (*p)->debugName);
+    debugPrintf("Cleaning up var %d %s => ", (*p)->ctr, (*p)->debugName);
     IDENT_MPTR_RAW *pDeref = (*p);
     _$_cleanup(pDeref);
 }
 
-IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor)
+IDENT_MPTR_RAW *_$_returnAppointer(IDENT_MPTR_RAW *$_mptr_in, void *obj, void *destructor)
 {
-    if ($_mptr_in->obj) {
-        debugPrintf("%s is being recycled\n",$_mptr_in->debugName);
-        _$_cleanup ($_mptr_in);
+    if ($_mptr_in->obj)
+    {
+        debugPrintf("%s is being recycled\n", $_mptr_in->debugName);
+        _$_cleanup_object($_mptr_in);
     }
-
-    //debugPrintf("%s is being prepared\n",$_mptr_in->debugName);
-
     $_mptr_in->ctr = 0;
     $_mptr_in->ptr = 0;
     $_mptr_in->obj = obj;
     $_mptr_in->destructor = destructor;
     return $_mptr_in;
 }
-

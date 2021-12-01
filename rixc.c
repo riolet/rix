@@ -775,6 +775,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
         //must be literal = or similar.
+        compilerDebugPrintf("must be literal = or similar: %s (%d) \n", verbname,__LINE__);
         if (!objects) {
             criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
         }
@@ -833,11 +834,12 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             snprintf(error, BUFFLEN, "Cannot find category for %s\n",objects->returnType);
             criticalError(ERROR_ParseError, error);
         }
-
+        //TODO: This ignores the classes assign method
         if (getFlag(rType,FLAG_PRIMITIVE)) {
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                      objects->code->value);
         } else {
+            
             snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
                      objects->code->value);
         }
