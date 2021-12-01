@@ -130,7 +130,7 @@ IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b)
     debugPrintf("Assigning %s = %s:",a->debugName, b->debugName);
 
     if (a->obj) {
-        //debugPrintf("%s %d is being recycled\n",a->debugName,a->ptr);
+        debugPrintf("%s %d is being recycled\n",a->debugName,a->ctr);
         _$_cleanup (a);
     } else {
         debugPrintf("assigned %s to %s\n",a->debugName,b->debugName);
@@ -183,7 +183,7 @@ void _$_cleanup (IDENT_MPTR_RAW *p)
             if (p->obj) {
                 void (*destructor)(void *) = p->destructor;
                 if (p->destructor) {
-                    //debugPrintf("%s has destructor\n",p->debugName);
+                    debugPrintf("%s has destructor\n",p->debugName);
                     destructor(p);
                 } else {
                     errorMsg("%s has no destructor\n",p->debugName);

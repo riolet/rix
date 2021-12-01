@@ -778,11 +778,11 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         if (!objects) {
             criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
         }
-        if (!objects->returnType) {
-            char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Paramtypes not found for %s %d.\n", objects->name,__LINE__);
-            criticalError(ERROR_ParseError, error);
-        }
+        // if (!objects->returnType) {
+        //     char error[BUFFLEN];
+        //     snprintf(error, BUFFLEN, "Paramtypes not found for %s %d.\n", objects->name,__LINE__);
+        //     criticalError(ERROR_ParseError, error);
+        // }
         result = CreateObject(0, 0, 0, Expression, objects->returnType);
         addParam(result, objects->returnType);
         if (objects->genericType) {
