@@ -13,7 +13,7 @@
 #define xcat(a,b) cat(a,b)
 #define cat(a,b) a ## b
 
-#define debugPrintf //printf
+#define debugPrintf(...) //printf("\n %d ",__LINE__);printf(__VA_ARGS__)
 FILE *outCompilerLogFile;
 #define compilerDebugPrintf(...) fprintf(outCompilerLogFile,__VA_ARGS__)
 
@@ -71,10 +71,17 @@ typedef enum {
 typedef struct _Object Object;
 typedef struct _ListObject ListObject;
 typedef struct _ListString ListString;
+typedef struct _ListType ListType;
 
 struct _ListString {
     char *value;
     ListString *next;
+};
+
+struct _ListType {
+    char *type;
+    char *genericType;
+    ListType *next;
 };
 
 struct _ListObject {
@@ -92,7 +99,7 @@ struct _Object {
     char *genericType;          //What value category if the returnType is Generic?(int,  int,  NULL)
     int genericTypeArgPos;      //What position of the returnType is Generic?(int,  int,  NULL)
     char *resolvedSpecificType;       //Generic type resolved as specific
-    ListString *paramTypes;     //parameters?     (NULL,     [int, int], NULL)
+    ListType *paramTypes;     //parameters?     (NULL,     [int, int], NULL)
     ListObject *definedSymbols; //Things inside?  (NULL, [Rectangle "r1", Rectangle "r2", int "a1", int "a2"], [int "w", int "h", Constructor "Rectangle", Function "Area"])
     ListString *code;           //CodeBlock       (NULL, "int ...calcTotalArea...(...) {...", "typedef struct...")
     int flags;
@@ -104,6 +111,7 @@ Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE 
 
 //append item to end of linked list
 int addParam(Object * tree, char *type);
+int addParamWithGenericType(Object * tree, char *type, char *genericType);
 int addGenericType(Object * tree, char *genericType, int genericTypeArgPos);
 int addSymbol(Object * tree, Object * leaf);
 ListString *addCode(Object * tree, char *line);

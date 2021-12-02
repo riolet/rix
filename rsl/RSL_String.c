@@ -7,38 +7,30 @@
 
 void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
 {
-
+    debugPrintf("Cleaning up String %s\n",_$_mptr_in->debugName);
     String *s = (String *) _$_mptr_in->obj;
-
     if (!s->isStaticBuffer) {
-        free(s->buffer);
+        debugPrintf("String %s contains %s\n",_$_mptr_in->debugName, s->buffer);
+        free(s->buffer); 
+    } {
+        debugPrintf("Not cleaning StaticString %s containing %s\n",_$_mptr_in->debugName, s->buffer);
     }
-    _$_cleanup(s->$super);
-    free(s->$super);
     free(s);
+    debugPrintf("Cleaned up String %s",_$_mptr_in->debugName);
 }
 
 IDENT_MPTR_RAW * String_$_String_$_ (IDENT_MPTR_RAW * _$_mptr_in)
 {
-//    String * s = calloc(1, sizeof(String));
-//    return  _$_returnAppointer($_mptr_in,s,String_$_destructor_$_);
-
-    _$_HEAP_VARIABLE(_$_mptr_super);
-    String * self_ = calloc(1, sizeof(String));
-    _$_mptr * self = _$_returnAppointer(_$_mptr_in,self_,String_$_destructor_$_);
-    self_->$super= BaseType_$_BaseType_$_(_$_mptr_super);
-    self_->$super_= self_->$super->obj;
+    _$_mptr * self = _$_returnAppointer(_$_mptr_in,calloc(1, sizeof(String)),String_$_destructor_$_);
     return self;
 }
 
 IDENT_MPTR_RAW * String_$_stringlit(char *strlit, IDENT_MPTR_RAW * $_mptr_in)
 {
     debugPrintf("String_$_stringlit %s %s\n",strlit,$_mptr_in->debugName);
-    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
-    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
+    _$_TEMP_OBJ($_mptr_temp);
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
-
     s->buffer = strlit;
     s->cap = strlen(strlit);
     s->length = strlen(strlit);
@@ -63,8 +55,7 @@ String * String_$_assign_$_String(String *left, String * right)
 IDENT_MPTR_RAW * String_$_plus_$_String(IDENT_MPTR_RAW * left_, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
 {
     debugPrintf("String_$_plus_$_String %s %s -> %s\n",left_->debugName,right_->debugName, $_mptr_in->debugName);
-    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
-                                                                                                    xstr($_mptr_temp));
+    _$_TEMP_OBJ($_mptr_temp);
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
     String * s = s_->obj;
     String * left = left_->obj;

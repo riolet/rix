@@ -50,6 +50,7 @@ void Array_$_destructor_$_ (StructArray ** a);
         debugPrintf("Last %d\n",_$v$_idx);\
     }\
     setBit(_$v$_arr->bitArray,_$v$_idx);\
+    IDENT_MPTR_RAW_initialize(&_$v$_arr->data[_$v$_idx], xstr(xcat(_$v$_arr,_$v$_idx)));\
     IDENT_MPTR_RAW_assign(&_$v$_arr->data[_$v$_idx], _$v$_elem);\
 })
 

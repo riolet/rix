@@ -79,20 +79,27 @@ void cleanup(Object* object) {
 
 */
 //append item to end of linked list
-int addParam(Object * tree, char *type)
+int addParam(Object * tree, char *type){
+    addParamWithGenericType(tree,type,0);    
+}
+
+int addParamWithGenericType(Object * tree, char *type, char *genericType)
 {
 
-    ListString *node = malloc(sizeof(ListString));
+    ListType *node = malloc(sizeof(ListType));
 
     if (node == 0) {
         warningMsg("Allocation failed in addParam. (ObjectTree.c)\n");
         return 1;
     }
 
-    node->value = strdup(type);
+    node->type = strdup(type);
+    if (genericType) {
+        node->genericType = strdup(genericType);
+    }
     node->next = 0;
 
-    if (node->value == 0) {
+    if (node->type == 0) {
         warningMsg("strdup failed in addParam. (ObjectTree.c)\n");
         return 2;
     }
@@ -102,7 +109,7 @@ int addParam(Object * tree, char *type)
         return 0;
     }
 
-    ListString *tail = tree->paramTypes;
+    ListType *tail = tree->paramTypes;
 
     while (tail->next != 0) {
         tail = tail->next;
@@ -570,11 +577,11 @@ Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params)
 
         if (!strcmp(name, iter->value->name)) {
 
-            ListString *iter_param = iter->value->paramTypes;
+            ListType *iter_param = iter->value->paramTypes;
 
             for (i = 0; i < paramc && iter_param != 0; i++) {
 
-                if (strcmp(params[i], iter_param->value)) {
+                if (strcmp(params[i], iter_param->type)) {
 
                     break;
 
@@ -642,7 +649,7 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 {
 
     ListObject *oIter;
-    ListString *sIter;
+    ListType *sIter;
 
     if (tree == 0) {
         warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
@@ -722,8 +729,10 @@ void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree
 void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 {
     ListObject *oIter;
-    ListString *sIter;
-
+    ListType *sIter;
+    
+    ListString *cIter;
+    
     oIter = tree->definedSymbols;
     sIter = tree->paramTypes;
 
@@ -749,11 +758,11 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     char printComma = ' ';
     while (sIter != 0) {
         printComma = ',';
-        pType = findByNameInScope(tree,sIter->value,false);
+        pType = findByNameInScope(tree,sIter->type,false);
         //compilerDebugPrintf("Looking up symbol %d\n",oIter);
         if (pType) {
             if (getFlag(pType, FLAG_PRIMITIVE)) {
-                fprintf(outh, "%s %s", sIter->value, oIter->value->fullname);
+                fprintf(outh, "%s %s", sIter->type, oIter->value->fullname);
             } else {
                 fprintf(outh, IDENT_MPTR " * %s", oIter->value->fullname);
             }
@@ -789,10 +798,10 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 
     //print each line of code.
     if (tree->code != 0 && tree->code->value != 0) {
-        sIter = tree->code;
-        while (sIter != 0) {
-            fprintf(outh, " \t%s\n", sIter->value);
-            sIter = sIter->next;
+        cIter = tree->code;
+        while (cIter != 0) {
+            fprintf(outh, " \t%s\n", cIter->value);
+            cIter = cIter->next;
         }
     }
     fprintf(outh, "}\n");
@@ -880,304 +889,304 @@ void writeForwardDeclarations (FILE * outh, Object * tree)
 
 //================  Testing / Printing =================
 
-void printSequential(ListString * list, int indent, int newlines)
-{
+// void printSequential(ListType * list, int indent, int newlines)
+// {
 
-    int i;
+//     int i;
 
-    if (!newlines) {
-        if (list == 0) {
-            printf("\n");
-            return;
-        }
+//     if (!newlines) {
+//         if (list == 0) {
+//             printf("\n");
+//             return;
+//         }
 
-        printf("%s, ", list->value);
+//         printf("%s, ", list->type);
 
-        while (list->next != 0) {
-            list = list->next;
-            printf("%s, ", list->value);
-        }
+//         while (list->next != 0) {
+//             list = list->next;
+//             printf("%s, ", list->type);
+//         }
 
-        printf("\n");
-    } else {
+//         printf("\n");
+//     } else {
 
-        if (list == 0) {
-            return;
-        }
+//         if (list == 0) {
+//             return;
+//         }
 
-        for (i = 0; i < indent; i++) {
-            printf("  ");
-        }
-        printf("\"%s\"\n", list->value);
+//         for (i = 0; i < indent; i++) {
+//             printf("  ");
+//         }
+//         printf("\"%s\"\n", list->type);
 
-        while (list->next != 0) {
-            list = list->next;
-            for (i = 0; i < indent; i++) {
-                printf("  ");
-            }
-            printf("\"%s\"\n", list->value);
-        }
+//         while (list->next != 0) {
+//             list = list->next;
+//             for (i = 0; i < indent; i++) {
+//                 printf("  ");
+//             }
+//             printf("\"%s\"\n", list->type);
+//         }
 
-    }
+//     }
 
-}
+// }
 
-void printType(OBJ_TYPE type)
-{
+// void printType(OBJ_TYPE type)
+// {
 
-    switch (type) {
+//     switch (type) {
 
-    case Undefined:
-        printf("Undefined");
-        break;
+//     case Undefined:
+//         printf("Undefined");
+//         break;
 
-    case Variable:
-        printf("Variable");
-        break;
+//     case Variable:
+//         printf("Variable");
+//         break;
 
-    case Type:
-        printf("Type");
-        break;
+//     case Type:
+//         printf("Type");
+//         break;
 
-    case Constructor:
-        printf("Constructor");
-        break;
+//     case Constructor:
+//         printf("Constructor");
+//         break;
 
-    case Function:
-        printf("Function");
-        break;
+//     case Function:
+//         printf("Function");
+//         break;
 
-    case CodeBlock:
-        printf("CodeBlock");
-        break;
+//     case CodeBlock:
+//         printf("CodeBlock");
+//         break;
 
-    case Expression:
-        printf("Expression");
-        break;
+//     case Expression:
+//         printf("Expression");
+//         break;
 
-    default:
-        printf("(missing from printType in ObjectTree.c)");
-        break;
+//     default:
+//         printf("(missing from printType in ObjectTree.c)");
+//         break;
 
-    }
+//     }
 
-}
+// }
 
-void printTreeList(ListObject * trees, int indent)
-{
+// void printTreeList(ListObject * trees, int indent)
+// {
 
-    if (trees == 0) {
+//     if (trees == 0) {
 
-        return;
+//         return;
 
-    }
+//     }
 
-    printTree(trees->value, indent);
+//     printTree(trees->value, indent);
 
-    while (trees->next != 0) {
+//     while (trees->next != 0) {
 
-        trees = trees->next;
+//         trees = trees->next;
 
-        printTree(trees->value, indent);
+//         printTree(trees->value, indent);
 
-    }
-
-}
-
-void printTree(Object * tree, int indent)
-{
-
-    if (getFlag(tree, FLAG_EXTERNAL)) {
-        return;
-    }
-
-    int i;
-    if (tree == 0) {
-        for (i = 0; i < indent; i++) {
-            printf("  ");
-        }
-        printf("Object: (null)\n");
-        return;
-    }
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("Object: name: \"%s\"\n", tree->name);
-
-    indent += 1;
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("fullname: \"%s\"\n", tree->fullname);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("parentScope: %s\n",
-           tree->parentScope ? tree->parentScope->fullname : "(null)");
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("parentClass: %s\n",
-           tree->parentClass ? tree->parentClass->fullname : "(null)");
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("category: ");
-    printType(tree->category);
-    printf("\n");
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("returnType: \"%s\"\n", tree->returnType);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("paramTypes: ");
-
-    printSequential(tree->paramTypes, indent + 1, 0);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("definedSymbols: \n");
-
-    printTreeList(tree->definedSymbols, indent + 1);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("code: \n");
-
-    printSequential(tree->code, indent + 1, 1);
-
-}
-
-//used to debug to file ( prints tree to file with fname )
-void printTreeToFile(Object * tree, int indent, char *fname)
-{
-
-    int i;
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("Object: name: \"%s\"\n", tree->name);
-
-    indent += 1;
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("fullname: \"%s\"\n", tree->fullname);
-
-    if (tree->parentScope == 0) {
-
-        for (i = 0; i < indent; i++) {
-            printf("  ");
-        }
-        printf("parentObject: (null)\n");
-
-    } else {
-
-        for (i = 0; i < indent; i++) {
-            printf("  ");
-        }
-        printf("parentObject: %s\n", tree->parentScope->fullname);
-
-    }
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("category: ");
-    printType(tree->category);
-    printf("\n");
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("returnType: \"%s\"\n", tree->returnType);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("paramTypes: ");
-
-    printSequential(tree->paramTypes, indent + 1, 0);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("definedSymbols: \n");
-
-    printTreeList(tree->definedSymbols, indent + 1);
-
-    for (i = 0; i < indent; i++) {
-        printf("  ");
-    }
-    printf("code: \n");
-
-    printSequential(tree->code, indent + 1, 1);
-
-}
+//     }
+
+// }
+
+// void printTree(Object * tree, int indent)
+// {
+
+//     if (getFlag(tree, FLAG_EXTERNAL)) {
+//         return;
+//     }
+
+//     int i;
+//     if (tree == 0) {
+//         for (i = 0; i < indent; i++) {
+//             printf("  ");
+//         }
+//         printf("Object: (null)\n");
+//         return;
+//     }
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("Object: name: \"%s\"\n", tree->name);
+
+//     indent += 1;
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("fullname: \"%s\"\n", tree->fullname);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("parentScope: %s\n",
+//            tree->parentScope ? tree->parentScope->fullname : "(null)");
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("parentClass: %s\n",
+//            tree->parentClass ? tree->parentClass->fullname : "(null)");
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("category: ");
+//     printType(tree->category);
+//     printf("\n");
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("returnType: \"%s\"\n", tree->returnType);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("paramTypes: ");
+
+//     printSequential(tree->paramTypes, indent + 1, 0);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("definedSymbols: \n");
+
+//     printTreeList(tree->definedSymbols, indent + 1);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("code: \n");
+
+//     printSequential((ListType*) tree->code, indent + 1, 1);
+
+// }
+
+// //used to debug to file ( prints tree to file with fname )
+// void printTreeToFile(Object * tree, int indent, char *fname)
+// {
+
+//     int i;
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("Object: name: \"%s\"\n", tree->name);
+
+//     indent += 1;
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("fullname: \"%s\"\n", tree->fullname);
+
+//     if (tree->parentScope == 0) {
+
+//         for (i = 0; i < indent; i++) {
+//             printf("  ");
+//         }
+//         printf("parentObject: (null)\n");
+
+//     } else {
+
+//         for (i = 0; i < indent; i++) {
+//             printf("  ");
+//         }
+//         printf("parentObject: %s\n", tree->parentScope->fullname);
+
+//     }
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("category: ");
+//     printType(tree->category);
+//     printf("\n");
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("returnType: \"%s\"\n", tree->returnType);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("paramTypes: ");
+
+//     printSequential(tree->paramTypes, indent + 1, 0);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("definedSymbols: \n");
+
+//     printTreeList(tree->definedSymbols, indent + 1);
+
+//     for (i = 0; i < indent; i++) {
+//         printf("  ");
+//     }
+//     printf("code: \n");
+
+//     printSequential(tree->code, indent + 1, 1);
+
+// }
 
 //===============  Test / sample  ====================
 
-int testmain()
-{
+// int testmain()
+// {
 
-    Object *root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "int");
-    Object *basetype = CreateObject("BaseType", "BaseType", 0, Type, 0);
-    Object *rect = CreateObject("Rectangle", "BaseType_Rectangle", basetype, Type, 0);
-    Object *rectConst =
-        CreateObject("Rectangle", "Rectangle_Rectangle_Rectangle_int_int", 0,
-                     Constructor, "Rectangle");
-    Object *subexpr = CreateObject(0, 0, 0, Expression, "float");
-    addCode(subexpr, "3.14159");
-    addParam(rectConst, "int");
-    addParam(rectConst, "int");
-    addSymbol(rectConst, CreateObject("width", "width", 0, Variable, "int"));
-    addSymbol(rectConst, CreateObject("height", "height", 0, Variable, "int"));
-    addSymbol(rectConst, CreateObject("self", "self", 0, Variable, "Rectangle*"));
-    addCode(rectConst,
-            "Rectangle * Rectangle_Rectangle_Rectangle_int_int(int width, int height) {");
-    addCode(rectConst, "    Rectangle * self = (Rectangle*)malloc(sizeof(Rectangle));");
-    addCode(rectConst, "    self->w = width;");
-    addCode(rectConst, "    self->h = height;");
-    addCode(rectConst, "    return self;");
+//     Object *root = CreateObject("Undefined", "Undefined", 0, CodeBlock, "int");
+//     Object *basetype = CreateObject("BaseType", "BaseType", 0, Type, 0);
+//     Object *rect = CreateObject("Rectangle", "BaseType_Rectangle", basetype, Type, 0);
+//     Object *rectConst =
+//         CreateObject("Rectangle", "Rectangle_Rectangle_Rectangle_int_int", 0,
+//                      Constructor, "Rectangle");
+//     Object *subexpr = CreateObject(0, 0, 0, Expression, "float");
+//     addCode(subexpr, "3.14159");
+//     addParam(rectConst, "int");
+//     addParam(rectConst, "int");
+//     addSymbol(rectConst, CreateObject("width", "width", 0, Variable, "int"));
+//     addSymbol(rectConst, CreateObject("height", "height", 0, Variable, "int"));
+//     addSymbol(rectConst, CreateObject("self", "self", 0, Variable, "Rectangle*"));
+//     addCode(rectConst,
+//             "Rectangle * Rectangle_Rectangle_Rectangle_int_int(int width, int height) {");
+//     addCode(rectConst, "    Rectangle * self = (Rectangle*)malloc(sizeof(Rectangle));");
+//     addCode(rectConst, "    self->w = width;");
+//     addCode(rectConst, "    self->h = height;");
+//     addCode(rectConst, "    return self;");
 
-    addCode(rectConst, "}");
+//     addCode(rectConst, "}");
 
-    addSymbol(rect, CreateObject("w", "w", 0, Variable, "int"));
+//     addSymbol(rect, CreateObject("w", "w", 0, Variable, "int"));
 
-    addSymbol(rect, CreateObject("h", "h", 0, Variable, "int"));
+//     addSymbol(rect, CreateObject("h", "h", 0, Variable, "int"));
 
-    addSymbol(rect, rectConst);
+//     addSymbol(rect, rectConst);
 
-    addCode(rect, "typedef struct {");
+//     addCode(rect, "typedef struct {");
 
-    addCode(rect, "    BaseType parent;");
+//     addCode(rect, "    BaseType parent;");
 
-    addCode(rect, "    int w;");
+//     addCode(rect, "    int w;");
 
-    addCode(rect, "    int h;");
+//     addCode(rect, "    int h;");
 
-    addCode(rect, "} Rectangle;");
+//     addCode(rect, "} Rectangle;");
 
-    addSymbol(root, basetype);
+//     addSymbol(root, basetype);
 
-    addSymbol(root, rect);
+//     addSymbol(root, rect);
 
-    addSymbol(root, subexpr);
+//     addSymbol(root, subexpr);
 
-    printTree(root, 0);
+//     printTree(root, 0);
 
-    return 0;
+//     return 0;
 
-}
+// }

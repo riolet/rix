@@ -84,10 +84,10 @@ Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isP
     }
 
     if (typeArgs) {
-        ListString * list = typeArgs->paramTypes;
+        ListType * list = typeArgs->paramTypes;
         compilerDebugPrintf(" Paramtypes: ");
         while (list) {
-            compilerDebugPrintf(" %s ", typeArgs->paramTypes->value);
+            compilerDebugPrintf(" %s ", typeArgs->paramTypes->type);
             list = list->next;
         }
         compilerDebugPrintf(" Paramtypes\n");
@@ -138,7 +138,7 @@ Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificTy
     if (returnType == 0) {
         criticalError(ERROR_ParseError, "Return category mustn't be null.\n");
     }
-    ListString *types = parameters->paramTypes;
+    ListType *types = parameters->paramTypes;
     ListString *names = parameters->code;
     //TODO: check funcName is undefined or function category
     //TODO: check returnType is a valid Type
@@ -163,7 +163,7 @@ Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificTy
         while (types != 0) {
             funcFullName_pos +=
                 snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
-                         COMPILER_SEP "%s", types->value);
+                         COMPILER_SEP "%s", types->type);
             while (funcFullName[funcFullName_pos - 1] == ' '
                    || funcFullName[funcFullName_pos - 1] == '*') {
                 funcFullName_pos--;
@@ -210,9 +210,9 @@ Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificTy
     while (types != 0) {
         if (!external) {
             addSymbol(result,
-                      CreateObject(names->value, names->value, 0, Variable, types->value));
+                      CreateObject(names->value, names->value, 0, Variable, types->type));
         }
-        addParam(result, types->value);
+        addParam(result, types->type);
         names = names->next;
         types = types->next;
     }
@@ -239,7 +239,7 @@ Object *beginConstructor(Object * parameters)
     if (current->category != Type) {
         criticalError(ERROR_ParseError, "Constructor can only exist inside a class.\n");
     }
-    ListString *types = parameters->paramTypes;
+    ListType *types = parameters->paramTypes;
     ListString *names = parameters->code;
 
     char funcFullName[BUFFLEN];
@@ -258,10 +258,10 @@ Object *beginConstructor(Object * parameters)
     }
 
     while (types != 0) {
-        compilerDebugPrintf("Adding category %s\n",types->value);
+        compilerDebugPrintf("Adding category %s\n",types->type);
         funcFullName_pos +=
             snprintf(&funcFullName[funcFullName_pos], BUFFLEN - funcFullName_pos,
-                     COMPILER_SEP "%s", types->value);
+                     COMPILER_SEP "%s", types->type);
         while (funcFullName[funcFullName_pos - 1] == ' '
                || funcFullName[funcFullName_pos - 1] == '*') {
             funcFullName_pos--;
@@ -293,9 +293,9 @@ Object *beginConstructor(Object * parameters)
     while (types != 0) {
         if (!external) {
             addSymbol(result,
-                      CreateObject(names->value, names->value, 0, Variable, types->value));
+                      CreateObject(names->value, names->value, 0, Variable, types->type));
         }
-        addParam(result, types->value);
+        addParam(result, types->type);
         names = names->next;
         types = types->next;
     }
@@ -448,7 +448,7 @@ void doneDestructor(Object * tree)
     scope_pop();
 }
 
-Object *funcParameters(Object * paramList, char *paramType, char *paramName)
+Object *funcParameters(Object * paramList, char *paramType, char *paramName, char *genericType)
 {
     //TODO: check if category is actually a defined category
     //TODO: check paramType is a valid Type
@@ -465,8 +465,7 @@ Object *funcParameters(Object * paramList, char *paramType, char *paramName)
     } else {
         result = paramList;
     }
-
-    addParam(result, type->returnType);
+    addParamWithGenericType(result, type->returnType,genericType);            
     addCode(result, paramName);
     return result;
 }
@@ -474,7 +473,7 @@ Object *funcParameters(Object * paramList, char *paramType, char *paramName)
 Object *concatParams(Object * existing, Object * newParam)
 {
     Object *result = CreateObject(0, 0, 0, Expression, 0);
-    ListString *paramIter;
+    ListType *paramIter;
     ListString *codeIter;
     int paramLen;
     int codeLen;
@@ -516,7 +515,7 @@ Object *concatParams(Object * existing, Object * newParam)
             continue;
         }
         addCode(result, codeIter->value);
-        addParam(result, paramIter->value);
+        addParamWithGenericType(result, paramIter->type,paramIter->genericType);
         codeLen--;
         codeIter = codeIter->next;
         paramIter = paramIter->next;
@@ -534,7 +533,7 @@ Object *concatParams(Object * existing, Object * newParam)
             continue;
         }
         addCode(result, codeIter->value);
-        addParam(result, paramIter->value);
+        addParamWithGenericType(result, paramIter->type,paramIter->genericType);
         codeLen--;
         codeIter = codeIter->next;
         paramIter = paramIter->next;
@@ -543,10 +542,13 @@ Object *concatParams(Object * existing, Object * newParam)
     return result;
 }
 
-Object *declareVariable(char *name, char *type)
+Object *declareVariable(char *name, char *type, char * genericType)
 {
     Object *oType = findByName(type);
     Object *var = CreateObject(name, name, 0, Variable, oType->returnType);
+    if (genericType) {
+        var->genericType=genericType;
+    }
     addSymbol(current, var);
     return var;
 }
@@ -696,7 +698,7 @@ Object *injectC(char *code)
     return 0;
 }
 
-Object *conjugateNewVarAssignment(Object * ident, Object * verb, Object * objects)
+Object *conjugateNewVarAssignment(char * ident, Object * verb, Object * objects)
 {
     if (ident == 0) {
         criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
@@ -775,14 +777,15 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         criticalError(ERROR_UndefinedVerb, error);
     } else if (realVerb == 0) {
         //must be literal = or similar.
+        compilerDebugPrintf("must be literal = or similar: %s (%d) \n", verbname,__LINE__);
         if (!objects) {
             criticalError(ERROR_ParseError, "Object of assignment was not found.\n");
         }
-        if (!objects->returnType) {
-            char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Paramtypes not found for %s %d.\n", objects->name,__LINE__);
-            criticalError(ERROR_ParseError, error);
-        }
+        // if (!objects->returnType) {
+        //     char error[BUFFLEN];
+        //     snprintf(error, BUFFLEN, "Paramtypes not found for %s %d.\n", objects->name,__LINE__);
+        //     criticalError(ERROR_ParseError, error);
+        // }
         result = CreateObject(0, 0, 0, Expression, objects->returnType);
         addParam(result, objects->returnType);
         if (objects->genericType) {
@@ -833,11 +836,12 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             snprintf(error, BUFFLEN, "Cannot find category for %s\n",objects->returnType);
             criticalError(ERROR_ParseError, error);
         }
-
+        //TODO: This ignores the classes assign method
         if (getFlag(rType,FLAG_PRIMITIVE)) {
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                      objects->code->value);
         } else {
+
             snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
                      objects->code->value);
         }
@@ -1124,7 +1128,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             }
             addParam(result, verb->returnType);
         } else if (!strcmp(subject->returnType, "float")
-                   || !strcmp(objects->paramTypes->value, "float")) {
+                   || !strcmp(objects->paramTypes->type, "float")) {
             result = CreateObject(0, 0, 0, Expression, "float");
             addParam(result, "float");
         } else {
@@ -1794,7 +1798,8 @@ int main(int argc, char **argv)
     bool quiet = false;
     g_headerLines = 0;
     bool waferSupport = false;
-    while ((c = getopt(argc, argv, "o:tqW")) != -1) {
+    bool isLibrary = false;
+    while ((c = getopt(argc, argv, "o:tqWL")) != -1) {
         switch (c) {
         case 't':
             compilerDebugPrintf("hit -t arg\n");
@@ -1808,7 +1813,11 @@ int main(int argc, char **argv)
         case 'W':
             waferSupport = true;
             break;
-
+            
+        case 'L':
+            isLibrary = true;
+            break;
+            
         case ':':              /* -f or -o without operand */
             fprintf(stderr, "Option -%c requires an operand\n", optopt);
             errflg++;
@@ -1918,6 +1927,8 @@ int main(int argc, char **argv)
                              "\t_$_U_VARIABLE(response);\n"
                              "\tRequest_$_Request_$_(__$$__request, request);\n"
                              "\tResponse_$_Response_$_(__$$__response, response);\n");
+    else if (isLibrary)
+        fprintf(outMainFile, "");                             
     else
         fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n"
                              "    _$$_argc=_$$_argc_;\n"
@@ -1925,11 +1936,12 @@ int main(int argc, char **argv)
 
     writeTree(outMainFile, outHeaderFile, root);
     if (printTreeBool == 1) {
-
-        printTreeToFile(root, 0, "./treeOutput.txt");
+        //printTreeToFile(root, 0, "./treeOutput.txt");
     }
-
-    fprintf(outMainFile, "  return 0;\n}\n");
+    
+	if (!isLibrary)
+		fprintf(outMainFile, "  return 0;\n}\n");
+		
     fclose(outHeaderFile);
     fclose(outMainFile);
     fclose(outMakeFile);

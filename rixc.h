@@ -38,11 +38,11 @@ void doneConstructor(Object * tree);
 Object *beginDestructor(Object * parameters);
 void doneDestructor(Object * tree);
 
-Object *funcParameters(Object * tree, char *paramType, char *paramName);
+Object *funcParameters(Object * tree, char *paramType, char *paramName, char *generiType);
 Object *concatParams(Object * existing, Object * newParam);
-Object *declareVariable(char *name, char *type);
+Object *declareVariable(char *name, char *type, char * genericType);
 
-Object *conjugateNewVarAssignment(Object * subject, Object * verb, Object * objects);
+Object *conjugateNewVarAssignment(char * ident, Object * verb, Object * objects);
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects);
 Object *conjugate(Object * lhs, Object * verb, Object * rhs);
 Object *conjugateConditional(Object * lhs, Object * verb, Object * rhs);
@@ -83,4 +83,5 @@ Object *genericOfGeneric(Object * parent, Object * child);
 
 Object *beginClass_R (char *className, char *parentName, Object *typeArgs, bool isPrimitive);
 
+Object * directive(char *key, char *value);
 #endif

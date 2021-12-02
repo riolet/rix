@@ -131,4 +131,7 @@ IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
 IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor);
 
+char *snprintfauto(const char *format, ...);
+void _$_cleanup_object(IDENT_MPTR_RAW *p);
+
 #endif
