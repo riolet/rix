@@ -9,6 +9,8 @@ void List_$_destructor_$_ (list_t ** list);
 IDENT_MPTR_RAW * _$_List_$_append_non_primitive(IDENT_MPTR_RAW * list_, IDENT_MPTR_RAW * element, IDENT_MPTR_RAW * $_mptr_in);
 bool _$_List_$_contains_non_primitive(IDENT_MPTR_RAW * list_, IDENT_MPTR_RAW * element);
 
+#define List  list_t  *
+
 #define _$_List_$_append_0(_$v$_list, _$v$_elem) ({list_rpush(_$v$_list, list_node_new(_$v$_elem));_$v$_list;})
 #define _$_List_$_append_1(_$v$_list, _$v$_elem) ({})
 

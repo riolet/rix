@@ -203,7 +203,7 @@ expr:
 
 genericType:
   TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = $1; } //1-ary
-  | TYPE LBRACE genericType RBRACE arguments{ compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric($1,$3); } //1-ary
+  | TYPE LBRACE genericType RBRACE { compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric($1,$3); } //1-ary
   | TYPE PARAMCOMMA genericType { compilerDebugPrintf("Multitype of Generic\n");   $$ = concatGenerics($1,$3); } //1-ary
   ;
 
@@ -257,8 +257,10 @@ function_definition:
 
 parameters:
   %empty                                { compilerDebugPrintf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | TYPE parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
-  | parameters PARAMCOMMA TYPE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
+  | TYPE parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = funcParameters( 0, $1, $2, 0); }
+  | TYPE LBRACE genericType RBRACE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters(0, $1, $5, $3); }
+  | parameters PARAMCOMMA TYPE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $4, 0); }
+  | parameters PARAMCOMMA TYPE LBRACE genericType RBRACE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $7, $5); }
   ;
 
 parameterIdent:
@@ -297,7 +299,8 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
-  | TYPE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
+  | TYPE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1, 0); }
+  | TYPE LBRACE genericType RBRACE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($5, $1, $3); }
   | function_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }
