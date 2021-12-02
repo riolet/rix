@@ -4,7 +4,7 @@
 #include "ObjectTree.h"
 #include "rixc.h"
 #include "errors.h"
-#include "rixc.rix_.h"
+#include "rixc.rix_ext.h"
 
 #define YYPARSE_PARAM scanner
 #define YYLEX_PARAM   scanner

@@ -23,6 +23,7 @@ typedef struct {
 void Array_$_destructor_$_ (StructArray ** a);
 
 //#define _$_Array_type_0(_$v$_type) _$v$_type *
+#define Array StructArray __attribute__ ((__cleanup__(Array_$_destructor_$_))) *
 #define _$_Array_type_0(_$v$_type) StructArray __attribute__ ((__cleanup__(Array_$_destructor_$_))) *
 #define _$_Array_type_1(_$v$_type) _$v$_type *
 

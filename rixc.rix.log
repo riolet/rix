@@ -1,0 +1,1184 @@
+rixc.rix
+Lines read 59
+Cannot find import file ext/List/List.rix in working directory. Trying RIX_HOME
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Array.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Array.c"
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: CtorDecPrim
+lexer: type
+parser: class-def
+External class 1
+EOL
+lexer: INDENT
+lexer: self
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: class-def
+Doing constructor Array_$_Array
+Adding category int
+Adding ctor Array_$_Array_$_int
+External ctor 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Constructor Defined! Array_$_Array_$_int
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Array_$_getObjectAtIndex_$_int
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: ParamComma
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: paramN
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Array_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$
+EOL
+parser: c_s-eol
+empty EOL
+lexer: OUTDENT
+parser: s_s-class - Class Defined! Array_$_BaseType
+parser: stmts-stmt,s_s
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_String.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_String.c"
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: ClassDec
+lexer: type
+parser: class-def
+External class 1
+EOL
+lexer: INDENT
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: )
+parser: param0
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! String_$_length_$_
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: )
+parser: param0
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! String_$_lower_$_
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: )
+parser: param0
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! String_$_upper_$_
+EOL
+parser: c_s-eol
+empty EOL
+lexer: OUTDENT
+parser: s_s-class - Class Defined! String_$_BaseType
+parser: stmts-stmt,s_s
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Stream.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rsl/RSL_Stream.c"
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: ClassDec
+lexer: type
+parser: class-def
+External class 1
+EOL
+lexer: INDENT
+lexer: self
+lexer: (
+lexer: )
+parser: param0
+parser: class-def
+Doing constructor Stream_$_Stream
+Adding no types
+Adding ctor Stream_$_Stream_$_
+External ctor 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Constructor Defined! Stream_$_Stream_$_
+lexer: self
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: ParamComma
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: paramN
+lexer: )
+parser: class-def
+Doing constructor Stream_$_Stream
+Adding category String
+Adding category String
+Adding ctor Stream_$_Stream_$_String_$_String
+External ctor 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Constructor Defined! Stream_$_Stream_$_String_$_String
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_print_$_String
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_print_$_int
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_print_$_float
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_echo_$_String
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_echo_$_int
+lexer: verb
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! Stream_$_echo_$_float
+EOL
+parser: c_s-eol
+empty EOL
+lexer: OUTDENT
+parser: s_s-class - Class Defined! Stream_$_BaseType
+parser: stmts-stmt,s_s
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "rixc.rix_ext.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "ext/List/List.h"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "ext/List/List.c"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "ext/List/cliblist.c"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "ext/List/list_node.c"
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value "ext/List/list_iterator.c"
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: CtorDecPrim
+lexer: type
+parser: class-def
+External class 1
+EOL
+lexer: INDENT
+lexer: self
+lexer: (
+lexer: )
+parser: param0
+parser: class-def
+Doing constructor List_$_List
+Adding no types
+Adding ctor List_$_List_$_
+External ctor 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Constructor Defined! List_$_List_$_
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! List_$_append_$_Generic_$$
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: type
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-def
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! List_$_contains_$_Generic_$$
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+lexer: Return
+lexer: (
+lexer: type
+lexer: unidentified identifier
+parser: UNMARKEDNEWIDENT
+parser: param1
+lexer: )
+parser: func-void
+External func 1
+EOL
+lexer: INDENT
+lexer: comment (ignored)
+EOL
+parser: s_s-eol
+empty EOL
+parser: stmts-s_s
+lexer: OUTDENT
+parser: codeblock
+parser: c_s-func - Function Defined! List_$_foreach_$_Generic_$$
+EOL
+parser: c_s-eol
+empty EOL
+lexer: OUTDENT
+parser: s_s-class - Class Defined! List_$_BaseType
+parser: stmts-stmt,s_s
+lexer: directive
+lexer: string
+EOL
+parser: dtv
+Directive value ""
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: assignment
+lexer: int
+parser: object-int
+objectInt(5)
+parser: expr-obj
+EOL
+parser: expr-asn
+verbAssignment(:=)
+objectNewIdent(a)
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_int
+must be literal = or similar: assign_$_int (780) 
+Creating new variable a as int
+	Conjugated: (850) a = 5 at 
+parser: stmt-expr
+lexer: unidentified identifier
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+lexer: ClassDec
+lexer: type
+parser: class-def
+External class 0
+EOL
+lexer: INDENT
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: OUTDENT
+parser: s_s-class - Class Defined! OBJ_TYPE_R_$_BaseType
+Beginning Destructor OBJ_TYPE_R_$_destructor_$_!
+Finding ctor for OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Doing constructor OBJ_TYPE_R_$_OBJ_TYPE_R
+Adding no types
+Adding ctor OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+External ctor 0
+parser: stmts-stmt,s_s
+lexer: unidentified identifier
+lexer: ClassDec
+lexer: type
+parser: class-def
+External class 0
+EOL
+lexer: INDENT
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: type
+lexer: unidentified identifier
+EOL
+parser: c_s:varType
+lexer: self
+lexer: (
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: param1
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: (
+lexer: type
+lexer: )
+Single TYpe Generic
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: ParamComma
+lexer: type
+lexer: identifier
+parser: IDENT
+parser: paramN
+lexer: )
+parser: class-def
+Doing constructor Object_R_$_Object_R
+Adding category String
+Adding category String
+Adding category Object_R
+Adding category Object_R
+Adding category OBJ_TYPE_R
+Adding category String
+Adding category String
+Adding category int
+Adding category String
+Adding category List
+Adding category List
+Adding category List
+Adding category int
+Adding ctor Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+External ctor 0
+EOL
+lexer: INDENT
+lexer: self
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self name
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(name)
+Ident full name name
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_String
+must be literal = or similar: assign_$_String (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->name,name) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self fullname
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(fullname)
+Ident full name fullname
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_String
+must be literal = or similar: assign_$_String (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->fullname,fullname) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self parentClass
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(parentClass)
+Ident full name parentClass
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_Object_R
+must be literal = or similar: assign_$_Object_R (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->parentClass,parentClass) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self parentScope
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(parentScope)
+Ident full name parentScope
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_Object_R
+must be literal = or similar: assign_$_Object_R (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->parentScope,parentScope) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self category
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(category)
+Ident full name category
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_OBJ_TYPE_R
+must be literal = or similar: assign_$_OBJ_TYPE_R (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->category,category) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self returnType
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(returnType)
+Ident full name returnType
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_String
+must be literal = or similar: assign_$_String (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->returnType,returnType) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self genericType
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(genericType)
+Ident full name genericType
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_String
+must be literal = or similar: assign_$_String (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->genericType,genericType) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self genericTypeArgPos
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(genericTypeArgPos)
+Ident full name genericTypeArgPos
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_int
+must be literal = or similar: assign_$_int (780) 
+	Conjugated: (850) /* 1748 */ (((Object_R *)( $self->obj)))->genericTypeArgPos = genericTypeArgPos at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self resolvedSpecificType
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(resolvedSpecificType)
+Ident full name resolvedSpecificType
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_String
+must be literal = or similar: assign_$_String (780) 
+	Conjugated: (850) IDENT_MPTR_RAW_assign(/* 1748 */ (((Object_R *)( $self->obj)))->resolvedSpecificType,resolvedSpecificType) at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self paramTypes
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(paramTypes)
+Ident full name paramTypes
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_List
+must be literal = or similar: assign_$_List (780) 
+	Conjugated: (850) /* 1748 */ (((Object_R *)( $self->obj)))->paramTypes = paramTypes at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self definedSymbols
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(definedSymbols)
+Ident full name definedSymbols
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_List
+must be literal = or similar: assign_$_List (780) 
+	Conjugated: (850) /* 1748 */ (((Object_R *)( $self->obj)))->definedSymbols = definedSymbols at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self code
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(code)
+Ident full name code
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_List
+must be literal = or similar: assign_$_List (780) 
+	Conjugated: (850) /* 1748 */ (((Object_R *)( $self->obj)))->code = code at 
+parser: stmt-expr
+lexer: self
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: object-self
+objectSelfIdent($)
+parser: expr-obj
+lexer: accessor
+lexer: identifier
+parser: IDENT
+parser: exp-.i
+conjugateAccessorIdent subject->code->value $self
+Trying parent class: Object_R
+Parent field $self flags
+lexer: assignment
+lexer: identifier
+EOL
+parser: object-identifer
+objectIdent(flags)
+Ident full name flags
+parser: expr-obj
+parser: expr-asn
+verbAssignment(=)
+ConjugateAssign: fullVerbName: assign_$_int
+must be literal = or similar: assign_$_int (780) 
+	Conjugated: (850) /* 1748 */ (((Object_R *)( $self->obj)))->flags = flags at 
+parser: stmt-expr
+lexer: EOF OUTDENT
+parser: s_s-stmt
+statement EOL
+parser: stmts-stmt,s_s
+parser: codeblock
+parser: c_s-func - Constructor Defined! Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+lexer: EOF OUTDENT
+parser: s_s-class - Class Defined! Object_R_$_BaseType
+Beginning Destructor Object_R_$_destructor_$_!
+Finding ctor for Object_R_$_Object_R_$_
+Doing constructor Object_R_$_Object_R
+Adding no types
+Adding ctor Object_R_$_Object_R_$_
+External ctor 0
+parser: stmts-stmt,s_s
+parser: rix-stmts
+parser: rix-EOF
+Forward decling OBJ_TYPE_R_$_destructor_$_
+Looking up function OBJ_TYPE_R_$_destructor_$_
+Looking up category _$_mptr
+Line746 OBJ_TYPE_R_$_destructor_$_
+Forward decling OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Looking up function OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Looking up category OBJ_TYPE_R
+Line746 OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Forward decling Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Looking up function Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Looking up category Object_R
+Line746 Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Forward decling Object_R_$_destructor_$_
+Looking up function Object_R_$_destructor_$_
+Looking up category _$_mptr
+Line746 Object_R_$_destructor_$_
+Forward decling Object_R_$_Object_R_$_
+Looking up function Object_R_$_Object_R_$_
+Looking up category Object_R
+Line746 Object_R_$_Object_R_$_
+Writing function OBJ_TYPE_R_$_destructor_$_
+Looking up function OBJ_TYPE_R_$_destructor_$_
+Looking up category _$_mptr
+Line746 OBJ_TYPE_R_$_destructor_$_
+Writing function OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Looking up function OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Looking up category OBJ_TYPE_R
+Line746 OBJ_TYPE_R_$_OBJ_TYPE_R_$_
+Writing function Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Looking up function Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Looking up category Object_R
+Line746 Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_List_$_List_$_List_$_int
+Writing function Object_R_$_destructor_$_
+Looking up function Object_R_$_destructor_$_
+Looking up category _$_mptr
+Line746 Object_R_$_destructor_$_
+Writing function Object_R_$_Object_R_$_
+Looking up function Object_R_$_Object_R_$_
+Looking up category Object_R
+Line746 Object_R_$_Object_R_$_

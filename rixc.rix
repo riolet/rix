@@ -1,4 +1,45 @@
-##external "rixc.rix_.h"
+##external "rixc.rix_ext.h"
 ##external ""
-thisIsRidiculous->String(String a)    
-    ->a
+
+import ("ext/List/List.rix")
+
+a:=5
+
+OBJ_TYPE_R::BaseType
+    int a
+
+Object_R::BaseType    
+    Array arr
+    String name
+    String fullname
+    Object_R parentClass
+    Object_R parentScope
+    OBJ_TYPE_R category
+    String returnType
+    String genericType
+    int genericTypeArgPos
+    String resolvedSpecificType
+    List{String} paramTypes
+    List{Object_R} definedSymbols
+    List{String} code
+    int flags
+
+    $(String name,String fullname,Object_R parentClass,Object_R parentScope,OBJ_TYPE_R category,String returnType,String genericType,int genericTypeArgPos,String resolvedSpecificType,List{String} paramTypes,List{Object_R} definedSymbols,List{String} code,int flags)
+        $.name=name
+        $.fullname=fullname
+        $.parentClass=parentClass
+        $.parentScope=parentScope
+        $.category=category
+        $.returnType=returnType
+        $.genericType=genericType
+        $.genericTypeArgPos=genericTypeArgPos
+        $.resolvedSpecificType=resolvedSpecificType
+        $.paramTypes=paramTypes
+        $.definedSymbols=definedSymbols
+        $.code=code
+        $.flags=flags
+
+
+
+
+

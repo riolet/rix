@@ -6,7 +6,7 @@
 
 #include "rixc.h"
 #include "crsl.h"
-#include "rixc.rix_.h"
+#include "rixc.rix_ext.h"
 
 #define BUFFLEN 1024
 #define LABELMAX 8096

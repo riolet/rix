@@ -35,13 +35,6 @@ struct IDENT_MPTR_RAW {
 
 typedef IDENT_MPTR_RAW * IDENT_MPTR_RAW_PTR;
 
-typedef struct  {
-    char *Type;
-    char *data;
-    size_t length;
-    size_t cap;
-} List;
-
 typedef void *UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
 //typedef char Char;
