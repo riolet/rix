@@ -18,10 +18,15 @@ IDENT_MPTR_RAW *toRixString(char *c, IDENT_MPTR_RAW *left)
     return left;
 }
 
-IDENT_MPTR_RAW *toRixListString(char *c, IDENT_MPTR_RAW *left)
+IDENT_MPTR_RAW *toRixListString(List olist, ListType *lt)
 {
-    List list = list_new();
-    
+    olist = list_new();
+    if (!lt)
+        return olist;
+    ListType *it=lt;   
+    while (it) {
+        list_rpush(lt->)
+    }
     return left;
 }
 
@@ -53,7 +58,7 @@ IDENT_MPTR_RAW *toRixObject(Object *o, IDENT_MPTR_RAW *left)
     toRixString(o->resolvedSpecificType, resolvedSpecificType);
 
     _$_U_VARIABLE(paramTypes);
-    toRixListString(o->paramTypes, paramTypes);
+    toRixListType(o->paramTypes, paramTypes);
 
     _$_U_VARIABLE(definedSymbols);
     toRixListObject(o->definedSymbols, definedSymbols);
