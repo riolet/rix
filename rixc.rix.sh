@@ -1,1 +1,0 @@
-gcc -Wno-implicit-function-declaration -lm -I ${RIX_HOME} -ggdb -o rixc.rix.out rixc.rix.c ${RIX_HOME}/rsl/rsl.c ${RIX_HOME}/errors.c ${RIX_HOME}/"rsl/RSL_Array.c" ${RIX_HOME}/"rsl/RSL_String.c" ${RIX_HOME}/"rsl/RSL_Stream.c" ${RIX_HOME}/"ext/List/List.c" ${RIX_HOME}/"ext/List/cliblist.c" ${RIX_HOME}/"ext/List/list_node.c" ${RIX_HOME}/"ext/List/list_iterator.c"  -lm

@@ -39,3 +39,5 @@ out.sh
 *.swp
 *.rit.*
 .idea
+
+rixc.rix.*
