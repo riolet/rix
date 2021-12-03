@@ -12,7 +12,7 @@ void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
     if (!s->isStaticBuffer) {
         debugPrintf("String %s contains %s\n",_$_mptr_in->debugName, s->buffer);
         free(s->buffer); 
-    } {
+    } else {
         debugPrintf("Not cleaning StaticString %s containing %s\n",_$_mptr_in->debugName, s->buffer);
     }
     free(s);
@@ -38,7 +38,7 @@ IDENT_MPTR_RAW * String_$_stringlit(char *strlit, IDENT_MPTR_RAW * $_mptr_in)
     debugPrintf("String_$_stringlit %s -> %s\n",$_mptr_temp.debugName,s->buffer);
 
     //Todod pass this from the caller
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -68,7 +68,7 @@ IDENT_MPTR_RAW * String_$_plus_$_String(IDENT_MPTR_RAW * left_, IDENT_MPTR_RAW *
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -92,7 +92,7 @@ IDENT_MPTR_RAW * String_$_plus_$_int(IDENT_MPTR_RAW * left_, int right, IDENT_MP
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -115,7 +115,7 @@ IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MP
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -139,7 +139,7 @@ IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDEN
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -162,7 +162,7 @@ IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDEN
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left)
@@ -198,7 +198,7 @@ IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
 
@@ -222,6 +222,6 @@ IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
     s->buffer[s->length] = 0;
     s->isStaticBuffer = false;
 
-    _$_mptr_prepare(&$_mptr_temp,$_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }

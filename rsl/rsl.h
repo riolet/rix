@@ -30,7 +30,7 @@ struct IDENT_MPTR_RAW {
     IDENT_MPTR_RAW *ptr;
     void *obj;
     void (*destructor)(void *);
-    char *debugName;
+    char debugName[1024];
 };
 
 typedef IDENT_MPTR_RAW * IDENT_MPTR_RAW_PTR;
@@ -123,7 +123,7 @@ void _$_cleanup (IDENT_MPTR_RAW *p);
 
 void _$_cleanup_var (IDENT_MPTR_RAW **p);
 
-void _$_mptr_prepare(IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * b);
+void _$_object_ownership_transfer(IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * b);
 
 IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 

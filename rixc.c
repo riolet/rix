@@ -312,60 +312,60 @@ Object *beginConstructor(Object * parameters)
         addCode(result, allocator);
 
 
-        if (!getFlag(current->parentClass,FLAG_PRIMITIVE)) {
-            char retVarName[BUFFLEN];
-            snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
-            retVarNumber++;
-            Object *retVar =
-                    CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
-            addSymbol(result, retVar);
+    //     if (!getFlag(current->parentClass,FLAG_PRIMITIVE)) {
+    //         char retVarName[BUFFLEN];
+    //         snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
+    //         retVarNumber++;
+    //         Object *retVar =
+    //                 CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
+    //         addSymbol(result, retVar);
 
-            //Todo: Handle heap variables
+    //         //Todo: Handle heap variables
 
-            snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
-                     current->parentClass->name, current->parentClass->name, retVarName);
+    //         snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
+    //                  current->parentClass->name, current->parentClass->name, retVarName);
 
-        }
-        addCode(result, allocator);
+    //     }
+    //     addCode(result, allocator);
 
-        snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "_= " IDENT_SELF_SELF "_->"IDENT_SUPER"->obj;");
-        addCode(result, allocator);
+    //     snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->" IDENT_SUPER "_= " IDENT_SELF_SELF "_->"IDENT_SUPER"->obj;");
+    //     addCode(result, allocator);
 
-        //Add field allocators
-        ListObject *oIter;
+    //     //Add field allocators
+    //     ListObject *oIter;
 
-        oIter = current->definedSymbols;
+    //     oIter = current->definedSymbols;
 
-        while (oIter != 0) {
+    //     while (oIter != 0) {
 
-            if (strcmp(oIter->value->name,IDENT_SUPER)&&strcmp(oIter->value->name,IDENT_SUPER "_"))
-            {
-                if (oIter->value->category == Variable) {
-                    Object * rType = findByName(oIter->value->returnType);
-                    if (!getFlag(rType,FLAG_PRIMITIVE)) {
+    //         if (strcmp(oIter->value->name,IDENT_SUPER)&&strcmp(oIter->value->name,IDENT_SUPER "_"))
+    //         {
+    //             if (oIter->value->category == Variable) {
+    //                 Object * rType = findByName(oIter->value->returnType);
+    //                 if (!getFlag(rType,FLAG_PRIMITIVE)) {
 
-                        char retVarName[BUFFLEN];
-                        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
-                        retVarNumber++;
-                        Object *retVar =
-                                CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
-                        addSymbol(result, retVar);
+    //                     char retVarName[BUFFLEN];
+    //                     snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d", retVarNumber);
+    //                     retVarNumber++;
+    //                     Object *retVar =
+    //                             CreateObject(retVarName, retVarName, 0, Variable, IDENT_HEAP_MPTR);
+    //                     addSymbol(result, retVar);
 
-                        //Todo: Handle heap variables
-                        snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->%s= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
-                                 oIter->value->name, oIter->value->returnType, oIter->value->returnType, retVarName);
-                        addCode(result, allocator);
+    //                     //Todo: Handle heap variables
+    //                     snprintf(allocator, BUFFLEN, IDENT_SELF_SELF "_->%s= %s" COMPILER_SEP "%s" COMPILER_SEP "(%s);",
+    //                              oIter->value->name, oIter->value->returnType, oIter->value->returnType, retVarName);
+    //                     addCode(result, allocator);
 
-                    }
+    //                 }
 
-                } else {
-                    oIter = oIter->next;
-                    break;
-                }
-            }
-            oIter = oIter->next;
+    //             } else {
+    //                 oIter = oIter->next;
+    //                 break;
+    //             }
+    //         }
+    //         oIter = oIter->next;
 
-        }
+    //     }
     }
     addSymbol(parentScope, result);
     scope_push(result);
@@ -413,26 +413,26 @@ Object *beginDestructor(Object * parameters)
     oIter = current->definedSymbols;
     char deallocator[BUFFLEN];
 
-    while (oIter != 0) {
-        if (strcmp(oIter->value->name,IDENT_SUPER "_"))
-        {
-            if (oIter->value->category == Variable) {
-                Object * rType = findByName(oIter->value->returnType);
-                if (!getFlag(rType,FLAG_PRIMITIVE)) {
-                    snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_MPTR "_in->obj)->%s);",
-                             current->returnType, oIter->value->name);
-                    addCode(result, deallocator);
-                    snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->%s);",
-                             current->returnType, oIter->value->name);
-                    addCode(result, deallocator);
-                }
-            } else {
-                oIter = oIter->next;
-                break;
-            }
-        }
-        oIter = oIter->next;
-    }
+    // while (oIter != 0) {
+    //     if (strcmp(oIter->value->name,IDENT_SUPER "_"))
+    //     {
+    //         if (oIter->value->category == Variable) {
+    //             Object * rType = findByName(oIter->value->returnType);
+    //             if (!getFlag(rType,FLAG_PRIMITIVE)) {
+    //                 snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_MPTR "_in->obj)->%s);",
+    //                          current->returnType, oIter->value->name);
+    //                 addCode(result, deallocator);
+    //                 snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->%s);",
+    //                          current->returnType, oIter->value->name);
+    //                 addCode(result, deallocator);
+    //             }
+    //         } else {
+    //             oIter = oIter->next;
+    //             break;
+    //         }
+    //     }
+    //     oIter = oIter->next;
+    // }
 
     snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj));",current->returnType);
     addCode(result, deallocator);
@@ -639,7 +639,7 @@ Object *makeReturn(Object * expression)
         //remove last semicolon
         if (line->value[strlen(line->value)-1]==';')
             line->value[strlen(line->value)-1]='\0';
-        snprintf(newCode, BUFFLEN, IDENT_MPTR "_prepare(%s, " IDENT_MPTR "_in);\n"
+        snprintf(newCode, BUFFLEN, "_$_object_ownership_transfer(%s, " IDENT_MPTR "_in);\n"
                 "return " IDENT_MPTR "_in;", line->value);
         free(line->value);
         line->value = strdup(newCode);

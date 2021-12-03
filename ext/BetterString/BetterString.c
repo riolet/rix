@@ -68,7 +68,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     memcpy(s->buffer, b->data, b->slen);
     s->cap = b->mlen;
     s->length = b->slen;
-    _$_mptr_prepare(&$_mptr_temp, $_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp, $_mptr_in);
     return $_mptr_in;
 }
 
@@ -124,7 +124,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_char(IDENT_MPTR_RAW *  b_, char c, IDENT
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bstrListDestroy(result);
     return $_mptr_in;
 }
@@ -153,7 +153,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bdestroy(sBstring);
     bstrListDestroy(result);
     return $_mptr_in;
@@ -183,7 +183,7 @@ IDENT_MPTR_RAW * BetterString_$_splits_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bdestroy(sBstring);
     bstrListDestroy(result);
     return $_mptr_in;
