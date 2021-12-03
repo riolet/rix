@@ -409,4 +409,18 @@ void defineRSLSymbols(Object * root, bool waferSupport)
         setFlags(rslFunc, FLAG_NO_CODEGEN);
         addSymbol(root, rslFunc);
     }
+
+    //To help with the bootstrapping
+    temp3 =
+        CreateObject("OBJ_TYPE", "OBJ_TYPE" COMPILER_SEP "BaseType", objBaseType, Type, "OBJ_TYPE");
+    setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
+    addSymbol(root, temp3);
+
+    //dummy import function
+        rslFunc = CreateObject("import", "import" COMPILER_SEP "String", 0, Function, "bool");
+    setFlags(rslFunc, FLAG_EXTERNAL);
+    setFlags(rslFunc, FLAG_GLOBAL);
+    setFlags(rslFunc, FLAG_NO_CODEGEN);
+    addSymbol(root, rslFunc);
 }

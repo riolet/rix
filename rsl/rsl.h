@@ -134,4 +134,6 @@ IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, voi
 char *snprintfauto(const char *format, ...);
 void _$_cleanup_object(IDENT_MPTR_RAW *p);
 
+#define import_$_String(x) true
+
 #endif

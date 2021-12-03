@@ -1784,6 +1784,87 @@ Object * directive(char *key, char *value) {
     return result;
 }
 
+#define LINESIZE 1024
+
+int rixParse(FILE *fp)
+{
+    compilerDebugPrintf("Rix Parse %d\n",yylineno);    
+        yylineno=1;
+        yyin = fp;
+        hitEOF = false;                                        
+        while (!hitEOF) {
+            compilerDebugPrintf("Read a line\n");    
+            yyparse();
+        }
+}
+
+int openFiles(char name[])
+{
+    FILE *fp;
+    char line[LINESIZE], word[LINESIZE], word2[LINESIZE];
+    size_t len = strlen(name);
+    if (name[len - 1] == '"')
+        name[len - 1] = '\0';
+    
+    if (name[0] == '"')
+    {
+        name++;
+    }
+    compilerDebugPrintf("Checking %s\n",name);     
+    if ((fp = fopen(name, "r+")) == 0)
+    {
+        compilerDebugPrintf("Cannot find import file %s in working directory. Trying RIX_HOME\n", name);
+        const char *RIX_HOME = getenv("RIX_HOME");
+        char importPath[BUFFLEN];
+        if (RIX_HOME != 0)
+        {
+            snprintf(importPath, BUFFLEN, "%s/%s", RIX_HOME, name);
+            if ((fp = fopen(importPath, "r+")) == 0)
+            {
+                printf("Cannot find import file %s in working directory or RIX_HOME\n",
+                       importPath);
+                perror("open");
+                return 1;
+            } else {
+                //compilerDebugPrintf("Found file %s RIX_HOME\n",name);
+            }
+        }
+        else
+        {
+            criticalError(0, "RIX_HOME not set.\n");
+            perror("open");
+            return 1;
+        }
+    }
+    compilerDebugPrintf("Reading %s\n",name);     
+    while (fgets(line, LINESIZE, fp))
+    {
+        char *importPos = strstr(line, "import");
+        if (importPos != NULL)
+        {
+            char *openParenPos = strchr(importPos, '(');
+            if (openParenPos != NULL)
+            {
+                char *word2 = malloc(BUFFLEN);
+                char *cursor = openParenPos + 1;
+                int i = 0;
+                while (*(cursor + i) != ')')
+                {
+                    word2[i] = *(cursor + i);
+                    i++;
+                }
+                word2[i] = '\0';
+                //compilerDebugPrintf("Recursing %s\n",word2);
+                openFiles(word2);
+            }
+        }
+    }    
+    compilerDebugPrintf("Parsing %s\n",name);
+    rewind(fp);
+    rixParse(fp);
+    return 0;        
+}
+
 int main(int argc, char **argv)
 {
     int c, i, fd, old_stdout;
@@ -1871,44 +1952,21 @@ int main(int argc, char **argv)
     current = scopeStack[scope_idx];
     defineRSLSymbols(root, waferSupport);
 
-    ritTempFile = fopen("rix_temp_file.rix", "w");
-    if (ritTempFile == 0) {
-        perror("fopen");
-        return 1;
-    }
-
     outCompilerLogFile = fopen(oCompilerLogFileName, "w");
     compilerDebugPrintf("%s\n", ifile);
-
-    //Read RSL
-    readFile("rsl/rsl.rix", ritTempFile, &numline);
-
-    compilerDebugPrintf("Lines read %d\n",numline);
-
-    g_headerLines = numline;
-    //Read mainfile
-    readFile(ifile, ritTempFile, &numline);
-    //compilerDebugPrintf("Lines read %d\n",numline);
-
-    fprintf(ritTempFile,"\n"); //END OF FILE GUARANTEE!
-    fclose(ritTempFile);
-
-    file = fopen("rix_temp_file.rix", "r+");
-
-    yyin = file;
-
+    
     outMainFile = fopen(oMainFileName, "w");
     outHeaderFile = fopen(oHeaderFileName, "w");
     outMakeFile = fopen(oMakeFileName, "w");
 
-
     fprintf(outMakeFile, "gcc -Wno-implicit-function-declaration -lm -I ${RIX_HOME} -ggdb -o %s.out "
             "%s.c ${RIX_HOME}/rsl/rsl.c ${RIX_HOME}/errors.c ", ofile, ofile);
-    //getln();
-    hitEOF = false;
-    while (!hitEOF) {
-        yyparse();
-    }
+
+        
+    openFiles("rsl/rsl.rix");
+    openFiles(ifile);
+
+
     fprintf(outMakeFile, " -lm");
 
     if (!quiet) {
