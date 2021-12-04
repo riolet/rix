@@ -10,44 +10,44 @@ void defineRSLSymbols(Object * root, bool waferSupport)
 
     // ==============  Built-in Types ===============
 
-    objBaseType = CreateObject("BaseType", "BaseType", 0, Type, "BaseType");
+    objBaseType = CreateObject(BASETYPE, BASETYPE, 0, Type, BASETYPE);
     setFlags(objBaseType, FLAG_EXTERNAL);
     addSymbol(root, objBaseType);
 
     temp2 =
-        CreateObject("Generic_$$", "Generic_$$" COMPILER_SEP "BaseType", objBaseType,
+        CreateObject("Generic_$$", "Generic_$$" COMPILER_SEP BASETYPE, objBaseType,
                      Type, "Generic_$$");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
 
     temp2 =
-            CreateObject("Generic_YTYPE$$", "Generic_YTYPE$$" COMPILER_SEP "BaseType", objBaseType,
+            CreateObject("Generic_YTYPE$$", "Generic_YTYPE$$" COMPILER_SEP BASETYPE, objBaseType,
                          Type, "Generic_YTYPE$$");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
 
     temp2 =
-            CreateObject("Generic_ZTYPE$$", "Generic_ZTYPE$$" COMPILER_SEP "BaseType", objBaseType,
+            CreateObject("Generic_ZTYPE$$", "Generic_ZTYPE$$" COMPILER_SEP BASETYPE, objBaseType,
                          Type, "Generic_ZTYPE$$");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
 
     temp2 =
-        CreateObject("bool", "bool" COMPILER_SEP "BaseType", objBaseType, Type,
+        CreateObject("bool", "bool" COMPILER_SEP BASETYPE, objBaseType, Type,
                      "bool");
     setFlags(temp2, FLAG_EXTERNAL);
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
 
     temp2 =
-        CreateObject("tern", "tern" COMPILER_SEP "BaseType", objBaseType, Type,
+        CreateObject("tern", "tern" COMPILER_SEP BASETYPE, objBaseType, Type,
                      "tern");
     setFlags(temp2, FLAG_EXTERNAL);
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
 
     temp2 =
-        CreateObject("Number", "Number" COMPILER_SEP "BaseType", objBaseType, Type,
+        CreateObject("Number", "Number" COMPILER_SEP BASETYPE, objBaseType, Type,
                      "Number");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
@@ -68,19 +68,19 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, temp3);
 
     temp4 =
-        CreateObject("System", "System" COMPILER_SEP "BaseType", objBaseType, Type,
+        CreateObject("System", "System" COMPILER_SEP BASETYPE, objBaseType, Type,
                      "System");
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
     temp4 =
-            CreateObject(IDENT_MPTR, IDENT_MPTR COMPILER_SEP "BaseType", objBaseType, Type,
+            CreateObject(IDENT_MPTR, IDENT_MPTR COMPILER_SEP BASETYPE, objBaseType, Type,
                          IDENT_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
     temp4 =
-            CreateObject(IDENT_HEAP_MPTR, IDENT_HEAP_MPTR COMPILER_SEP "BaseType", objBaseType, Type,
+            CreateObject(IDENT_HEAP_MPTR, IDENT_HEAP_MPTR COMPILER_SEP BASETYPE, objBaseType, Type,
                          IDENT_HEAP_MPTR);
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
@@ -88,10 +88,10 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     // ==============  Basetype constructor ===============
 
     rslFunc =
-            CreateObject("BaseType", "BaseType" COMPILER_SEP "BaseType" COMPILER_SEP,
+            CreateObject(BASETYPE, BASETYPE COMPILER_SEP BASETYPE COMPILER_SEP,
                          0, Constructor, IDENT_MPTR);
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "BaseType");
+    addParam(rslFunc, BASETYPE);
     addSymbol(root, rslFunc);
 
     // ==============  Exponent functions ===============
@@ -412,7 +412,7 @@ void defineRSLSymbols(Object * root, bool waferSupport)
 
     //To help with the bootstrapping
     temp3 =
-        CreateObject("OBJ_TYPE", "OBJ_TYPE" COMPILER_SEP "BaseType", objBaseType, Type, "OBJ_TYPE");
+        CreateObject("OBJ_TYPE", "OBJ_TYPE" COMPILER_SEP BASETYPE, objBaseType, Type, "OBJ_TYPE");
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);

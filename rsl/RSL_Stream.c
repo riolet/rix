@@ -78,3 +78,11 @@ int Stream_$_echo_$_float(IDENT_MPTR_RAW * stream_, float f)
     FILE * stream = ((Stream *) stream_->obj)->stream;
     return fprintf(stream, "%f", f);
 }
+
+IDENT_MPTR_RAW * Stream_$_fromFile_$_ (FILE *fp,IDENT_MPTR_RAW * _$_mptr_in)
+{
+    IDENT_MPTR_RAW * self = Stream_$_Stream_$_(_$_mptr_in);    
+    Stream * selfStream = self->obj;
+    selfStream->stream=fp;
+    return self;
+}

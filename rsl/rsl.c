@@ -152,8 +152,31 @@ IDENT_MPTR_RAW *IDENT_MPTR_RAW_TEMP_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
     return a;
 }
 
+IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign_with_alloc (IDENT_MPTR_RAW **a_ptr, IDENT_MPTR_RAW *b,char * debugName)
+{
+    IDENT_MPTR_RAW * a = *a_ptr;
+    if (!a) {
+        /* TODO: Create better class field handling */        
+        a = malloc(sizeof(IDENT_MPTR_RAW)); 
+        IDENT_MPTR_RAW_initialize(a,"TempHeapVariable");
+        a->ptr=0;
+        a->ctr=0;
+        size_t needed = snprintf(a->debugName,1000, "%s %llu", debugName,(long long unsigned int)a);
+    }
+    *a_ptr = a;
+    return IDENT_MPTR_RAW_assign(a,b);
+}
+
 IDENT_MPTR_RAW *IDENT_MPTR_RAW_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
 {
+    if (!a) {
+        /* TODO: Create better class field handling */        
+        a = malloc(sizeof(IDENT_MPTR_RAW)); 
+        IDENT_MPTR_RAW_initialize(a,"TempHeapVariable");
+        a->ptr=0;
+        a->ctr=0;
+    }
+
     debugPrintf("Assigning %s = %s:", a->debugName, b->debugName);
 
     if (a->obj)

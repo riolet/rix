@@ -55,4 +55,6 @@ IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
 
 IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in);
 
+bool String_$_cmpeq_$_String(IDENT_MPTR_RAW *  left, IDENT_MPTR_RAW * right);
+
 #endif

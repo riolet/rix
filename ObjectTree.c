@@ -28,62 +28,12 @@ Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE 
     return result;
 }
 
-//UNTESTED
-/*
-void cleanup(Object* object) {
-
-  ListObject* lop, * loi;
-  ListString* lsp, * lsi;
-
-  if(object->name != 0)
-    free(object->name);
-  if(object->fullname != 0)
-    free(object->fullname);
-  if(object->returnType != 0)
-    free(object->returnType);
-
-  if(object->paramTypes != 0) {
-    lsi = object->paramTypes;
-      while(lsi != 0) {
-        lsp = lsi->next;
-        free(lsi->value);
-        free(lsi->next);
-        free(lsi);
-        lsi = lsp;
-      }
-    }
-  if(object->code != 0) {
-    lsi = object->code;
-      while(lsi != 0) {
-        lsp = lsi->next;
-        free(lsi->value);
-        free(lsi->next);
-        free(lsi);
-        lsi = lsp;
-      }
-    }
-  if(object->definedSymbols != 0) {
-    loi = object->definedSymbols;
-    while(loi != 0) {
-      lop = loi->next;
-      cleanup(loi);
-      free(loi->value);
-      free(loi->next);
-      free(loi);
-      loi = lop;
-    }
-  }
-  if(object != 0)
-    free(object);
+int addParam(Object * tree, char *type){   
+    addParamWithGenericType(tree,type,0);  
 }
 
-*/
-//append item to end of linked list
-int addParam(Object * tree, char *type){
-    addParamWithGenericType(tree,type,0);    
-}
 
-int addParamWithGenericType(Object * tree, char *type, char *genericType)
+int addParamWithGenericType(Object * tree, char *type, ListType *genericType)
 {
 
     ListType *node = malloc(sizeof(ListType));
@@ -95,7 +45,7 @@ int addParamWithGenericType(Object * tree, char *type, char *genericType)
 
     node->type = strdup(type);
     if (genericType) {
-        node->genericType = strdup(genericType);
+        node->genericType = genericType;
     }
     node->next = 0;
 
@@ -121,9 +71,9 @@ int addParamWithGenericType(Object * tree, char *type, char *genericType)
 }
 
 //append item to end of linked list
-int addGenericType(Object * tree, char *genericType, int genericTypeArgPos)
+int addGenericType(Object * tree, ListType *genericType, int genericTypeArgPos)
 {
-    tree->genericType = genericType ? strdup(genericType) : 0;
+    tree->genericType = genericType;
     tree->genericTypeArgPos = genericTypeArgPos;
     return 0;
 }
@@ -239,7 +189,17 @@ ListString *addCode(Object * tree, char *line)
     return node;
 }
 
-int listlen(ListString * head)
+int listStringlen(ListString * head)
+{
+    int count = 0;
+    while (head != 0) {
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+int listTypelen(ListType * head)
 {
     int count = 0;
     while (head != 0) {
@@ -684,9 +644,10 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
             if (!getFlag(oIter->value,FLAG_NO_CODEGEN)) {
                 if (getFlag(rType, FLAG_PRIMITIVE)) {
                     if (oIter->value->genericType) {
-                        Object * gType = findByNameInScope(tree,oIter->value->genericType,false);
+                        //ToDo better Generic Handling
+                        Object * gType = findByNameInScope(tree,oIter->value->genericType->type,false);
                         if (getFlag(gType,FLAG_PRIMITIVE)) {
-                            fprintf(outFile, "\t_$_%s_type_1(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType,
+                            fprintf(outFile, "\t_$_%s_type_1(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
                                     oIter->value->fullname);
                         } else {
                             fprintf(outFile, "\t_$_%s_type_0(" IDENT_MPTR ")  %s;\n", oIter->value->returnType,

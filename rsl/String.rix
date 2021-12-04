@@ -7,5 +7,7 @@ String::BaseType
         //Virtual
     upper->String()
         //Virtual
+    cmpeq->bool(String s)
+        //Virtual
 //Done
 ##external ""

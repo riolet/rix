@@ -295,13 +295,15 @@ char* handleCodeInsert(void) {
 }
 
 void* handleComma(void) {
+     void *returnValue;
 	 compilerDebugPrintf("lexer: eating spaces between commas\n");
 	 int c;
 	 while ( c = input()) {
         if ( c !=  '\t' || c != ' ') {
-	 		return;
+	 		return returnValue;
 	 	}
 	 }
+     return returnValue;
 }
 
 

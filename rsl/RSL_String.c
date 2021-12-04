@@ -225,3 +225,16 @@ IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_
     _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
     return $_mptr_in;
 }
+
+bool String_$_cmpeq_$_String(IDENT_MPTR_RAW *  left_, IDENT_MPTR_RAW * right_) {
+    if (!(left_&&right_)) {
+      return false;
+    } 
+    String * left = left_->obj;
+    String * right = right_->obj;
+    if (strcmp(left->buffer,right->buffer)) {
+        return false;
+    } else {
+        return true;
+    }
+}

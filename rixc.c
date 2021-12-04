@@ -133,7 +133,7 @@ void doneClass(Object * tree)
     scope_pop();
 }
 
-Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificType, Object * parameters)
+Object *beginFunction(char *funcName, char *returnType, ListType *returnGenericType, Object * parameters)
 {
     if (returnType == 0) {
         criticalError(ERROR_ParseError, "Return category mustn't be null.\n");
@@ -218,9 +218,10 @@ Object *beginFunction(char *funcName, char *returnType, char *resolvedSpecificTy
     }
 
     //If the return type is a generic type...
-    if (resolvedSpecificType) {
-        compilerDebugPrintf("Setting generic ytype (%s)\n", resolvedSpecificType);
-        result->resolvedSpecificType=resolvedSpecificType;
+    if (returnGenericType) {
+        //ToDo better generic handling
+        compilerDebugPrintf("Setting generic ytype (%s)\n", returnGenericType->type);
+        result->resolvedSpecificType=returnGenericType->type;
     }
 
     addSymbol(parentScope, result);
@@ -448,7 +449,7 @@ void doneDestructor(Object * tree)
     scope_pop();
 }
 
-Object *funcParameters(Object * paramList, char *paramType, char *paramName, char *genericType)
+Object *funcParameters(Object * paramList, char *paramType, char *paramName, ListType *genericType)
 {
     //TODO: check if category is actually a defined category
     //TODO: check paramType is a valid Type
@@ -481,12 +482,15 @@ Object *concatParams(Object * existing, Object * newParam)
     char *lastParam;
     char newCode[BUFFLEN];
 
+    compilerDebugPrintf("Concating exist: %s new: %s\n",existing->paramTypes->type,newParam->paramTypes->type);
     //insert any declarations from the old objects
-    paramIter = existing->paramTypes;
+    paramIter = existing->paramTypes;    
     codeIter = existing->code;
-    paramLen = listlen(paramIter);
-    codeLen = listlen(codeIter);
+    paramLen = listTypelen(paramIter);
+    compilerDebugPrintf("Existing param count and code ciybt %d %d\n",paramLen,codeLen);
+    codeLen = listStringlen(codeIter);
     while (codeLen > 0 && codeLen > paramLen) {
+        compilerDebugPrintf("Adding code %s\n",codeIter->value);
         addCode(result, codeIter->value);
         codeLen--;
         codeIter = codeIter->next;
@@ -495,8 +499,9 @@ Object *concatParams(Object * existing, Object * newParam)
     //insert any declarations from the new object
     paramIter = newParam->paramTypes;
     codeIter = newParam->code;
-    paramLen = listlen(paramIter);
-    codeLen = listlen(codeIter);
+    paramLen = listTypelen(paramIter);
+    codeLen = listStringlen(codeIter);
+    compilerDebugPrintf("New param count and code ciybt %d %d\n",paramLen,codeLen);
     while (codeLen > 0 && codeLen > paramLen) {
         addCode(result, codeIter->value);
         codeLen--;
@@ -506,8 +511,8 @@ Object *concatParams(Object * existing, Object * newParam)
     //insert parameters of old objects
     paramIter = existing->paramTypes;
     codeIter = existing->code;
-    paramLen = listlen(paramIter);
-    codeLen = listlen(codeIter);
+    paramLen = listTypelen(paramIter);
+    codeLen = listStringlen(codeIter);
     while (codeLen > 0) {
         if (codeLen > paramLen) {
             codeLen--;
@@ -524,14 +529,15 @@ Object *concatParams(Object * existing, Object * newParam)
     //insert parameters of new objects
     paramIter = newParam->paramTypes;
     codeIter = newParam->code;
-    paramLen = listlen(paramIter);
-    codeLen = listlen(codeIter);
+    paramLen = listTypelen(paramIter);
+    codeLen = listStringlen(codeIter);
     while (codeLen > 0) {
         if (codeLen > paramLen) {
             codeLen--;
             codeIter = codeIter->next;
             continue;
         }
+        compilerDebugPrintf("Adding code %s\n",codeIter->value);
         addCode(result, codeIter->value);
         addParamWithGenericType(result, paramIter->type,paramIter->genericType);
         codeLen--;
@@ -542,7 +548,7 @@ Object *concatParams(Object * existing, Object * newParam)
     return result;
 }
 
-Object *declareVariable(char *name, char *type, char * genericType)
+Object *declareVariable(char *name, char *type, ListType *genericType)
 {
     Object *oType = findByName(type);
     Object *var = CreateObject(name, name, 0, Variable, oType->returnType);
@@ -721,12 +727,13 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     if (subject == 0) {
         criticalError(ERROR_ParseError, "Cannot assign to nothing.\n");
     }
-    ListString *paramIter;
+    ListType *paramIter;
     Object *realVerb = 0;
     Object *result = 0;
     char verbname[BUFFLEN];
     char tempBuffer[BUFFLEN];
     int verbname_pos = 0;
+    ListString *codeIter;
 
     if (verb->category == Type) {
         verbname_pos +=
@@ -764,7 +771,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         while (paramIter != 0) {
             verbname_pos +=
                 snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos,
-                         COMPILER_SEP "%s", paramIter->value);
+                         COMPILER_SEP "%s", paramIter->type);
             paramIter = paramIter->next;
         }
     }
@@ -787,11 +794,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         //     criticalError(ERROR_ParseError, error);
         // }
         result = CreateObject(0, 0, 0, Expression, objects->returnType);
-        addParam(result, objects->returnType);
-        if (objects->genericType) {
-            result->genericType = strdup(objects->genericType);
-        }
-
+        addParamWithGenericType(result, objects->returnType,result->genericType);
         if (!subject->returnType) {
             if (subject->category == NewMarkedIdent) {
                 compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->returnType);
@@ -800,7 +803,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
                                  objects->returnType);
 
                     if (objects->genericType) {
-                        variable->genericType = strdup(objects->genericType);
+                        variable->genericType = objects->genericType;
                     }
 //                    compilerDebugPrintf("objects at %d = %d, variable %s %d\n",__LINE__,objects,variable->name,variable);
 //                    if (variable->genericType)
@@ -841,9 +844,16 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                      objects->code->value);
         } else {
-
-            snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
+            //if (subject->name)
+            //ToDo handle member initializations
+            compilerDebugPrintf("Is it FLAG_IDENT_SELF %d\n",getFlag(subject,FLAG_IDENT_SELF));
+            if (getFlag(subject,FLAG_IDENT_SELF)) {                
+                snprintf(verbname, BUFFLEN, MPTR_ASSIGN_ALLOC "(&%s,%s,\"subject->code->value\")", subject->code->value,
                      objects->code->value);
+            } else {
+                snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
+                     objects->code->value);
+            }
         }
 
         addCode(result, verbname);
@@ -868,18 +878,18 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
                      subject->code->value);
     }
     if (objects) {
-        paramIter = objects->code;
-        while (paramIter != 0) {
-            if (paramIter->next == 0) {
+        codeIter = objects->code;
+        while (codeIter != 0) {
+            if (codeIter->next == 0) {
                 verbname_pos +=
                     snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
-                             paramIter->value);
+                             codeIter->value);
             } else {
                 verbname_pos +=
                     snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s,",
-                             paramIter->value);
+                             codeIter->value);
             }
-            paramIter = paramIter->next;
+            codeIter = codeIter->next;
         }
     }
 
@@ -891,7 +901,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
             addSymbol(current, variable);
             compilerDebugPrintf("Subject at %d = %s\n",__LINE__,subject->code->value);
             if (objects->genericType) {
-                variable->genericType = strdup(objects->genericType);
+                variable->genericType = objects->genericType;
             }
         } else {
             char error[1024];
@@ -916,7 +926,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
 
 Object *conjugate(Object * subject, Object * verb, Object * objects)
 {
-    ListString *paramIter = 0;
+    ListType *paramIter = 0;
     ListString *codeIter = 0;
     Object *realVerb = 0;
     Object *result = 0;
@@ -1021,7 +1031,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
         while (paramIter) {
             verbname_pos +=
                 snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos,
-                         COMPILER_SEP "%s", paramIter->value);
+                         COMPILER_SEP "%s", paramIter->type);
             genericVerbNamePos +=
                 snprintf(&genericVerbName[genericVerbNamePos],
                          BUFFLEN - genericVerbNamePos, COMPILER_SEP "%s", GENERIC_PARAM);
@@ -1030,7 +1040,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             }
             verbname[verbname_pos] = '\0';
             genericVerbName[genericVerbNamePos] = '\0';
-            paramTypes[paramNumber] = strdup(paramIter->value);
+            paramTypes[paramNumber] = strdup(paramIter->type);
             paramIter = paramIter->next;
             paramNumber++;
         }
@@ -1133,10 +1143,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             addParam(result, "float");
         } else {
             result = CreateObject(0, 0, 0, Expression, subject->returnType);
-            if (subject->genericType) {
-                result->genericType = strdup(subject->genericType);
-            }
-            addParam(result, subject->returnType);
+            addParamWithGenericType(result, subject->returnType, subject->genericType);
         }
 
         invoke_pos +=
@@ -1165,9 +1172,10 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     if (strcmp(realVerb->returnType, "Generic_$$")) {
         returnType = strdup(realVerb->returnType);
     } else {
+        //ToDo better generic handling
         if (realVerb->genericType)
             //Preset return category
-            returnType = strdup(realVerb->genericType);
+            returnType = realVerb->genericType->type;
         else
             //Positional return category
             returnType=paramTypes[realVerb->genericTypeArgPos - 1];
@@ -1196,7 +1204,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             }
 
             if (genericVerb) {
-                Object * pType = findByName(paramIter->value);
+                Object * pType = findByName(paramIter->type);
 
                 if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
 //                    invoke_pos +=
@@ -1240,15 +1248,15 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     //compilerDebugPrintf("Conjverb Generic type %s\n",verb->genericType);
 
     if (verb->resolvedSpecificType) {
-        result->genericType = strdup(verb->resolvedSpecificType);
+        result->genericType = createGeneric(verb->resolvedSpecificType);
     } else if (verb->genericType) {
-            result->genericType = strdup(verb->genericType);
+            result->genericType = verb->genericType;
 
             if (hasParams) {
                 invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
             }
-
-            Object *pType = findByName(result->genericType);
+            //Todo better Generics handling
+            Object *pType = findByName(result->genericType->type);
             if (pType && getFlag(pType, FLAG_PRIMITIVE)) {
                 invoke_pos +=
                         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "true");
@@ -1257,17 +1265,18 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
                         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "false");
             }
             invoke_pos +=
-                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->genericType);
+                    snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->genericType->type);
     }
 
 
 
     if (!strcmp(realVerb->returnType, GENERIC_PARAM)) {
         if (realVerb->genericType) {
-            result->returnType = strdup(realVerb->genericType);
-            addParam(result, realVerb->genericType);
+            //Todo better Generics handling
+            result->returnType = realVerb->genericType->type;            
+            addParam(result, realVerb->genericType->type);
         } else {
-            result->genericType = strdup(paramTypes[realVerb->genericTypeArgPos - 1]);
+            result->genericType = createGeneric(paramTypes[realVerb->genericTypeArgPos - 1]);
             addParam(result, paramTypes[realVerb->genericTypeArgPos - 1]);
         }
         Object * pType = findByName(result->returnType);
@@ -1285,8 +1294,9 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     } else if (!strcmp(realVerb->returnType, "Generic_YTYPE$$")) {
         //compilerDebugPrintf("Subject %s at %d = %d\n",subject->name,__LINE__,subject);
         if (subject->genericType) {
-            result->returnType = strdup(subject->genericType);
-            addParam(result, subject->genericType);
+            //Todo better Generics handling
+            result->returnType = strdup(subject->genericType->type);
+            addParam(result, subject->genericType->type);
         } else {
             compilerDebugPrintf("Subject %s has no generic type at %d\n", subject->name, __LINE__);
         }
@@ -1457,7 +1467,13 @@ Object *sVerbIdent(char *staticVerb)
     return result;
 }
 
-Object *verbCtor(char *type, char *genericType)
+ListType * createGeneric (char *type) {
+    ListType *node = malloc(sizeof(ListType));
+    node->type=type;
+    node->next;
+}
+
+Object *verbCtor(char *type, ListType *genericType)
 {
     compilerDebugPrintf("verbCtor(%s)\n", type);
     Object *result = findByName(type);
@@ -1467,7 +1483,7 @@ Object *verbCtor(char *type, char *genericType)
         criticalError(ERROR_UndefinedVerb, error);
     }
     if (genericType) {
-        compilerDebugPrintf("Setting generic ytype (%s)\n", genericType);
+        compilerDebugPrintf("Setting generic ytype (%s)\n", genericType->type);
         result->genericType=genericType;
     }
     return result;
@@ -1531,9 +1547,7 @@ Object *objectUnmarkedNewIdent(char *ident)
         result =
             CreateObject(identifier->name, identifier->fullname, 0, identifier->category,
                          identifier->returnType);
-        addParam(result, identifier->returnType);
-        if (identifier->genericType)
-            addParam(result, identifier->genericType);
+        addParamWithGenericType(result, identifier->returnType,identifier->genericType);
     }
     addCode(result, identifier ? identifier->fullname : ident);
 //    compilerDebugPrintf("Result at %d = %d\n",__LINE__,result);
@@ -1558,9 +1572,7 @@ Object *objectIdent(char *ident)
         result =
             CreateObject(identifier->name, identifier->fullname, 0, identifier->category,
                          identifier->returnType);
-        addParam(result, identifier->returnType);
-        if (identifier->genericType)
-            result->genericType = strdup(identifier->genericType);
+        addParamWithGenericType(result, identifier->returnType,identifier->genericType);
     }
     compilerDebugPrintf("Ident full name %s\n",identifier->fullname);
     addCode(result, identifier ? identifier->fullname : ident);
@@ -1690,9 +1702,12 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         }
 
         char *returnType = subject->returnType;
+        compilerDebugPrintf("subject->code->value return type is %s %s\n", subCodeValue,returnType);
+
         if (!strcmp(returnType,"Generic_YTYPE$$")) {
             if (subject->genericType) {
-                returnType = subject->genericType;
+                //ToDo Better Generics Handling
+                returnType = subject->genericType->type;
                 //compilerDebugPrintf("Setting gentype %s\n", parent);
             } else {
                 errorMsg("No generic type for %s\n",subCodeValue);
@@ -1749,6 +1764,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
         //snprintf(accessCode, BUFFLEN, "/* %d */ ((%s *)(%s))->%s", __LINE__, parent->returnType, newSubject, field);
         addParam(result, oField->returnType);
         addCode(result, accessCode);
+        setFlags(result,FLAG_IDENT_SELF);
         return result;
 
 }
@@ -1950,9 +1966,17 @@ int main(int argc, char **argv)
 
     scopeStack[scope_idx] = root;
     current = scopeStack[scope_idx];
-    defineRSLSymbols(root, waferSupport);
 
     outCompilerLogFile = fopen(oCompilerLogFileName, "w");
+    if (!outCompilerLogFile) {
+        errorMsg("Can't create log files\n");
+//      file = fopen("helloworld.rix", "r");
+        criticalError(ERROR_ParseError, "Can't create log");
+    }
+
+    defineRSLSymbols(root, waferSupport);
+
+
     compilerDebugPrintf("%s\n", ifile);
     
     outMainFile = fopen(oMainFileName, "w");
@@ -1986,7 +2010,7 @@ int main(int argc, char **argv)
                              "\tRequest_$_Request_$_(__$$__request, request);\n"
                              "\tResponse_$_Response_$_(__$$__response, response);\n");
     else if (isLibrary)
-        fprintf(outMainFile, "");                             
+        fprintf(outMainFile, "/* This is a library */");                             
     else
         fprintf(outMainFile, "int main(int _$$_argc_, char **_$$_argv_) {\n"
                              "    _$$_argc=_$$_argc_;\n"
@@ -2011,11 +2035,11 @@ int main(int argc, char **argv)
     return 0;
 }
 
-Object *concatGenerics(Object * existing, Object * newGeneric) {
+ListType * concatGenerics(char * existing, ListType * newGeneric) {return newGeneric;}
 
+ListType * genericOfGeneric(char * parent, ListType * child) {return child;}
+
+bool beginsWith(const char *haystack, const char *needle)
+{
+    return strncmp(needle, haystack, strlen(needle)) == 0;
 }
-
-Object *genericOfGeneric(Object * parent, Object * child) {
-
-}
-

@@ -25,6 +25,7 @@
 	float   fval;
 	char*   sval;
 	Object* oval;
+  ListType* ltval;
 }
 
 // define the constant-string tokens:
@@ -98,7 +99,7 @@
 %type <oval> arguments;
 %type <oval> arglist;
 %type <oval> typeArgList;
-%type <oval> genericType;
+%type <ltval> genericType;
 
 %type <sval> parameterIdent;
 %type <sval> anyIdent;
@@ -202,7 +203,7 @@ expr:
   ;
 
 genericType:
-  TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = $1; } //1-ary
+  TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = createGeneric($1); } //1-ary
   | TYPE LBRACE genericType RBRACE { compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric($1,$3); } //1-ary
   | TYPE PARAMCOMMA genericType { compilerDebugPrintf("Multitype of Generic\n");   $$ = concatGenerics($1,$3); } //1-ary
   ;
@@ -281,7 +282,8 @@ codeblock:
 
 
 class_definition:
-  UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, false); }
+  UNMARKEDNEWIDENT CLASSDEC { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, BASETYPE, 0, false); }
+  | UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, false); }
   | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDEC TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, false); }
   | UNMARKEDNEWIDENT CLASSDECPRIM TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, true); }
   | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDECPRIM TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, true); }

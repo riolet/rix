@@ -2,13 +2,13 @@
 #define RITC_H
 
 #include "ObjectTree.h"
-#include "preproc.h"
 #include "errors.h"
 #include "ctype.h"
 #include "crsl.h"
 
 #define COMPILER_SEP "_$_"
 #define GENERIC_PARAM "Generic_$$"
+#define BASETYPE "BaseType"
 
 extern int yylex();
 extern int yyparse();
@@ -32,16 +32,16 @@ void decPrev();
 
 Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive);
 void doneClass(Object * tree);
-Object *beginFunction(char *funcName, char *returnType, char *returnGenericType, Object * parameters);
+Object *beginFunction(char *funcName, char *returnType, ListType *returnGenericType, Object * parameters);
 void doneFunction(Object * tree);
 Object *beginConstructor(Object * parameters);
 void doneConstructor(Object * tree);
 Object *beginDestructor(Object * parameters);
 void doneDestructor(Object * tree);
 
-Object *funcParameters(Object * tree, char *paramType, char *paramName, char *generiType);
+Object *funcParameters(Object * tree, char *paramType, char *paramName, ListType *genericType);
 Object *concatParams(Object * existing, Object * newParam);
-Object *declareVariable(char *name, char *type, char * genericType);
+Object *declareVariable(char *name, char *type, ListType *returnGenericType);
 
 Object *conjugateNewVarAssignment(char * ident, Object * verb, Object * objects);
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects);
@@ -60,7 +60,9 @@ Object *verbDestructor();
 Object *verbGetObjAtIdx();
 Object *verbPutObjAtIdx();
 Object *sVerbIdent(char *staticVerb);
-Object *verbCtor(char *type, char *ytype);
+ListType * createGeneric (char *type);
+char * genericNameToString (ListType *genericType);
+Object *verbCtor(char *type, ListType *genericType);
 Object *parenthesize(Object * expr);
 Object *objectIdent(char *ident);
 Object *objectNewIdent(char *ident);
@@ -79,8 +81,11 @@ Object *createCodeBlock(Object * expression);
 float simplifyfloat(float left, char *op, float right);
 int simplifyInt(int left, char *op, int right);
 
-Object *concatGenerics(Object * existing, Object * newGeneric);
-Object *genericOfGeneric(Object * parent, Object * child);
+ListType * concatGenerics(char * existing, ListType * newGeneric);
+ListType * genericOfGeneric(char * parent, ListType * child);
 
 Object * directive(char *key, char *value);
+
+bool beginsWith(const char *haystack, const char *needle);
+
 #endif

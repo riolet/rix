@@ -127,9 +127,13 @@ void _$_object_ownership_transfer(IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * b);
 
 IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
+IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign_with_alloc (IDENT_MPTR_RAW **a_ptr, IDENT_MPTR_RAW *b,char *debugName);
+
 IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
 
 IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor);
+
+void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW *mptr, char *name);
 
 char *snprintfauto(const char *format, ...);
 void _$_cleanup_object(IDENT_MPTR_RAW *p);

@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include "errors.h"
+#include <setjmp.h>
+#include <signal.h>
 
 #define xstr(a) str(a)
 #define str(a) #a
@@ -25,6 +27,7 @@ FILE *outCompilerLogFile;
 #define FLAG_PRIMITIVE     32
 #define FLAG_GLOBAL     64
 #define FLAG_NO_CODEGEN     128
+#define FLAG_IDENT_SELF     256
 
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
@@ -36,6 +39,7 @@ FILE *outCompilerLogFile;
 #define IDENT_CTR_PTR _$_counter_pointer
 #define MPTR_POINT_RAW cat(IDENT_MPTR_RAW,_point)
 #define MPTR_ASSIGN_RAW cat(IDENT_MPTR_RAW,_assign)
+#define MPTR_ASSIGN_ALLOC_RAW cat(IDENT_MPTR_RAW,_assign_with_alloc)
 #define IDENT_MPTR_INITIALIZE_RAW cat(IDENT_MPTR_RAW,_initialize)
 
 
@@ -44,6 +48,7 @@ FILE *outCompilerLogFile;
 #define IDENT_MPTR_INITIALIZE xstr(IDENT_MPTR_INITIALIZE_RAW)
 #define MPTR_POINT xstr(MPTR_POINT_RAW)
 #define MPTR_ASSIGN xstr(MPTR_ASSIGN_RAW)
+#define MPTR_ASSIGN_ALLOC xstr(MPTR_ASSIGN_ALLOC_RAW)
 
 #define _$_TEMP_OBJ(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) x; IDENT_MPTR_INITIALIZE_RAW (&x,xstr(x));
 #define _$_VARIABLE(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup_var))) * x = alloca(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
@@ -80,7 +85,7 @@ struct _ListString {
 
 struct _ListType {
     char *type;
-    char *genericType;
+    ListType *genericType;
     ListType *next;
 };
 
@@ -96,7 +101,7 @@ struct _Object {
     Object *parentScope;        //parent scope    (global scope, global scope, BaseType)
     OBJ_TYPE category;              //What is this?   (Variable, Function, Class)
     char *returnType;           //What value category?(int,  int,  NULL)
-    char *genericType;          //What value category if the returnType is Generic?(int,  int,  NULL)
+    ListType *genericType;          //What value category if the returnType is Generic?(int,  int,  NULL)
     int genericTypeArgPos;      //What position of the returnType is Generic?(int,  int,  NULL)
     char *resolvedSpecificType;       //Generic type resolved as specific
     ListType *paramTypes;     //parameters?     (NULL,     [int, int], NULL)
@@ -111,15 +116,16 @@ Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE 
 
 //append item to end of linked list
 int addParam(Object * tree, char *type);
-int addParamWithGenericType(Object * tree, char *type, char *genericType);
-int addGenericType(Object * tree, char *genericType, int genericTypeArgPos);
+int addParamWithGenericType(Object * tree, char *type, ListType *genericType);
+int addGenericType(Object * tree, ListType *genericType, int genericTypeArgPos);
 int addSymbol(Object * tree, Object * leaf);
 ListString *addCode(Object * tree, char *line);
 ListString *pushCode(Object * tree, char *line);
 int setFlags(Object * tree, int flags);
 int getFlag(Object * tree, int flag);
 int setParentClass(Object * tree, Object * parentClass);
-int listlen(ListString * head);
+int listStringlen(ListString * head);
+int listTypelen(ListType * head);
 
 //writes the code of root first, then children in order
 void writeTree(FILE * outc, FILE * outh, Object * tree);
@@ -146,4 +152,10 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName);
 Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params);
 
 bool isVerb (Object *result);
+
+#define TRY do{ jmp_buf ex_buf__; if( !setjmp(ex_buf__) ){
+#define CATCH } else {
+#define ETRY } }while(0)
+#define THROW longjmp(ex_buf__, 1)
+
 #endif
