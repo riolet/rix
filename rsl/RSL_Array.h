@@ -37,7 +37,7 @@ void Array_$_destructor_$_ (StructArray ** a);
     memset (_$v$_arr->data,0,_$v$_size__ * sizeof(IDENT_MPTR_RAW)); \
 })
 
-#define _$_Array_Initialize_1(_$v$_size__,_$v$_type) //
+#define _$_Array_Initialize_1(_$v$_size__,_$v$_type) alloca(_$v$_size__ * _$v$_type)
 
 #define _$_Array_object_at_0(_$v$_arr__,_$v$_idx__) &_$v$_arr__->data[_$v$_idx__]
 #define _$_Array_object_at_1(_$v$_arr__,_$v$_idx__) _$v$_arr__[_$v$_idx__]
@@ -58,15 +58,14 @@ void Array_$_destructor_$_ (StructArray ** a);
         })
 
 #define Array_$_Array_$_int(_$v$_size__, _$v$_primYtpe, _$v$_type) ({\
-    xcat(_$_Array_Declare_,_$v$_primYtpe)(_$v$_size__,_$v$_type);\
-    xcat(_$_Array_Initialize_,_$v$_primYtpe)(_$v$_size__,_$v$_arr);\
-    _$v$_arr;\
+    /* xcat(_$_Array_Declare_,_$v$_primYtpe)(_$v$_size__,_$v$_type);\ */\
+    xcat(_$_Array_Initialize_,_$v$_primYtpe)(_$v$_size__,_$v$_primYtpe);\
 })
 
 
 #define Array_$_putObjectAtIndex_$_Generic_$$_$_Generic_$$(_$v$_arr, _$v$_idx, _$v$_primIdx, _$v$_elem, _$v$_primElem,\
                                                     _$v$_mptr, _$v$_primRet, _$v$_typeRet) ({\
-    xcat(_$_Array_set_object_at_,_$v$_primRet)(_$v$_arr, _$v$_idx, _$v$_elem);\
+    xcat(_$_Array_set_object_at_,_$v$_primElem)(_$v$_arr, _$v$_idx, _$v$_elem);\
     _$v$_mptr;\
 })
 

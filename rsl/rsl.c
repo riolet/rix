@@ -147,8 +147,8 @@ IDENT_MPTR_RAW *IDENT_MPTR_RAW_TEMP_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
     debugPrintf("Temp assigned %s = %s:\n", a->debugName, b->debugName);    
     a->destructor = b->destructor;
     a->obj = b->obj;
-    b->obj = 0;
-    b->ptr = 0;
+    //Objects that get returned should not be destroyed
+    b->ctr = 1;
     return a;
 }
 

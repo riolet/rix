@@ -224,6 +224,7 @@ Object *beginFunction(char *funcName, char *returnType, ListType *returnGenericT
         result->resolvedSpecificType=returnGenericType->type;
     }
 
+    compilerDebugPrintf("Creating function (%s)\n", result->fullname);
     addSymbol(parentScope, result);
     scope_push(result);
 
@@ -797,18 +798,22 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         addParamWithGenericType(result, objects->returnType,result->genericType);
         if (!subject->returnType) {
             if (subject->category == NewMarkedIdent) {
-                compilerDebugPrintf ("Creating new variable %s as %s\n",subject->name, objects->returnType);
-                Object *variable =
-                    CreateObject(subject->name, subject->fullname, 0, Variable,
-                                 objects->returnType);
+                compilerDebugPrintf ("Creating new variable %s as %s of %s\n",subject->name, objects->returnType,
+                subject->genericType?subject->genericType->type:"{}");
 
-                    if (objects->genericType) {
-                        variable->genericType = objects->genericType;
-                    }
+                subject->category=Variable;
+                subject->returnType=objects->returnType;
+
+                if (objects->genericType) {
+                    subject->genericType = objects->genericType;
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                }
 //                    compilerDebugPrintf("objects at %d = %d, variable %s %d\n",__LINE__,objects,variable->name,variable);
 //                    if (variable->genericType)
 //                        compilerDebugPrintf("variable %d generic type %s\n",variable,variable->genericType);
-                    addSymbol(current, variable);
+                compilerDebugPrintf ("Created new variable %s as %s of %s\n",subject->name, objects->returnType,
+                subject->genericType?subject->genericType->type:"{}");
+                addSymbol(current, subject);
             } else {
                 char error[1024];
                 g_lineNum--;
@@ -818,17 +823,11 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
         } else {
             //Check compatible types if Subject exists
             if (strcmp(subject->returnType, objects->returnType)) {
-//                if (!((strcmp(subject->returnType, "int")
-//                       || strcmp(subject->returnType, "float")
-//                      ) && (strcmp(objects->paramTypes->value, "int")
-//                            || strcmp(objects->paramTypes->value, "float")
-//                      ))) {
                     char error[BUFFLEN];
                     snprintf(error, BUFFLEN, "%s (%s) cannot be assigned category %s\n",
                              subject->code->value, subject->returnType,
                              objects->returnType);
                     criticalError(ERROR_IncompatibleTypes, error);
-//                }
             }
         }
 
@@ -894,16 +893,7 @@ Object *conjugateAssign(Object * subject, Object * verb, Object * objects)
     }
 
     if (subject && subject->returnType == 0) {
-        if (subject->category == NewMarkedIdent) {
-            compilerDebugPrintf("NewMarkedIdent %s", subject->name);
-            Object *variable = CreateObject(subject->name, subject->fullname, 0, Variable,
-                                            verb->returnType);
-            addSymbol(current, variable);
-            compilerDebugPrintf("Subject at %d = %s\n",__LINE__,subject->code->value);
-            if (objects->genericType) {
-                variable->genericType = objects->genericType;
-            }
-        } else {
+        if (subject->category != NewMarkedIdent) {
             char error[1024];
             snprintf(error, 1024, "Unknown identifier %s\n", subject->name);
             criticalError(ERROR_ParseError, error);
@@ -1273,7 +1263,7 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
     if (!strcmp(realVerb->returnType, GENERIC_PARAM)) {
         if (realVerb->genericType) {
             //Todo better Generics handling
-            result->returnType = realVerb->genericType->type;            
+            result->returnType = strdup(realVerb->genericType->type);            
             addParam(result, realVerb->genericType->type);
         } else {
             result->genericType = createGeneric(paramTypes[realVerb->genericTypeArgPos - 1]);
@@ -1298,7 +1288,22 @@ Object *conjugate(Object * subject, Object * verb, Object * objects)
             result->returnType = strdup(subject->genericType->type);
             addParam(result, subject->genericType->type);
         } else {
-            compilerDebugPrintf("Subject %s has no generic type at %d\n", subject->name, __LINE__);
+            //printf("%s",subject->genericType->type);
+            compilerDebugPrintf("Subject %s %s has no generic type at %d\n", subject->name,subject->returnType, __LINE__);
+            ListObject *lo = current->definedSymbols;
+            while (lo) {
+                compilerDebugPrintf("Subject %s",lo->value->name);
+                if (lo->value->genericType) {
+                    compilerDebugPrintf("  GenType %s",lo->value->genericType->type);
+                    
+                }
+                compilerDebugPrintf("\n",lo->value->name);
+                lo=lo->next;
+            }
+            //compilerDebugPrintf("\n",lo->value->name);
+            criticalError(ERROR_RuntimeError,"Can't ascertain generic type");
+            exit(-1);
+
         }
         Object * pType = findByName(result->returnType);
         if (pType&&getFlag(pType,FLAG_PRIMITIVE)) {
@@ -1470,7 +1475,7 @@ Object *sVerbIdent(char *staticVerb)
 ListType * createGeneric (char *type) {
     ListType *node = malloc(sizeof(ListType));
     node->type=type;
-    node->next;
+    node->next=0;
 }
 
 Object *verbCtor(char *type, ListType *genericType)
@@ -1572,6 +1577,7 @@ Object *objectIdent(char *ident)
         result =
             CreateObject(identifier->name, identifier->fullname, 0, identifier->category,
                          identifier->returnType);
+            result->genericType = identifier->genericType;
         addParamWithGenericType(result, identifier->returnType,identifier->genericType);
     }
     compilerDebugPrintf("Ident full name %s\n",identifier->fullname);
