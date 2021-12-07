@@ -12,7 +12,7 @@ int int_$_int_$_String(IDENT_MPTR_RAW *s_)
     return atoi(s->buffer);
 }
 
-float float_$_exponent_$_int(float f, int i)
+double double_$_exponent_$_int(double f, int i)
 {
     return pow(f, i);
 }
@@ -22,12 +22,12 @@ int int_$_exponent_$_int(int i1, int i2)
     return (int)pow(i1, i2);
 }
 
-float int_$_exponent_$_float(int i, float f)
+double int_$_exponent_$_double(int i, double f)
 {
     return pow(i, f);
 }
 
-float float_$_exponent_$_float(float f1, float f2)
+double double_$_exponent_$_double(double f1, double f2)
 {
     return pow(f1, f2);
 }
@@ -54,7 +54,7 @@ int print_$_int(int i)
     return fprintf(stdout, "%d\n", i);
 }
 
-int print_$_float(float f)
+int print_$_double(double f)
 {
     return fprintf(stdout, "%f\n", f);
 }
@@ -71,7 +71,7 @@ int echo_$_int(int i)
     return fprintf(stdout, "%d", i);
 }
 
-int echo_float(float f)
+int echo_double(double f)
 {
     return fprintf(stdout, "%f", f);
 }
@@ -149,6 +149,7 @@ IDENT_MPTR_RAW *IDENT_MPTR_RAW_TEMP_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
     a->obj = b->obj;
     //Objects that get returned should not be destroyed
     b->ctr = 1;
+    //DANGER    
     return a;
 }
 
@@ -233,8 +234,8 @@ void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW *mptr, char *name)
     mptr->ctr = 0;
     mptr->ptr = 0;
     mptr->obj = 0;
-    mptr->destructor = 0;
-    size_t needed = snprintf(mptr->debugName,1000, "%s %llu", name,(long long unsigned int)mptr);
+    mptr->destructor = 0;    
+    mptr->debugName[0]=0;
 }
 
 void _$_cleanup_object(IDENT_MPTR_RAW *p)

@@ -305,14 +305,24 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
     if (!result && scope->parentClass) {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
         if (result && result->category == Variable) {
-            char newFullName[BUFFLEN];
-            snprintf(newFullName, BUFFLEN, "((%s *) (" IDENT_SELF_SELF "->obj))->%s /* %s %d %s */",
-                     scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
-            //TODO: memory leak. (allocating space that will never be freed)
-            Object *temp =
-                CreateObject(result->name, newFullName, result->parentScope, result->category,
-                             result->returnType);
-            result = temp;
+            if (getFlag(scope->parentClass,FLAG_PRIMITIVE)) {
+                char newFullName[BUFFLEN];
+                snprintf(newFullName, BUFFLEN, IDENT_SELF_SELF ".%s",result->fullname);
+                //TODO: memory leak. (allocating space that will never be freed)
+                Object *temp =
+                    CreateObject(result->name, newFullName, result->parentScope, result->category,
+                                result->returnType);
+                result = temp;
+            } else {
+                char newFullName[BUFFLEN];
+                snprintf(newFullName, BUFFLEN, "((%s *) (" IDENT_SELF_SELF "->obj))->%s /* %s %d %s */",
+                        scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
+                //TODO: memory leak. (allocating space that will never be freed)
+                Object *temp =
+                    CreateObject(result->name, newFullName, result->parentScope, result->category,
+                                result->returnType);
+                result = temp;
+            }
         }
 
         if (result) {
@@ -324,12 +334,14 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
 
     if (!result && scope->parentScope) {
 
+        compilerDebugPrintf("Looking for %s\n",name);
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
-
+        
         if (result && result->category != Type && !isVerb(result)) {
             if (!getFlag(result,FLAG_GLOBAL)) {
                 compilerDebugPrintf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname,
                                     scope->parentScope->fullname, result->fullname);
+                //Object not found
                 result = 0;
             }
         } else {
@@ -638,20 +650,39 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 
 }
 
+void writeWithGenericAndPrimitive(FILE * outh, Object * tree, Object * rType, char *returnType, ListType *genericType) {
+        if (getFlag(rType, FLAG_PRIMITIVE)) {
+            if (rType->genericType) {
+                Object * gType = findByNameInScope(tree,genericType->type,false);
+                if (getFlag(gType, FLAG_PRIMITIVE)) {
+                    fprintf(outh, "%s_$primitive$_(%s)", returnType, genericType->type);
+                } else {
+                    fprintf(outh, "%s_$non_primitive$_(%s)", returnType, genericType->type);
+                }
+            } else {
+                fprintf(outh, "%s", returnType);
+            }
+        } else {
+            fprintf(outh, IDENT_MPTR "* ");
+        }
+}
+
 void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
             Object * rType = findByNameInScope(tree,oIter->value->returnType,false);
             //compilerDebugPrintf("writing variable %s\n",oIter->value->name);
             if (!getFlag(oIter->value,FLAG_NO_CODEGEN)) {
+                // writeWithGenericAndPrimitive(outFile, tree, rType, oIter->value->returnType, oIter->value->genericType);
+                // fprintf(outFile, " %s;\n", oIter->value->fullname);
                 if (getFlag(rType, FLAG_PRIMITIVE)) {
                     if (oIter->value->genericType) {
                         //ToDo better Generic Handling
                         Object * gType = findByNameInScope(tree,oIter->value->genericType->type,false);
                         if (getFlag(gType,FLAG_PRIMITIVE)) {
-                            fprintf(outFile, "\t_$_%s_type_1(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
+                            fprintf(outFile, "\t_$_%s_$dec_prim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
                                     oIter->value->fullname);
                         } else {
-                            fprintf(outFile, "\t_$_%s_type_0(" IDENT_MPTR ")  %s;\n", oIter->value->returnType,
-                                    oIter->value->fullname);
+                            fprintf(outFile, "\t_$_%s_$dec_non_prim$_(" IDENT_MPTR ",%s)  %s;\n", oIter->value->returnType,
+                                    oIter->value->genericType->type, oIter->value->fullname);
                         }
                     } else {
                         fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
@@ -687,6 +718,8 @@ void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree
     }
 }
 
+
+
 void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
 {
     ListObject *oIter;
@@ -701,15 +734,11 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     Object * rType = findByNameInScope(tree,tree->returnType,false);
 
     compilerDebugPrintf ("Looking up category %s\n",tree->returnType);
-
-
+    //writeWithGenericAndPrimitive(outh, getFlag(rType, FLAG_PRIMITIVE), )
     if (rType) {
         compilerDebugPrintf("Line%d %s\n",__LINE__, tree->fullname);
-        if (getFlag(rType, FLAG_PRIMITIVE)) {
-            fprintf(outh, "%s %s(", tree->returnType, tree->fullname);
-        } else {
-            fprintf(outh, IDENT_MPTR "* %s(", tree->fullname);
-        }
+        writeWithGenericAndPrimitive(outh,tree,rType,tree->returnType,tree->genericType);
+        fprintf(outh, " %s(", tree->fullname);
     } else {
         fprintf(outh, "void %s(", tree->fullname);
     }
@@ -721,21 +750,14 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
         printComma = ',';
         pType = findByNameInScope(tree,sIter->type,false);
         //compilerDebugPrintf("Looking up symbol %d\n",oIter);
-        if (pType) {
-            if (getFlag(pType, FLAG_PRIMITIVE)) {
-                fprintf(outh, "%s %s", sIter->type, oIter->value->fullname);
-            } else {
-                fprintf(outh, IDENT_MPTR " * %s", oIter->value->fullname);
-            }
-        }
-
+        writeWithGenericAndPrimitive(outh,tree, pType,sIter->type,sIter->genericType);
+        fprintf(outh, " %s", oIter->value->fullname);
         sIter = sIter->next;
         oIter = oIter->next;
         if (sIter !=0 ) {
             fprintf(outh, ",");
         }
     }
-
 
     if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
         fprintf(outh, "%c " IDENT_MPTR " * " IDENT_MPTR "_in",printComma);

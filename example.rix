@@ -14,7 +14,7 @@ Line :: BaseType
     $.a=a
     $.b=b
 
-  length->float() = (((a.x-b.x)^^2) + ((a.y-b.y)^^2)) ^^ 0.5
+  length->double() = ((((a.x-b.x)^^2) + ((a.y-b.y)^^2)) ^^ 0.5)
 
 #myLine = Line (Point (3, 0), Point (0, 4))
 print ("Length of my line is: " + myLine.length())

@@ -61,7 +61,7 @@ numeral       [0-9]
 alphanumeric  {alphabetic}|{numeral}
 integer       {numeral}+
 decimal       "."{numeral}+|{numeral}+"."{numeral}+
-float         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
+double         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
 char          \'(\\.|[^\\'])+\'
 comment       \/\/.*
@@ -200,7 +200,7 @@ dtvAddsource "##addsource"
 {string}      { compilerDebugPrintf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { compilerDebugPrintf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 {char}     { compilerDebugPrintf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
-{float}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return FLOAT; }
+{double}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return DOUBLE; }
 {mathOp}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 
 {hash}{identifier}  {   char* first = strtok(yytext, "#");
@@ -215,6 +215,12 @@ dtvAddsource "##addsource"
                           criticalError(ERROR_ParseError, error);
                         }
                       }                     
+
+{accessor}{identifier}  {   char* first = strtok(yytext, ".");                        
+                          compilerDebugPrintf("lexer: new identifier %s\n",first);
+                          yylval->sval = strdup(first);
+                          return ACCESSOR_IDENT;                        
+                      }
 
 {identifier}  { yylval->sval = strdup(yytext);
                         Object* exists = findByName(yytext);

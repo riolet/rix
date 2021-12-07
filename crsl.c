@@ -6,7 +6,7 @@
 
 void defineRSLSymbols(Object * root, bool waferSupport)
 {
-    Object *objBaseType, *temp2, *temp3, *temp4, *temp5, *rslFunc;
+    Object *objBaseType, *temp2, *temp3, *temp4, *temp5, *numberType, *intType, *floatType,  *rslFunc;
 
     // ==============  Built-in Types ===============
 
@@ -46,29 +46,39 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
 
-    temp2 =
+    numberType =
         CreateObject("Number", "Number" COMPILER_SEP BASETYPE, objBaseType, Type,
                      "Number");
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
 
     temp3 =
-        CreateObject("int", "int" COMPILER_SEP "Number", temp2, Type, "int");
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
-    temp3 = CreateObject("float", "float" COMPILER_SEP "Number", temp2, Type, "float");
+        CreateObject("int", "int" COMPILER_SEP "Number", numberType, Type, "int");
+    temp3->parentClass=numberType;
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
 
-    temp3 = CreateObject("char", "char" COMPILER_SEP "Number", temp2, Type, "char");
+    temp3 = CreateObject("float", "float" COMPILER_SEP "Number", numberType, Type, "float");
+    temp3->parentClass=numberType;
+    setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
+    addSymbol(root, temp3);
+
+    temp3 = CreateObject("double", "double" COMPILER_SEP "Number", numberType, Type, "double");
+    temp3->parentClass=numberType;
+    setFlags(temp3, FLAG_EXTERNAL);
+    setFlags(temp3, FLAG_PRIMITIVE);
+    addSymbol(root, temp3);
+
+    temp3 = CreateObject("char", "char" COMPILER_SEP "Number", numberType, Type, "char");
+    temp3->parentClass=numberType;
     setFlags(temp3, FLAG_EXTERNAL);
     setFlags(temp3, FLAG_PRIMITIVE);
     addSymbol(root, temp3);
 
     temp4 =
-        CreateObject("System", "System" COMPILER_SEP BASETYPE, objBaseType, Type,
+        CreateObject("System", "System" COMPILER_SEP BASETYPE, numberType, Type,
                      "System");
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
@@ -97,25 +107,25 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     // ==============  Exponent functions ===============
 
     rslFunc =
-        CreateObject("exponent", "float" COMPILER_SEP "exponent" COMPILER_SEP "int",
-                     0, Function, "float");
+        CreateObject("exponent", "double" COMPILER_SEP "exponent" COMPILER_SEP "int",
+                     0, Function, "double");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "float",
-                     0, Function, "float");
+        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "double",
+                     0, Function, "double");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("exponent", "float" COMPILER_SEP "exponent" COMPILER_SEP "float", 0,
-                     Function, "float");
+        CreateObject("exponent", "double" COMPILER_SEP "exponent" COMPILER_SEP "double", 0,
+                     Function, "double");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "float");
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
+    addParam(rslFunc, "double");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "int",
@@ -126,12 +136,12 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, rslFunc);
 
     // ============== Sqrt functions ==============
-    // ============== TODO sqrt(int) should be a float? ==============
+    // ============== TODO sqrt(int) should be a double? ==============
     rslFunc =
-        CreateObject("sqrt", "int" COMPILER_SEP "sqrt" COMPILER_SEP, 0, Function,
-                     "int");
+        CreateObject("sqrt", "Number" COMPILER_SEP "sqrt" COMPILER_SEP, numberType, Function,
+                     "double");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
+    addParam(rslFunc, "Number");
     addSymbol(root, rslFunc);
 
     // ==============  String Functions ===============
@@ -180,18 +190,18 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "float" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+        CreateObject("plus", "double" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addParam(rslFunc, "String");
     addSymbol(root, rslFunc);
     rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "float", 0,
+        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "double", 0,
                      Function, "String");
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "String");
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addSymbol(root, rslFunc);
     rslFunc =
             CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
@@ -310,23 +320,25 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     addSymbol(root, rslFunc);
 
     rslFunc =
-        CreateObject("for", "for" COMPILER_SEP "int" COMPILER_SEP "int", 0,
+        CreateObject("for", "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER", 0,
                      Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "int");
+    addParam(rslFunc, "NUMBER");
+    addParam(rslFunc, "NUMBER");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("for",
-                     "for" COMPILER_SEP "int" COMPILER_SEP "int" COMPILER_SEP
-                     "int", 0, Function, "int");
+                     "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER" COMPILER_SEP
+                     "NUMBER", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
     setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "int");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
+    addParam(rslFunc, "Generic_$$");
     addSymbol(root, rslFunc);
+
+    
     // ==============  Print Functions ===============
     rslFunc =
             CreateObject("print", "print" COMPILER_SEP "char", 0, Function, "int");
@@ -338,9 +350,9 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "float", 0, Function, "int");
+    rslFunc = CreateObject("print", "print" COMPILER_SEP "double", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addSymbol(root, rslFunc);
     rslFunc =
         CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "int");
@@ -357,9 +369,9 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, "int");
     addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "float", 0, Function, "int");
+    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "double", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "float");
+    addParam(rslFunc, "double");
     addSymbol(root, rslFunc);
     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "int");
     setFlags(rslFunc, FLAG_EXTERNAL);

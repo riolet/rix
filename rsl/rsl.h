@@ -60,7 +60,8 @@ typedef void *Generic_$$;
 
 #define for_$_int_$_int(i,a,b) for (i=a;i<b;i++) {
 #define for_$_int_$_int_$_int(i,a,b,c) for (i=a;i<b;i+=c) {
-
+#define for_$_Generic_$$_$_Generic_$$_$_Generic_$$(i,a,b,c) for (i=a;i<b;i+=c) {
+    
 #define downfor_$_int_$_int(i,a,b) for (i=a;i>=b;i--) {
 #define downfor_$_int_$_int_$_int(i,a,b,c) for (i=a;i>=b;i-=c) {
 
@@ -78,13 +79,13 @@ typedef void *Generic_$$;
 int int_$_int_$_String(IDENT_MPTR_RAW * s_);
 
 
-float float_$_exponent_$_int(float f, int i);
+double double_$_exponent_$_int(double f, int i);
 
 int int_$_exponent_$_int(int i1, int i2);
 
-float int_$_exponent_$_float(int i, float f);
+double int_$_exponent_$_double(int i, double f);
 
-float float_$_exponent_$_float(float f1, float f2);
+double double_$_exponent_$_double(double f1, double f2);
 
 int int_$_sqrt_$_(int i);
 
@@ -95,13 +96,13 @@ int print_$_Char(char c);
 
 int print_$_int(int i);
 
-int print_$_float(float f);
+int print_$_double(double f);
 
 int echo_$_String(IDENT_MPTR_RAW * s);
 
 int echo_$_int(int i);
 
-int echo_float(float f);
+int echo_double(double f);
 
 Ternary int_$_compare_$_int(int a, int b);
 

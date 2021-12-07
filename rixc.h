@@ -13,6 +13,7 @@
 extern int yylex();
 extern int yyparse();
 extern int yylineno;
+char yyinFileName[256];
 extern FILE *yyin;
 
 //void defineRSLSymbols(Object *);
@@ -32,16 +33,16 @@ void decPrev();
 
 Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive);
 void doneClass(Object * tree);
-Object *beginFunction(char *funcName, char *returnType, ListType *returnGenericType, Object * parameters);
+Object *beginFunction(char *funcName, ListType *returnType, Object * parameters);
 void doneFunction(Object * tree);
 Object *beginConstructor(Object * parameters);
 void doneConstructor(Object * tree);
 Object *beginDestructor(Object * parameters);
 void doneDestructor(Object * tree);
 
-Object *funcParameters(Object * tree, char *paramType, char *paramName, ListType *genericType);
+Object *funcParameters(Object * tree, ListType *paramType, char *paramName);
 Object *concatParams(Object * existing, Object * newParam);
-Object *declareVariable(char *name, char *type, ListType *returnGenericType);
+Object *declareVariable(char *name, ListType *type);
 
 Object *conjugateNewVarAssignment(char * ident, Object * verb, Object * objects);
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects);
@@ -60,15 +61,15 @@ Object *verbDestructor();
 Object *verbGetObjAtIdx();
 Object *verbPutObjAtIdx();
 Object *sVerbIdent(char *staticVerb);
-ListType * createGeneric (char *type);
+ListType * createListType (char *type);
 char * genericNameToString (ListType *genericType);
-Object *verbCtor(char *type, ListType *genericType);
+Object *verbCtor(ListType *Type);
 Object *parenthesize(Object * expr);
 Object *objectIdent(char *ident);
 Object *objectNewIdent(char *ident);
 Object *objectUnmarkedNewIdent(char *ident);
 Object *objectSelfIdent(char *ident);
-Object *objectfloat(float f);
+Object *objectdouble(double f);
 Object *objectInt(int i);
 Object *objectChar(char *c);
 Object *objectPrev();
@@ -78,14 +79,15 @@ Object *conjugateAccessorIdent(Object *subject, char *field);
 
 Object *createCodeBlock(Object * expression);
 
-float simplifyfloat(float left, char *op, float right);
+double simplifydouble(double left, char *op, double right);
 int simplifyInt(int left, char *op, int right);
 
-ListType * concatGenerics(char * existing, ListType * newGeneric);
-ListType * genericOfGeneric(char * parent, ListType * child);
+ListType *concatGenerics(ListType * existing, ListType * newGeneric);
+ListType *genericOfGeneric(ListType * parent, ListType * child);
 
-Object * directive(char *key, char *value);
+Object *directive(char *key, char *value);
 
 bool beginsWith(const char *haystack, const char *needle);
 
+void * displayDefinedSymbols(Object *tree);
 #endif

@@ -23,18 +23,20 @@ typedef struct {
 void Array_$_destructor_$_ (StructArray ** a);
 
 #define Array StructArray *
-#define _$_Array_type_0(_$v$_type) StructArray __attribute__ ((__cleanup__(Array_$_destructor_$_))) *
-#define _$_Array_type_1(_$v$_type) _$v$_type *
+#define Array_$non_primitive$_(x) StructArray *
+#define Array_$primitive$_(X) X *
 
-#define _$_Array_Declare_0(_$v$_size__,_$v$_type) StructArray * _$v$_arr = alloca(sizeof(StructArray));
-#define _$_Array_Declare_1(_$v$_size__,_$v$_type) _$v$_type _$v$_arr[_$v$_size__]
+#define _$_Array_$dec_non_prim$_(X,Y) StructArray __attribute__ ((__cleanup__(Array_$_destructor_$_))) *
+#define _$_Array_$dec_prim$_(X) X *
 
-#define _$_Array_Initialize_0(_$v$_size__,_$v$_arr)  ({ \
+#define _$_Array_Initialize_0(_$v$_size__,_$v$_type)  ({ \
+    StructArray *_$v$_arr = alloca(_$v$_size__ * _$v$_type);\
     _$v$_arr->last=0;\
     _$v$_arr->bitArray=alloca(((_$v$_size__/WORD_SIZE)+1) * sizeof(uintmax_t));\
     memset (_$v$_arr->bitArray,0,((_$v$_size__/WORD_SIZE)+1) * sizeof(uintmax_t)); \
     _$v$_arr->data = (void *) alloca(_$v$_size__ * sizeof(IDENT_MPTR_RAW));\
     memset (_$v$_arr->data,0,_$v$_size__ * sizeof(IDENT_MPTR_RAW)); \
+    _$v$_arr;\
 })
 
 #define _$_Array_Initialize_1(_$v$_size__,_$v$_type) alloca(_$v$_size__ * _$v$_type)
@@ -58,7 +60,6 @@ void Array_$_destructor_$_ (StructArray ** a);
         })
 
 #define Array_$_Array_$_int(_$v$_size__, _$v$_primYtpe, _$v$_type) ({\
-    /* xcat(_$_Array_Declare_,_$v$_primYtpe)(_$v$_size__,_$v$_type);\ */\
     xcat(_$_Array_Initialize_,_$v$_primYtpe)(_$v$_size__,_$v$_primYtpe);\
 })
 

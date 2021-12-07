@@ -22,7 +22,7 @@
 // use that union instead of "int" for the definition of "yystype":
 %union {
 	int     ival;
-	float   fval;
+	double   fval;
 	char*   sval;
 	Object* oval;
   ListType* ltval;
@@ -36,7 +36,7 @@
 // by convention), and associate each with a field of the union:
 %token <ival> INT
 %token <sval> CHAR
-%token <fval> FLOAT
+%token <fval> DOUBLE
 %token <sval> STRING
 %token <sval> IDENT
 %token <sval> NEWIDENT
@@ -77,9 +77,10 @@
 
 %token <sval> CONDRETURN
 %token <sval> ACCESSOR
-
+%token <sval> ACCESSOR_IDENT
 %token <sval> DTV_EXTERNAL
 %token <sval> DTV_ADDSOURCE
+
 
 %type <oval> rix;
 %type <oval> statements;
@@ -94,15 +95,14 @@
 %type <oval> function_definition;
 %type <oval> class_definition;
 %type <oval> ctor_definition;
+%type <oval> typeOrExpr;
 %type <oval> expr;
 %type <oval> object;
 %type <oval> arguments;
 %type <oval> arglist;
-%type <oval> typeArgList;
-%type <ltval> genericType;
+%type <ltval> typeExpression;
 
 %type <sval> parameterIdent;
-%type <sval> anyIdent;
 %type <sval> anyIdentOrVerb;
 
 
@@ -172,15 +172,20 @@ simple_statement:
   ;
 
 statement:
-  expr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
-  | RETURN expr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
+  typeOrExpr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
+  | RETURN typeOrExpr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
   | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
+  ;
+
+typeOrExpr:
+  expr { $$ = $1; }
+  | typeExpression arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   ;
 
 expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
-  | UNMARKEDNEWIDENT NEWVARASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
-  | expr ASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
+  | UNMARKEDNEWIDENT NEWVARASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
+  | expr ASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr MATHASSIGN expr  { compilerDebugPrintf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr LESSTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr GREATERTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
@@ -192,20 +197,18 @@ expr:
   | expr  UNARYNEGATE   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
-  |        TYPE     arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,0), $2); }
   | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
-  | TYPE LBRACE genericType RBRACE arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1,$3), $5); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
-  | expr ACCESSOR anyIdent { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $3); }
+  | expr ACCESSOR_IDENT { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $2); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
   ;
 
-genericType:
-  TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = createGeneric($1); } //1-ary
-  | TYPE LBRACE genericType RBRACE { compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric($1,$3); } //1-ary
-  | TYPE PARAMCOMMA genericType { compilerDebugPrintf("Multitype of Generic\n");   $$ = concatGenerics($1,$3); } //1-ary
+typeExpression:
+  TYPE { compilerDebugPrintf("Single TYpe Generic\n");   $$ = createListType($1); } //1-ary
+  | TYPE LESSTHAN typeExpression GREATERTHAN { compilerDebugPrintf("Generic of Generic\n");   $$ = genericOfGeneric(createListType($1),$3); } //1-ary
+  | typeExpression PARAMCOMMA typeExpression { compilerDebugPrintf("Multitype of Generic\n");   $$ = concatGenerics($1,$3); } //1-ary
   ;
 
 arguments:
@@ -219,28 +222,15 @@ arglist:
   | expr PARAMCOMMA arglist { compilerDebugPrintf("parser: arg(x,y)\n");   $$ = concatParams($1,$3); } //n-ary
   ;
 
-typeArgList:
-  UNMARKEDNEWIDENT { compilerDebugPrintf("parser: arg-(x) %s\n",$1);   $$ = objectPlaceHolderType($1); } //1-ary
-  | UNMARKEDNEWIDENT PARAMCOMMA UNMARKEDNEWIDENT { compilerDebugPrintf("parser: arg(x,y) %s, %s\n",$1,$3);   $$ = concatParams(objectPlaceHolderType($1),objectPlaceHolderType($3)); } //n-ary
-  ;
-
-
 object:
   INT       { compilerDebugPrintf("parser: object-int\n");       $$ = objectInt($1); }
   | CHAR       { compilerDebugPrintf("parser: object-int\n");       $$ = objectChar($1); }
-  | FLOAT   { compilerDebugPrintf("parser: object-float\n");     $$ = objectfloat($1);}
+  | DOUBLE   { compilerDebugPrintf("parser: object-double\n");     $$ = objectdouble($1);}
   | IDENT   { compilerDebugPrintf("parser: object-identifer\n"); $$ = objectIdent($1); }
   | NEWIDENT   { compilerDebugPrintf("parser: object-new-identifer\n"); $$ = objectNewIdent($1); }
-  | UNMARKEDNEWIDENT { compilerDebugPrintf("parser: object-unmarked-new-identifer\n"); $$ = objectUnmarkedNewIdent($1); }
   | STRING  { compilerDebugPrintf("parser: object-string\n");    $$ = objectString($1);  }
   | SELFIDENT { compilerDebugPrintf("parser: object-self\n");    $$ = objectSelfIdent($1);}
   | CONDITIONLINK { compilerDebugPrintf("parser: object-previous\n"); $$ = objectPrev();   }
-  ;
-
-anyIdent:
-  IDENT   { compilerDebugPrintf("parser: IDENT\n"); $$ = $1; }
-  | NEWIDENT   { compilerDebugPrintf("parser: NEWIDENT\n"); $$ = $1; }
-  | UNMARKEDNEWIDENT { compilerDebugPrintf("parser: UNMARKEDNEWIDENT\n"); $$ = $1; }
   ;
 
 anyIdentOrVerb:
@@ -251,17 +241,14 @@ anyIdentOrVerb:
   ;
 
 function_definition:
-  anyIdentOrVerb RETURN TYPE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def\n"); $$ = beginFunction($1, $3, 0, $5); }
-  | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction($1, "void", 0, $4); }
-  | anyIdentOrVerb RETURN TYPE LBRACE genericType RBRACE LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def-gen\n"); $$ = beginFunction($1, $3, $5, $8); }
+  anyIdentOrVerb RETURN typeExpression LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-def\n"); $$ = beginFunction($1, $3, $5); }
+  | anyIdentOrVerb RETURN LPAREN parameters RPAREN { compilerDebugPrintf("parser: func-void\n"); $$ = beginFunction($1, createListType("void"), $4); }
   ;
 
 parameters:
   %empty                                { compilerDebugPrintf("parser: param0\n"); $$ = CreateObject(0, 0, 0, Expression, 0); }
-  | TYPE parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = funcParameters( 0, $1, $2, 0); }
-  | TYPE LBRACE genericType RBRACE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters(0, $1, $5, $3); }
-  | parameters PARAMCOMMA TYPE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $4, 0); }
-  | parameters PARAMCOMMA TYPE LBRACE genericType RBRACE parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $7, $5); }
+  | typeExpression parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = funcParameters( 0, $1, $2); }
+  | parameters PARAMCOMMA typeExpression parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = funcParameters($1, $3, $4); }
   ;
 
 parameterIdent:
@@ -284,9 +271,8 @@ codeblock:
 class_definition:
   UNMARKEDNEWIDENT CLASSDEC { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, BASETYPE, 0, false); }
   | UNMARKEDNEWIDENT CLASSDEC TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, false); }
-  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDEC TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, false); }
+  | UNMARKEDNEWIDENT CLASSDECPRIM { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, BASETYPE, 0, true); }
   | UNMARKEDNEWIDENT CLASSDECPRIM TYPE { compilerDebugPrintf("parser: class-def\n"); $$ = beginClass($1, $3, 0, true); }
-  | UNMARKEDNEWIDENT LBRACE typeArgList RBRACE CLASSDECPRIM TYPE { compilerDebugPrintf("parser: gen-class-def\n"); $$ = beginClass($1, $6, $3, true); }
   ;
 
 ctor_definition:
@@ -301,8 +287,7 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
-  | TYPE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1, 0); }
-  | TYPE LBRACE genericType RBRACE UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($5, $1, $3); }
+  | typeExpression UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
   | function_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
           doneFunction($1); }
@@ -318,8 +303,8 @@ class_statement:
 
 //void yyerror(char const *msg) {
 void yyerror(YYLTYPE *locp, const char* msg) {
-  char errorMsg[256];
-  snprintf(errorMsg, 256, "%s\n", msg);
+  char errorMsg[1024];
+  snprintf(errorMsg, 256, "In File: %s. %s\n", yyinFileName, msg);
   criticalError(ERROR_ParseError, errorMsg);
 	// might as well halt now:
 	exit(-1);
