@@ -1,0 +1,14 @@
+##external "rsl/RSL_Options.h"
+##addsource "rsl/RSL_Options.c"
+
+Options:::BaseType
+    $(String s)
+        //
+    getBool->bool(char c)
+        //
+    getString->String(char c)
+        //
+    getString->String()
+        //Mandatory opts
+
+##external ""
