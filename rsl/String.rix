@@ -1,6 +1,6 @@
 ##external "rsl/RSL_String.h"
 ##addsource "rsl/RSL_String.c"
-String::BaseType
+String:::BaseType
     length->int()
         //Virtual
     lower->String()

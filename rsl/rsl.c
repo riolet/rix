@@ -37,10 +37,9 @@ int int_$_sqrt_$_(int i)
     return (int)sqrt(i);
 }
 
-int print_$_String(IDENT_MPTR_RAW *s_)
+int print_$_String(String s)
 {
-    String *s = (String *)s_->obj;
-    int result = fwrite(s->buffer, sizeof(char), s->length, stdout) + fputc('\n', stdout);
+    int result = fwrite(s.buffer, sizeof(char), s.length, stdout) + fputc('\n', stdout);
     return result;
 }
 
@@ -112,9 +111,9 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-IDENT_MPTR_RAW *args_$_int(int i, IDENT_MPTR_RAW *$_mptr_in)
+String args_$_int(int i)
 {
-    return String_$_stringlit(_$$_argv[i], $_mptr_in);
+    return String_$_stringlit(_$$_argv[i]);
 }
 
 int args_$_()

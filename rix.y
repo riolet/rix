@@ -7,6 +7,7 @@
 
 #define YYPARSE_PARAM scanner
 #define YYLEX_PARAM   scanner
+#define YYDEBUG 1
 
 %}
 
@@ -99,7 +100,6 @@
 %type <oval> function_definition;
 %type <oval> class_definition;
 %type <oval> ctor_definition;
-%type <oval> typeOrExpr;
 %type <oval> expr;
 %type <oval> object;
 %type <oval> arguments;
@@ -122,7 +122,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //  %right (as opposed to %left) means,
 //    given a compound expression,
 //    evaluate from right to left.
-%right ASSIGNMENT MATHASSIGN
+%right ASSIGNMENT MATHASSIGN NEWVARASSIGNMENT
 %left VERB TYPE STATICVERB RBRACKETASSIGN
 %left ENDOFLINE INDENT
 %left PARAMCOMMA
@@ -131,7 +131,7 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %left MATH_OP
 %left UNARYNEGATE
 %left RANGE
-%left ACCESSOR
+%left ACCESSOR ACCESSOR_IDENT
 %left DESTRUCTOR
 %left LBRACKET RBRACKET LBRACE RBRACE
 //%right class_definition
@@ -178,22 +178,18 @@ simple_statement:
   ;
 
 statement:
-   typeOrExpr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
-  | RETURN typeOrExpr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
+   expr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
+  | RETURN expr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
   | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
-  ;
-
-typeOrExpr:
-  expr { $$ = $1; }
-  | typeExpression arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
   ;
 
 expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
   | typeExpression UNMARKEDNEWIDENT { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
   | typeExpression BITWISEEXP UNMARKEDNEWIDENT { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareGlobalVariable($3, $1); }
-  | UNMARKEDNEWIDENT NEWVARASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
-  | expr ASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
+  | UNMARKEDNEWIDENT NEWVARASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
+  | typeExpression arguments  { compilerDebugPrintf("parser: expr-sto\n");   $$ = conjugate( 0,   verbCtor($1), $2); }
+  | expr ASSIGNMENT expr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr MATHASSIGN expr  { compilerDebugPrintf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr LESSTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr GREATERTHAN expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
@@ -204,7 +200,6 @@ expr:
   | expr  UNARYNEGATE   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
-  | expr ACCESSOR VERB arguments { compilerDebugPrintf("parser: expr-.vo\n");   $$ = conjugate( $1, verbIdent($3), $4); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
@@ -222,8 +217,7 @@ typeExpression:
   ;
 
 arguments:
-   %empty { compilerDebugPrintf("parser: arg\n");   $$ = 0; } //0-ary
-  | LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
+   LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
   | LPAREN arglist RPAREN { compilerDebugPrintf("parser: arg(...)\n");   $$ = $2; } //n-ary
   ;
 

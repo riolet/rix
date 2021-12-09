@@ -11,13 +11,6 @@ Rix Standard Library - Default Includes
 -->"rsl/Array.rix"
 -->"rsl/String.rix"
 -->"rsl/Stream.rix"
-
-Options:::BaseType
-    $(String s)
-        //
-    getBool->bool(char c)
-        //
-    getString->String(char c)
-        //
+-->"rsl/Options.rix"
 
 ##external ""

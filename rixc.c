@@ -1915,17 +1915,9 @@ Object *objectString(char *string)
 {
     //== RetVar shenanigans ==
     Object *rType = findByName("String");
-
-    char retVarName[BUFFLEN];
-    snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d_%d", scope_idx, retVarNumber);
-    retVarNumber++;
-    Object *retVar =
-        CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
-    addSymbol(current, retVar);
-
     compilerDebugPrintf("objectString(%s)\n", string);
     char buffer[BUFFLEN];
-    snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s,&%s)", string, retVarName);
+    snprintf(buffer, BUFFLEN, "String" COMPILER_SEP "stringlit(%s)", string);
     Object *result = CreateObject(0, 0, 0, Expression, "String");
     addCode(result, buffer);
     addParam(result, "String");

@@ -84,7 +84,7 @@ double double_$_exponent_$_double(double f1, double f2);
 
 int int_$_sqrt_$_(int i);
 
-int print_$_String(IDENT_MPTR_RAW * s);
+int print_$_String(String s);
 
 int print_$_Char(char c);
 
@@ -107,7 +107,7 @@ String Ternary_$_pick_$_String_$_String_$_String(Ternary ternary, String a, Stri
 int _$$_argc;
 char **_$$_argv;
 
-IDENT_MPTR_RAW * args_$_int(int i, IDENT_MPTR_RAW * $_mptr_in);
+String args_$_int(int i);
 
 int args_$_();
 
