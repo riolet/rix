@@ -18,16 +18,28 @@ IDENT_MPTR_RAW *toRixString(char *c, IDENT_MPTR_RAW *left)
     return left;
 }
 
-IDENT_MPTR_RAW *toRixListString(List olist, ListType *lt)
+IDENT_MPTR_RAW *toRixListType(List * olist, ListType *lt)
 {
     olist = list_new();
     if (!lt)
         return olist;
     ListType *it=lt;   
-    while (it) {
-        list_rpush(lt->)
-    }
-    return left;
+    // while (it) {
+    //     list_rpush(it->)
+    // }
+    return olist;
+}
+
+IDENT_MPTR_RAW *toRixListString(List * olist, ListString *lt)
+{
+    olist = list_new();
+    if (!lt)
+        return olist;
+    ListString *it=lt;   
+    // while (it) {
+    //     list_rpush(lt->)
+    // }
+    return olist;
 }
 
 IDENT_MPTR_RAW *toRixObject(Object *o, IDENT_MPTR_RAW *left)
@@ -70,7 +82,7 @@ IDENT_MPTR_RAW *toRixObject(Object *o, IDENT_MPTR_RAW *left)
 
     _$_U_VARIABLE(object_R);
 
-    Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_ListString_R_$_ListObject_R_$_ListString_R_$_int(
+    left=Object_R_$_Object_R_$_String_$_String_$_Object_R_$_Object_R_$_OBJ_TYPE_R_$_String_$_String_$_int_$_String_$_ListString_R_$_ListObject_R_$_ListString_R_$_int(
         name,
         fullname,
         parentClass,
@@ -83,7 +95,9 @@ IDENT_MPTR_RAW *toRixObject(Object *o, IDENT_MPTR_RAW *left)
         paramTypes,
         definedSymbols,
         code,
-        flags);
+        flags,
+        left
+        );
     return left;
 }
 

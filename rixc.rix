@@ -1,45 +1,10 @@
-import ("ext/List/List.rix")
-##external "rixc.rix_ext.h"
-OBJ_TYPE_R:::BaseType
-    //virtual
-##external ""
-    
-Type_R::BaseType
-    Type_R type
-    String genericTypes  
+options := Options("o:tqWL")
+quiet := options.getBool('q')
+outFile := options.getString('o')
+waferSupport := options.getBool('W')
+inFile := options.getString()
+print ("Compiling "+outFile+" as "+inFile)
 
-Object_R::BaseType    
-    Array arr
-    String name
-    String fullname
-    Object_R parentClass
-    Object_R parentScope
-    OBJ_TYPE category
-    String returnType
-    String genericType
-    int genericTypeArgPos
-    String resolvedSpecificType
-    List{Type_R} paramTypes
-    List{Object_R} definedSymbols
-    List{String} code
-    int flags
-
-    $(String name,String fullname,Object_R parentClass,Object_R parentScope,OBJ_TYPE category,String returnType,String genericType,int genericTypeArgPos,String resolvedSpecificType,List{String} paramTypes,List{Object_R} definedSymbols,List{String} code,int flags)
-        $.name=name
-        $.fullname=fullname
-        $.parentClass=parentClass
-        $.parentScope=parentScope
-        $.category=category
-        $.returnType=returnType
-        $.genericType=genericType
-        $.genericTypeArgPos=genericTypeArgPos
-        $.resolvedSpecificType=resolvedSpecificType
-        $.paramTypes=paramTypes
-        $.definedSymbols=definedSymbols
-        $.code=code
-        $.flags=flags
-
-
-
-
-
+if (!inFile?)
+    errorMsg("No file to compile\n");
+    criticalError(ERROR_ParseError, "No file to compile specified");

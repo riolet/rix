@@ -58,7 +58,9 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     debugPrintf("Creating string  from %s and storing in %s\n",b_->debugName,$_mptr_in->debugName);
     BetterString * b = b_->obj;
 
-    _$_TEMP_OBJ($_mptr_temp);
+    _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
+    IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
+
     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
 
     String *s = (String *) s_->obj;
@@ -66,7 +68,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     memcpy(s->buffer, b->data, b->slen);
     s->cap = b->mlen;
     s->length = b->slen;
-    _$_mptr_prepare(&$_mptr_temp, $_mptr_in);
+    _$_object_ownership_transfer(&$_mptr_temp, $_mptr_in);
     return $_mptr_in;
 }
 
@@ -122,7 +124,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_char(IDENT_MPTR_RAW *  b_, char c, IDENT
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bstrListDestroy(result);
     return $_mptr_in;
 }
@@ -151,7 +153,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bdestroy(sBstring);
     bstrListDestroy(result);
     return $_mptr_in;
@@ -181,7 +183,7 @@ IDENT_MPTR_RAW * BetterString_$_splits_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR
                                                             _$_temp_betterstring,
                                                             false, _$_temp_vector_item, false, _$_mptr);
     }
-    _$_mptr_prepare(_$_temp_vector,$_mptr_in);
+    _$_object_ownership_transfer(_$_temp_vector,$_mptr_in);
     bdestroy(sBstring);
     bstrListDestroy(result);
     return $_mptr_in;
