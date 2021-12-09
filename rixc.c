@@ -14,6 +14,18 @@
 #define MAXSCOPE 64
 #define EVAL_BUFF_MAX_LEN 4096
 
+#ifndef YY_CURRENT_BUFFER
+#define YY_CURRENT_BUFFER 0
+#endif
+
+#ifndef YY_BUFFER_STATE
+typedef int YY_BUFFER_STATE;
+#endif
+
+#ifndef YY_BUF_SIZE
+#define YY_BUF_SIZE 0
+#endif
+
 FILE *file;
 FILE *outMainFile;
 FILE *outHeaderFile;
@@ -73,29 +85,26 @@ Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isP
     snprintf(codename, BUFFLEN, "%s", className);
 
     Object *result = CreateObject(className, fullname, current, Type, codename);
-    if (!isPrimitive)
+
+    setParentClass(result, parent);
+
+    if (external)
     {
-        Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_MPTR);
-        Object *parentReference_ = CreateObject(IDENT_SUPER "_", IDENT_SUPER "_", 0, Variable, parent->name);
-        compilerDebugPrintf("External class %d\n", external);
-        if (external)
-        {
-            setFlags(result, FLAG_EXTERNAL);
-        }
-        else
-        {
-            setParentClass(result, parent);
-            addSymbol(result, parentReference);
-            addSymbol(result, parentReference_);
-        }
+        setFlags(result, FLAG_EXTERNAL);
+    }
+    else if (isPrimitive)
+    {
+        //Do nothing
     }
     else
     {
-        if (external)
-        {
-            setFlags(result, FLAG_EXTERNAL);
-        }
+        Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_MPTR);
+        Object *parentReference_ = CreateObject(IDENT_SUPER "_", IDENT_SUPER "_", 0, Variable, parent->name);
+
+        addSymbol(result, parentReference);
+        addSymbol(result, parentReference_);
     }
+
     if (typeArgs)
     {
         ListType *list = typeArgs->paramTypes;
@@ -219,9 +228,9 @@ Object *beginFunction(char *funcName, ListType *returnType, Object *parameters)
     Object *result =
         CreateObject(funcName, funcFullName, parentScope, Function, returnType->type);
 
-    compilerDebugPrintf("External func %d\n", external);
     if (external)
     {
+        compilerDebugPrintf("External func %d\n", external);
         setFlags(result, FLAG_EXTERNAL);
     }
     else
@@ -236,6 +245,7 @@ Object *beginFunction(char *funcName, ListType *returnType, Object *parameters)
             //addSymbol(result, CreateObject(COMPILER_SEP "prev", COMPILER_SEP "prev", 0, Variable, COMPILER_SEP "Last"));
         }
     }
+
     //add parameters to the function
     types = parameters->paramTypes;
     //assuming for every Type there is a name
@@ -261,16 +271,20 @@ Object *beginFunction(char *funcName, ListType *returnType, Object *parameters)
         result->resolvedSpecificType = returnGenericType->type;
     }
 
-    compilerDebugPrintf("Creating function (%s)\n", result->fullname);
+    compilerDebugPrintf("Creating function (%s) in %s and %s\n", result->fullname, parentScope->name, current->name);
+    if (current->category == Type)
+    {
+        addSymbol(current, result);
+    }
     addSymbol(parentScope, result);
     scope_push(result);
-
     return result;
 }
 
 void doneFunction(Object *tree)
 {
     scope_pop();
+    displayDefinedSymbols(0);
 }
 
 Object *beginConstructor(Object *parameters)
@@ -362,7 +376,7 @@ Object *beginConstructor(Object *parameters)
     else
     {
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s %s;", returnType,IDENT_SELF_SELF);
+        snprintf(allocator, BUFFLEN, "%s %s;", returnType, IDENT_SELF_SELF);
         addCode(result, allocator);
     }
     addSymbol(parentScope, result);
@@ -373,7 +387,8 @@ Object *beginConstructor(Object *parameters)
 
 void doneConstructor(Object *tree)
 {
-    if (!external) {
+    if (!external)
+    {
         addCode(current, "return " IDENT_SELF_SELF ";");
     }
     scope_pop();
@@ -574,7 +589,17 @@ Object *declareVariable(char *name, ListType *type)
     {
         var->genericType = genericType;
     }
+    if (external) {
+        setFlags(var,FLAG_NO_CODEGEN);
+    }
     addSymbol(current, var);
+    return var;
+}
+
+Object *declareGlobalVariable(char *name, ListType *type)
+{
+    Object *var = declareVariable(name, type);
+    setFlags(var, FLAG_GLOBAL);
     return var;
 }
 
@@ -879,9 +904,83 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
                 {
                     subject->genericType = objects->genericType;
                     //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
 //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
                     //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
 //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
+//                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);                    
+                    //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
                     //                        compilerDebugPrintf("Variable '%s' generic type %s\n",variable->name, variable->genericType->type);
                 }
                 //                    compilerDebugPrintf("objects at %d = %d, variable %s %d\n",__LINE__,objects,variable->name,variable);
@@ -1013,8 +1112,13 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
 
 void *displayDefinedSymbols(Object *tree)
 {
+    if (tree)
+        compilerDebugPrintf("Defined symbols for %s\n", tree->fullname);
     if (!tree)
-        tree=current;
+    {
+        tree = current;
+    }
+
     ListObject *lo = tree->definedSymbols;
     while (lo)
     {
@@ -1048,108 +1152,115 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
     }
 
     //== Build the fullname for the verb ==
-
-    if (subject)
+    if (getFlag(verb, FLAG_FOUND_PARENT))
     {
-        if (subject->returnType == 0)
-        {
-            char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition\n",
-                     subject->code->value);
-            criticalError(ERROR_UndefinedVariable, error);
-        }
-
         verbname_pos +=
             snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
-                     subject->returnType);
-
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
-    }
-    else if (verb->category == Type)
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
-                     verb->name);
-    }
-    //erase the " *" if it's there from the name
-
-    //build base name of verb (e.g. "+" becomes "plus")
-    if (!strcmp(verb->name, "+"))
-    {
-        verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus");
-    }
-    else if (!strcmp(verb->name, "-"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus");
-    }
-    else if (!strcmp(verb->name, "*"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times");
-    }
-    else if (!strcmp(verb->name, "/"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash");
-    }
-    else if (!strcmp(verb->name, "%"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "modulus");
-    }
-    else if (!strcmp(verb->name, "^^"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent");
-    }
-    else if (!strcmp(verb->name, "<"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt");
-    }
-    else if (!strcmp(verb->name, ">"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt");
-    }
-    else if (!strcmp(verb->name, "<="))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq");
-    }
-    else if (!strcmp(verb->name, ">="))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq");
-    }
-    else if (!strcmp(verb->name, "=="))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");
-    }
-    else if (!strcmp(verb->name, "!="))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");
-    }
-    else if (!strcmp(verb->name, "<>"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare");
-    }
-    else if (!strcmp(verb->name, "-->"))
-    {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn");
+                     verb->fullname);
     }
     else
     {
-        verbname_pos +=
-            snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
-    }
+        if (subject)
+        {
+            if (subject->returnType == 0)
+            {
+                char error[BUFFLEN];
+                snprintf(error, BUFFLEN, "Variable '%s' used before definition\n",
+                         subject->code->value);
+                criticalError(ERROR_UndefinedVariable, error);
+            }
 
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s",
+                         subject->returnType);
+
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, COMPILER_SEP);
+        }
+        else if (verb->category == Type)
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s" COMPILER_SEP,
+                         verb->name);
+        }
+        //erase the " *" if it's there from the name
+
+        //build base name of verb (e.g. "+" becomes "plus")
+        if (!strcmp(verb->name, "+"))
+        {
+            verbname_pos += snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "plus");
+        }
+        else if (!strcmp(verb->name, "-"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "minus");
+        }
+        else if (!strcmp(verb->name, "*"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "times");
+        }
+        else if (!strcmp(verb->name, "/"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "slash");
+        }
+        else if (!strcmp(verb->name, "%"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "modulus");
+        }
+        else if (!strcmp(verb->name, "^^"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "exponent");
+        }
+        else if (!strcmp(verb->name, "<"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplt");
+        }
+        else if (!strcmp(verb->name, ">"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgt");
+        }
+        else if (!strcmp(verb->name, "<="))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmplteq");
+        }
+        else if (!strcmp(verb->name, ">="))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpgteq");
+        }
+        else if (!strcmp(verb->name, "=="))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpeq");
+        }
+        else if (!strcmp(verb->name, "!="))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "cmpneq");
+        }
+        else if (!strcmp(verb->name, "<>"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "compare");
+        }
+        else if (!strcmp(verb->name, "-->"))
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "condreturn");
+        }
+        else
+        {
+            verbname_pos +=
+                snprintf(&verbname[verbname_pos], BUFFLEN - verbname_pos, "%s", verb->name);
+        }
+    }
     //verify objects exists and is a known variable or is an expression composed of known variables
     verbname[verbname_pos] = '\0';
     strncpy(genericVerbName, verbname, (verbname_pos < BUFFLEN) ? verbname_pos : BUFFLEN);
@@ -1157,6 +1268,7 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
     genericVerbNamePos = verbname_pos;
 
     int paramNumber = 0;
+
     if (objects)
     {
         if (!objects->paramTypes)
@@ -1213,48 +1325,55 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
         realVerb = findFunctionByFullName(genericVerbName);
         genericVerb = true;
         compilerDebugPrintf("%s is a Generic Verb\n", genericVerbName);
+        displayDefinedSymbols(current);
     }
 
     if (!realVerb && subject)
     {
-        //This part looks for an inherited method via parent classes.
-        //TODO: this seems too complex. It should be revisited.
-        char newName[BUFFLEN];
-        char newSubject[BUFFLEN];
-        char paramTypes[BUFFLEN][BUFFLEN];
-        int subject_idx = snprintf(newSubject, BUFFLEN, "/* %d */ ((%s *) ((%s)->obj))->", __LINE__,
-                                   subject->returnType, subject->code->value);
-        int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
-        while (newName[offset - 1] == '*' || newName[offset - 1] == ' ')
+        if (getFlag(verb, FLAG_FOUND_PARENT))
         {
-            offset--;
         }
-        newName[offset] = '\0';
-        Object *parent = findByName(newName);
-        if (parent && parent->parentClass)
+        else
         {
-            //skip first level (already checked there)
-            parent = parent->parentClass;
-        }
+            //This part looks for an inherited method via parent classes.
+            //TODO: this seems too complex. It should be revisited.
+            char newName[BUFFLEN];
+            char newSubject[BUFFLEN];
+            char paramTypes[BUFFLEN][BUFFLEN];
+            int subject_idx = snprintf(newSubject, BUFFLEN, "/* %d */ ((%s *) ((%s)->obj))->", __LINE__,
+                                       subject->returnType, subject->code->value);
+            int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
+            while (newName[offset - 1] == '*' || newName[offset - 1] == ' ')
+            {
+                offset--;
+            }
+            newName[offset] = '\0';
+            Object *parent = findByName(newName);
+            if (parent && parent->parentClass)
+            {
+                //skip first level (already checked there)
+                parent = parent->parentClass;
+            }
 
-        while (!realVerb && parent && parent->category == Type)
-        {
-            snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
-            compilerDebugPrintf("Trying parent class: %s\n", newName);
-            realVerb = findFunctionByFullName(newName);
-            char *oldSubject = strdup(newSubject);
+            while (!realVerb && parent && parent->category == Type)
+            {
+                snprintf(newName, BUFFLEN, "%s%s", parent->name, &verbname[offset]);
+                compilerDebugPrintf("Trying parent class: %s %d\n", newName, __LINE__);
+                realVerb = findFunctionByFullName(newName);
+                char *oldSubject = strdup(newSubject);
 
-            subject_idx +=
-                snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER "_->");
+                subject_idx +=
+                    snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, IDENT_SUPER "_->");
 
-            parent = parent->parentClass;
-        }
-        newSubject[subject_idx - 3] = '\0';
-        if (realVerb)
-        {
-            //TODO: violates encapsulation. (just this once!)
-            free(subject->code->value);
-            subject->code->value = strdup(newSubject);
+                parent = parent->parentClass;
+            }
+            newSubject[subject_idx - 3] = '\0';
+            if (realVerb)
+            {
+                //TODO: violates encapsulation. (just this once!)
+                free(subject->code->value);
+                subject->code->value = strdup(newSubject);
+            }
         }
     }
 
@@ -1265,11 +1384,12 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
         {
             snprintf(error, BUFFLEN, "Type \"%s\" doesn't have member function \"%s\".\n",
                      subject->returnType, &verbname[strlen(subject->returnType) + 1]);
-            displayDefinedSymbols(0);
         }
         else
+        {
             snprintf(error, BUFFLEN, "Cannot find function named %s %d.\n", verbname, __LINE__);
-        displayDefinedSymbols(0);
+        }
+        //displayDefinedSymbols(0);
         criticalError(ERROR_UndefinedVerb, error);
     }
     else if (!realVerb)
@@ -1596,7 +1716,7 @@ Object *verbMathOp(char *verb)
 Object *verbComparison(char *verb)
 {
     compilerDebugPrintf("verbComparison(%s)\n", verb);
-    Object *result = CreateObject(verb, verb, 0, Function, "bool");
+    Object *result = CreateObject("range", "range", 0, Function, "bool");
     return result;
 }
 
@@ -1918,7 +2038,7 @@ Object *objectPlaceHolderType(char *ident)
     return result;
 }
 
-Object *conjugateAccessorIdent(Object *subject, char *field)
+Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
 {
     //verify parent is defined
     char *subCodeValue = subject->code->value;
@@ -1959,7 +2079,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
     int subject_idx = 0;
     if (getFlag(oReturnType, FLAG_PRIMITIVE))
     {
-        
+
         subject_idx = snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "/* %s */ %s", oReturnType->name, subCodeValue);
     }
     else
@@ -1973,13 +2093,13 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
     bool firstRound = true;
     while (!oField && parent)
     {
-        
-        compilerDebugPrintf("Trying parent class: %s for %s\n", parent->name,field);
+
+        compilerDebugPrintf("Trying parent class: %s for %s\n", parent->name, field);
         displayDefinedSymbols(parent);
         compilerDebugPrintf("__________________________\n");
         ListObject *oIter = parent->definedSymbols;
         while (oIter)
-        {            
+        {
             if (!strcmp(oIter->value->name, field))
             {
                 oField = oIter->value;
@@ -1990,9 +2110,12 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
 
         if (!oField)
         {
-            if (getFlag(oReturnType, FLAG_PRIMITIVE)) {
-                parent = parent->parentClass;                
-            } else {
+            if (getFlag(oReturnType, FLAG_PRIMITIVE))
+            {
+                parent = parent->parentClass;
+            }
+            else
+            {
                 subject_idx +=
                     snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "->" IDENT_SUPER "_");
                 parent = parent->parentClass;
@@ -2011,21 +2134,62 @@ Object *conjugateAccessorIdent(Object *subject, char *field)
                  subCodeValue, field);
         criticalError(ERROR_UndefinedVariable, error);
     }
-
-    Object *result = CreateObject(field, field, 0, Expression, oField->returnType);
-    char accessCode[BUFFLEN];
-    compilerDebugPrintf("Parent field %s %s\n", subCodeValue, field);
-    if (getFlag(oReturnType, FLAG_PRIMITIVE))
+    else
     {
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s).%s",  __LINE__, oReturnType->name, newSubject, field);
+        compilerDebugPrintf("%s %s has member named %s\n", parent->name,
+                            subCodeValue, field);
     }
-    else {
+
+    Object *result;
+    if (category == Field)
+    {
+        result = CreateObject(field, field, 0, Expression, oField->returnType);
+        char accessCode[BUFFLEN];
+        compilerDebugPrintf("Parent field %s %s\n", subCodeValue, field);
+        if (getFlag(oReturnType, FLAG_PRIMITIVE))
+        {
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s).%s", __LINE__, oReturnType->name, newSubject, field);
+        }
+        else
+        {
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
         snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+        }
+        addParam(result, oField->returnType);
+        addCode(result, accessCode);
+        setFlags(result, FLAG_IDENT_SELF);
     }
-    //snprintf(accessCode, BUFFLEN, "/* %d */ ((%s *)(%s))->%s", __LINE__, parent->returnType, newSubject, field);
-    addParam(result, oField->returnType);
-    addCode(result, accessCode);
-    setFlags(result, FLAG_IDENT_SELF);
+    else
+    {
+        char accessCode[BUFFLEN];
+        snprintf(accessCode, BUFFLEN, "%s" COMPILER_SEP "%s", parent->name, field);
+        compilerDebugPrintf("Fullname %s\n", accessCode);
+        result = CreateObject(field, strdup(accessCode), 0, Method, oField->returnType);
+        result->genericType = oField->genericType;
+        addParam(result, oField->returnType);
+        setFlags(result, FLAG_FOUND_PARENT);
+    }
     return result;
 }
 
@@ -2070,26 +2234,18 @@ Object *directive(char *key, char *value)
 
 int rixParse(FILE *fp)
 {
-    compilerDebugPrintf("Rix Parse %d\n", yylineno);
+    compilerDebugPrintf("Rix Parse %s\n", yyinFileName);
     yylineno = 1;
     yyin = fp;
     hitEOF = false;
-        hitEOF = false;                                        
-    hitEOF = false;
-        hitEOF = false;                                        
-    hitEOF = false;
     while (!hitEOF)
     {
-        compilerDebugPrintf("Read a line\n");
-            compilerDebugPrintf("Read a line\n");    
-        compilerDebugPrintf("Read a line\n");
-            compilerDebugPrintf("Read a line\n");    
-        compilerDebugPrintf("Read a line\n");
         yyparse();
     }
+    compilerDebugPrintf("Done parsing %s %d\n", yyinFileName,yylineno);
 }
 
-int openFiles(char name[])
+Object* openFiles(char name[])
 {
     FILE *fp;
     char line[LINESIZE], word[LINESIZE], word2[LINESIZE];
@@ -2115,7 +2271,7 @@ int openFiles(char name[])
                 printf("Cannot find import file %s in working directory or RIX_HOME\n",
                        importPath);
                 perror("open");
-                return 1;
+                return 0;
             }
             else
             {
@@ -2127,7 +2283,7 @@ int openFiles(char name[])
         {
             criticalError(0, "RIX_HOME not set.\n");
             perror("open");
-            return 1;
+            return 0;
         }
     }
     else
@@ -2137,16 +2293,16 @@ int openFiles(char name[])
     compilerDebugPrintf("Reading %s\n", name);
     while (fgets(line, LINESIZE, fp))
     {
-        char *importPos = strstr(line, "import");
+        char *importPos = strstr(line, "-->");
         if (importPos != NULL)
         {
-            char *openParenPos = strchr(importPos, '(');
+            char *openParenPos = strchr(importPos, '"');
             if (openParenPos != NULL)
             {
                 char *word2 = malloc(BUFFLEN);
                 char *cursor = openParenPos + 1;
                 int i = 0;
-                while (*(cursor + i) != ')')
+                while (*(cursor + i) != '"')
                 {
                     word2[i] = *(cursor + i);
                     i++;
@@ -2156,8 +2312,7 @@ int openFiles(char name[])
                 openFiles(word2);
             }
         }
-    }
-    compilerDebugPrintf("Parsing %s\n", name);
+    }    
     rewind(fp);
     rixParse(fp);
     return 0;

@@ -26,4 +26,22 @@ Stream::BaseType
         //virtual
 
 //Done
+
+print->int(String s2)
+    //virtual
+
+print->int(int i2)
+    //virtual
+
+print->int(float f2)
+    //virtual
+
+echo->int(String s2)
+    //virtual
+
+echo->int(int i2)
+    //virtual
+
+echo->int(float f2)
+    //virtual
 ##external ""

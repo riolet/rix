@@ -28,6 +28,7 @@ FILE *outCompilerLogFile;
 #define FLAG_GLOBAL     64
 #define FLAG_NO_CODEGEN     128
 #define FLAG_IDENT_SELF     256
+#define FLAG_FOUND_PARENT     256
 
 #define BUFFLEN 1024
 #define COMPILER_SEP "_$_"
@@ -70,7 +71,8 @@ typedef enum {
     NewMarkedIdent,
     NewUnmarkedIdent,
     Destructor,
-    Method
+    Method,
+    Field
 } OBJ_TYPE;
 
 typedef struct _Object Object;

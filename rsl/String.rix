@@ -9,5 +9,10 @@ String::BaseType
         //Virtual
     cmpeq->bool(String s)
         //Virtual
+    plus->String(String s)
+        //Virtual
+    plus->String(int i)
+        //Virtual
+
 //Done
 ##external ""

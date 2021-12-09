@@ -18,7 +18,7 @@ int errorMsg(const char *format, ...)
     int ret;
     fprintf(stderr, ANSI_COLOR_RED);
     //fprintf(stderr, "Line %d: Column:%d - ", g_lineNum-g_headerLines, g_lineCol);
-    fprintf(stderr, "Line %d: Column:%d - ", g_lineNum, g_lineCol);
+    fprintf(stderr, "File:%s Line %d: Column:%d - ", g_fileName, g_lineNum, g_lineCol);
     va_list arg;
     va_start(arg, format);
     ret = vfprintf(stderr, format, arg);

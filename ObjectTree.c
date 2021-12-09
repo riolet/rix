@@ -513,7 +513,7 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName)
 
     }
 
-    //printf("exiting findByName (%s), found %s\n", scope->fullname, result? result->fullname : "nothing.");
+    compilerDebugPrintf("exiting findByName (%s), found %s\n", scope->fullname, result? result->fullname : "nothing.");
     return result;
 
 }

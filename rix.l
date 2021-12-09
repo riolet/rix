@@ -73,6 +73,7 @@ classDecPrim  ":::"
 conditionLink "?"
 selfIdent     "$"
 hash          "#"
+range         ".."
 
 identifier    ({selfIdent})*({alphabetic}|"_")({alphanumeric}|"_")*({selfIdent})*
 
@@ -83,15 +84,18 @@ assignment    "="
 newVarassignment ":="
 return        "->"
 
+bitwiseExp        "^"
+
 lessThan      "<"
 greaterThan   ">"
 mathAssign    "+="|"-="|"*="|"/="
 comparison    "<="|">="|"=="|"!="
 ternary       "<>"
-bitwiseOp     "&"|"^"|"|"|"~"|">>"|"<<"
+bitwiseOp     "&"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
 
-condReturn    "-->"
+import    "-->"
+
 implies       "==>"
 accessor      "."
 
@@ -202,6 +206,7 @@ dtvAddsource "##addsource"
 {char}     { compilerDebugPrintf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
 {double}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return DOUBLE; }
 {mathOp}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
+{range}     { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return RANGE; }
 
 {hash}{identifier}  {   char* first = strtok(yytext, "#");
                         Object* exists = findByName(first);
@@ -254,13 +259,13 @@ dtvAddsource "##addsource"
 {selfIdent}     { compilerDebugPrintf("lexer: self\n");       yylval->sval = strdup(yytext); return SELFIDENT; }
 
 {unaryNegate}   { compilerDebugPrintf("lexer: Unary Negate\n");  yylval->sval = strdup(yytext); return UNARYNEGATE;  }
-
-{booleanOp}     { compilerDebugPrintf("lexer: bitwiseOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+{bitwiseExp}     { compilerDebugPrintf("lexer: booleanOp\n");  yylval->sval = strdup(yytext); return BITWISEEXP;  }
+{booleanOp}     { compilerDebugPrintf("lexer: booleanOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
 {comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {lessThan}    { compilerDebugPrintf("lexer: comparator<\n"); yylval->sval = strdup(yytext); return LESSTHAN; }
 {greaterThan}    { compilerDebugPrintf("lexer: comparator>\n"); yylval->sval = strdup(yytext); return GREATERTHAN; }
 {ternary}       { compilerDebugPrintf("lexer: ternary\n");                                   return TERNARY; }
-{condReturn}    { compilerDebugPrintf("lexer: condReturn\n");                                return CONDRETURN; }
+{import}    { compilerDebugPrintf("lexer: condReturn\n");                                return IMPORT; }
 {mathAssign}    { compilerDebugPrintf("lefloatxer: MathAssign\n"); yylval->sval = strdup(yytext); return MATHASSIGN; }
 {accessor}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 

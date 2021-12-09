@@ -32,12 +32,12 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(temp2, FLAG_EXTERNAL);
     addSymbol(root, temp2);
 
-    temp2 =
-        CreateObject("bool", "bool" COMPILER_SEP BASETYPE, objBaseType, Type,
-                     "bool");
-    setFlags(temp2, FLAG_EXTERNAL);
-    setFlags(temp2, FLAG_PRIMITIVE);
-    addSymbol(root, temp2);
+    // temp2 =
+    //     CreateObject("bool", "bool" COMPILER_SEP BASETYPE, objBaseType, Type,
+    //                  "bool");
+    // setFlags(temp2, FLAG_EXTERNAL);
+    // setFlags(temp2, FLAG_PRIMITIVE);
+    // addSymbol(root, temp2);
 
     temp2 =
         CreateObject("tern", "tern" COMPILER_SEP BASETYPE, objBaseType, Type,
@@ -45,37 +45,6 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(temp2, FLAG_EXTERNAL);
     setFlags(temp2, FLAG_PRIMITIVE);
     addSymbol(root, temp2);
-
-    numberType =
-        CreateObject("Number", "Number" COMPILER_SEP BASETYPE, objBaseType, Type,
-                     "Number");
-    setFlags(temp2, FLAG_EXTERNAL);
-    addSymbol(root, temp2);
-
-    temp3 =
-        CreateObject("int", "int" COMPILER_SEP "Number", numberType, Type, "int");
-    temp3->parentClass=numberType;
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
-
-    temp3 = CreateObject("float", "float" COMPILER_SEP "Number", numberType, Type, "float");
-    temp3->parentClass=numberType;
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
-
-    temp3 = CreateObject("double", "double" COMPILER_SEP "Number", numberType, Type, "double");
-    temp3->parentClass=numberType;
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
-
-    temp3 = CreateObject("char", "char" COMPILER_SEP "Number", numberType, Type, "char");
-    temp3->parentClass=numberType;
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
 
     temp4 =
         CreateObject("System", "System" COMPILER_SEP BASETYPE, numberType, Type,
@@ -106,43 +75,8 @@ void defineRSLSymbols(Object * root, bool waferSupport)
 
     // ==============  Exponent functions ===============
 
-    rslFunc =
-        CreateObject("exponent", "double" COMPILER_SEP "exponent" COMPILER_SEP "int",
-                     0, Function, "double");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "double");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "double",
-                     0, Function, "double");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "double");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("exponent", "double" COMPILER_SEP "exponent" COMPILER_SEP "double", 0,
-                     Function, "double");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "double");
-    addParam(rslFunc, "double");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("exponent", "int" COMPILER_SEP "exponent" COMPILER_SEP "int",
-                     0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-
     // ============== Sqrt functions ==============
     // ============== TODO sqrt(int) should be a double? ==============
-    rslFunc =
-        CreateObject("sqrt", "Number" COMPILER_SEP "sqrt" COMPILER_SEP, numberType, Function,
-                     "double");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Number");
-    addSymbol(root, rslFunc);
 
     // ==============  String Functions ===============
 //    rslFunc =
@@ -152,287 +86,287 @@ void defineRSLSymbols(Object * root, bool waferSupport)
 //    addParam(rslFunc, "String");
 //    addSymbol(root, rslFunc);
 
-    rslFunc =
-            CreateObject("assign", "String" COMPILER_SEP "String" COMPILER_SEP, 0,
-                         Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//             CreateObject("assign", "String" COMPILER_SEP "String" COMPILER_SEP, 0,
+//                          Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("assign", "String" COMPILER_SEP "assign" COMPILER_SEP "String", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("assign", "String" COMPILER_SEP "assign" COMPILER_SEP "String", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("plus", "int" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "int", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("plus", "double" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "double");
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "double", 0,
-                     Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "double");
-    addSymbol(root, rslFunc);
-    rslFunc =
-            CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
-                         Function, "char");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("plus", "int" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "int", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("plus", "double" COMPILER_SEP "plus" COMPILER_SEP "String", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "double");
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("plus", "String" COMPILER_SEP "plus" COMPILER_SEP "double", 0,
+//                      Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "double");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//             CreateObject("getObjectAtIndex", "String" COMPILER_SEP "getObjectAtIndex" COMPILER_SEP "int", 0,
+//                          Function, "char");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
 
-    // ==============  Conditional Functions ===============
+//     // ==============  Conditional Functions ===============
 
-    rslFunc = CreateObject("if", "bool" COMPILER_SEP "if", 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("elif", "bool" COMPILER_SEP "elif" COMPILER_SEP "bool", 0,
-                     Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "bool");
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("else", "bool" COMPILER_SEP "else", 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("if", "bool" COMPILER_SEP "if", 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_SAVERESULT);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("elif", "bool" COMPILER_SEP "elif" COMPILER_SEP "bool", 0,
+//                      Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_SAVERESULT);
+//     addParam(rslFunc, "bool");
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("else", "bool" COMPILER_SEP "else", 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_SAVERESULT);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("tf",
-                     "bool" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM
-                     COMPILER_SEP GENERIC_PARAM, 0, Function, "Generic_$$");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "bool");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addGenericType(rslFunc, 0, 1);
-    addSymbol(root, rslFunc);
-    //============= Python style conditional Functions =============
-    rslFunc = CreateObject("if", "if" COMPILER_SEP "bool", 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    //setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("elif", "elif" COMPILER_SEP "bool", 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    //setFlags(rslFunc, FLAG_SAVERESULT);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("else", "else" COMPILER_SEP, 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    //setFlags(rslFunc, FLAG_SAVERESULT);
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("tf",
+//                      "bool" COMPILER_SEP "tf" COMPILER_SEP GENERIC_PARAM
+//                      COMPILER_SEP GENERIC_PARAM, 0, Function, "Generic_$$");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "bool");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addGenericType(rslFunc, 0, 1);
+//     addSymbol(root, rslFunc);
+//     //============= Python style conditional Functions =============
+//     rslFunc = CreateObject("if", "if" COMPILER_SEP "bool", 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     //setFlags(rslFunc, FLAG_SAVERESULT);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("elif", "elif" COMPILER_SEP "bool", 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     //setFlags(rslFunc, FLAG_SAVERESULT);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("else", "else" COMPILER_SEP, 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     //setFlags(rslFunc, FLAG_SAVERESULT);
+//     addSymbol(root, rslFunc);
 
-    //============= Ternary Functions =============
-    rslFunc =
-        CreateObject("compare", "int" COMPILER_SEP "compare" COMPILER_SEP "int",
-                     0, Function, "Ternary");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
+//     //============= Ternary Functions =============
+//     rslFunc =
+//         CreateObject("compare", "int" COMPILER_SEP "compare" COMPILER_SEP "int",
+//                      0, Function, "Ternary");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("gel",
-                     "Ternary" COMPILER_SEP "gel" COMPILER_SEP GENERIC_PARAM "0"
-                     COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0,
-                     Function, "Generic_$$");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Ternary");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addGenericType(rslFunc, 0, 1);
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("gel",
+//                      "Ternary" COMPILER_SEP "gel" COMPILER_SEP GENERIC_PARAM "0"
+//                      COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0,
+//                      Function, "Generic_$$");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "Ternary");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addGenericType(rslFunc, 0, 1);
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("leg",
-                     "Ternary" COMPILER_SEP "leg" COMPILER_SEP GENERIC_PARAM "0"
-                     COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0,
-                     Function, "Generic_$$");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "Ternary");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addGenericType(rslFunc, 0, 1);
-    addSymbol(root, rslFunc);
-    // ==============  bool true, false as Dummies ===============
-    // TODO: Introduce constants
-    rslFunc = CreateObject("false", "false", 0, Variable, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_GLOBAL);
-    setFlags(rslFunc, FLAG_NO_CODEGEN);
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("leg",
+//                      "Ternary" COMPILER_SEP "leg" COMPILER_SEP GENERIC_PARAM "0"
+//                      COMPILER_SEP GENERIC_PARAM "1" COMPILER_SEP GENERIC_PARAM "2", 0,
+//                      Function, "Generic_$$");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "Ternary");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addGenericType(rslFunc, 0, 1);
+//     addSymbol(root, rslFunc);
+//     // ==============  bool true, false as Dummies ===============
+//     // TODO: Introduce constants
+//     rslFunc = CreateObject("false", "false", 0, Variable, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_GLOBAL);
+//     setFlags(rslFunc, FLAG_NO_CODEGEN);
+//     addSymbol(root, rslFunc);
 
-    rslFunc = CreateObject("true", "true", 0, Variable, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_GLOBAL);
-    setFlags(rslFunc, FLAG_NO_CODEGEN);
-    addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("true", "true", 0, Variable, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_GLOBAL);
+//     setFlags(rslFunc, FLAG_NO_CODEGEN);
+//     addSymbol(root, rslFunc);
 
-    // ==============  Looping Functions ===============
+//     // ==============  Looping Functions ===============
 
-    rslFunc =
-        CreateObject("while", "bool" COMPILER_SEP "while" COMPILER_SEP, 0, Function,
-                     "void");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("while", "while" COMPILER_SEP "bool", 0, Function, "void");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("while", "bool" COMPILER_SEP "while" COMPILER_SEP, 0, Function,
+//                      "void");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("while", "while" COMPILER_SEP "bool", 0, Function, "void");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-        CreateObject("for", "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "NUMBER");
-    addParam(rslFunc, "NUMBER");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("for",
-                     "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER" COMPILER_SEP
-                     "NUMBER", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_ASSIGNMENT);
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addParam(rslFunc, "Generic_$$");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("for", "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER", 0,
+//                      Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_ASSIGNMENT);
+//     addParam(rslFunc, "NUMBER");
+//     addParam(rslFunc, "NUMBER");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("for",
+//                      "for" COMPILER_SEP "NUMBER" COMPILER_SEP "NUMBER" COMPILER_SEP
+//                      "NUMBER", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_ASSIGNMENT);
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addParam(rslFunc, "Generic_$$");
+//     addSymbol(root, rslFunc);
 
     
-    // ==============  Print Functions ===============
-    rslFunc =
-            CreateObject("print", "print" COMPILER_SEP "char", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("print", "print" COMPILER_SEP "int", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("print", "print" COMPILER_SEP "double", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "double");
-    addSymbol(root, rslFunc);
-    rslFunc =
-        CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
+//     // ==============  Print Functions ===============
+//     rslFunc =
+//             CreateObject("print", "print" COMPILER_SEP "char", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("print", "print" COMPILER_SEP "int", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("print", "print" COMPILER_SEP "double", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "double");
+//     addSymbol(root, rslFunc);
+//     rslFunc =
+//         CreateObject("print", "print" COMPILER_SEP "String", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
 
-    rslFunc =
-            CreateObject("echo", "echo" COMPILER_SEP "char", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "int", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "double", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "double");
-    addSymbol(root, rslFunc);
-    rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
+//     rslFunc =
+//             CreateObject("echo", "echo" COMPILER_SEP "char", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "int", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "double", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "double");
+//     addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("echo", "echo" COMPILER_SEP "String", 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
 
-    // ==============  System Functions ===============
+//     // ==============  System Functions ===============
 
-    rslFunc = CreateObject("args", "args" COMPILER_SEP "int", 0, Function, "String");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "int");
-    addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("args", "args" COMPILER_SEP "int", 0, Function, "String");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "int");
+//     addSymbol(root, rslFunc);
 
-    rslFunc = CreateObject("args", "args" COMPILER_SEP, 0, Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addSymbol(root, rslFunc);
+//     rslFunc = CreateObject("args", "args" COMPILER_SEP, 0, Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addSymbol(root, rslFunc);
 
-    // ==============  int Functions ===============
-    rslFunc =
-        CreateObject("int", "int" COMPILER_SEP "int" COMPILER_SEP "String", 0,
-                     Function, "int");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "String");
-    addSymbol(root, rslFunc);
+//     // ==============  int Functions ===============
+//     rslFunc =
+//         CreateObject("int", "int" COMPILER_SEP "int" COMPILER_SEP "String", 0,
+//                      Function, "int");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "String");
+//     addSymbol(root, rslFunc);
 
-    // ==============  Condreturn Functions ===============
-    rslFunc =
-        CreateObject("condreturn",
-                     "bool" COMPILER_SEP "condreturn" COMPILER_SEP GENERIC_PARAM "0",
-                     0, Function, "void");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    addParam(rslFunc, "bool");
-    addSymbol(root, rslFunc);
+//     // ==============  Condreturn Functions ===============
+//     rslFunc =
+//         CreateObject("condreturn",
+//                      "bool" COMPILER_SEP "condreturn" COMPILER_SEP GENERIC_PARAM "0",
+//                      0, Function, "void");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     addParam(rslFunc, "bool");
+//     addSymbol(root, rslFunc);
 
-    if (waferSupport) {
-        // ==============  bool true, false as Dummies ===============
-        // TODO: Introduce constants
-        rslFunc = CreateObject("request", "request", 0, Variable, "Request");
-        setFlags(rslFunc, FLAG_EXTERNAL);
-        setFlags(rslFunc, FLAG_GLOBAL);
-        setFlags(rslFunc, FLAG_NO_CODEGEN);
-        addSymbol(root, rslFunc);
+//     if (waferSupport) {
+//         // ==============  bool true, false as Dummies ===============
+//         // TODO: Introduce constants
+//         rslFunc = CreateObject("request", "request", 0, Variable, "Request");
+//         setFlags(rslFunc, FLAG_EXTERNAL);
+//         setFlags(rslFunc, FLAG_GLOBAL);
+//         setFlags(rslFunc, FLAG_NO_CODEGEN);
+//         addSymbol(root, rslFunc);
 
-        rslFunc = CreateObject("response", "response", 0, Variable, "Response");
-        setFlags(rslFunc, FLAG_EXTERNAL);
-        setFlags(rslFunc, FLAG_GLOBAL);
-        setFlags(rslFunc, FLAG_NO_CODEGEN);
-        addSymbol(root, rslFunc);
-    }
+//         rslFunc = CreateObject("response", "response", 0, Variable, "Response");
+//         setFlags(rslFunc, FLAG_EXTERNAL);
+//         setFlags(rslFunc, FLAG_GLOBAL);
+//         setFlags(rslFunc, FLAG_NO_CODEGEN);
+//         addSymbol(root, rslFunc);
+//     }
 
-    //To help with the bootstrapping
-    temp3 =
-        CreateObject("OBJ_TYPE", "OBJ_TYPE" COMPILER_SEP BASETYPE, objBaseType, Type, "OBJ_TYPE");
-    setFlags(temp3, FLAG_EXTERNAL);
-    setFlags(temp3, FLAG_PRIMITIVE);
-    addSymbol(root, temp3);
+//     //To help with the bootstrapping
+//     temp3 =
+//         CreateObject("OBJ_TYPE", "OBJ_TYPE" COMPILER_SEP BASETYPE, objBaseType, Type, "OBJ_TYPE");
+//     setFlags(temp3, FLAG_EXTERNAL);
+//     setFlags(temp3, FLAG_PRIMITIVE);
+//     addSymbol(root, temp3);
 
-    //dummy import function
-        rslFunc = CreateObject("import", "import" COMPILER_SEP "String", 0, Function, "bool");
-    setFlags(rslFunc, FLAG_EXTERNAL);
-    setFlags(rslFunc, FLAG_GLOBAL);
-    setFlags(rslFunc, FLAG_NO_CODEGEN);
-    addSymbol(root, rslFunc);
+//     //dummy import function
+//         rslFunc = CreateObject("import", "import" COMPILER_SEP "String", 0, Function, "bool");
+//     setFlags(rslFunc, FLAG_EXTERNAL);
+//     setFlags(rslFunc, FLAG_GLOBAL);
+//     setFlags(rslFunc, FLAG_NO_CODEGEN);
+//     addSymbol(root, rslFunc);
 }

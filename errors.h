@@ -32,6 +32,7 @@ typedef enum {
 int g_lineNum;
 int g_lineCol;
 int g_headerLines;
+char * g_fileName;
 
 int errorMsg(const char *format, ...);
 int warningMsg(const char *format, ...);

@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "ObjectTree.h"
@@ -17,10 +16,6 @@ typedef struct Stream Stream;
 typedef struct {
     int object_$_id;
 } BaseType;
-
-typedef struct {
-    BaseType parent;
-} Number;
 
 typedef struct IDENT_MPTR_RAW IDENT_MPTR_RAW;
 

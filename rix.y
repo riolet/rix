@@ -75,9 +75,13 @@
 %token <ival> TERNARY
 %token <sval> CODE_INSERT
 
-%token <sval> CONDRETURN
+%token <sval> IMPORT
 %token <sval> ACCESSOR
 %token <sval> ACCESSOR_IDENT
+%token <sval> BITWISEEXP
+
+%token <sval> RANGE
+
 %token <sval> DTV_EXTERNAL
 %token <sval> DTV_ADDSOURCE
 
@@ -119,13 +123,14 @@ void yyerror(YYLTYPE *locp, const char* msg);
 //    given a compound expression,
 //    evaluate from right to left.
 %right ASSIGNMENT MATHASSIGN
-%left VERB TYPE STATICVERB CONDRETURN RBRACKETASSIGN
+%left VERB TYPE STATICVERB RBRACKETASSIGN
 %left ENDOFLINE INDENT
 %left PARAMCOMMA
 %left BOOLEANOP
 %left COMPARISON LESSTHAN GREATERTHAN TERNARY
 %left MATH_OP
 %left UNARYNEGATE
+%left RANGE
 %left ACCESSOR
 %left DESTRUCTOR
 %left LBRACKET RBRACKET LBRACE RBRACE
@@ -144,6 +149,7 @@ statements:
 
 simple_statement:
   ENDOFLINE             { compilerDebugPrintf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
+  | IMPORT STRING ENDOFLINE{ compilerDebugPrintf("parser: import\n"); $$ = 0; }
   | DTV_EXTERNAL STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
   | DTV_ADDSOURCE STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
   | statement ENDOFLINE { compilerDebugPrintf("parser: s_s-stmt\nstatement EOL\n"); $$ = $1; }
@@ -172,7 +178,7 @@ simple_statement:
   ;
 
 statement:
-  typeOrExpr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
+   typeOrExpr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
   | RETURN typeOrExpr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
   | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
   ;
@@ -184,6 +190,8 @@ typeOrExpr:
 
 expr:
   object                  { compilerDebugPrintf("parser: expr-obj\n");   $$ = $1; }
+  | typeExpression UNMARKEDNEWIDENT { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
+  | typeExpression BITWISEEXP UNMARKEDNEWIDENT { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareGlobalVariable($3, $1); }
   | UNMARKEDNEWIDENT NEWVARASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugateNewVarAssignment($1, verbAssignment($2), $3); }
   | expr ASSIGNMENT typeOrExpr  { compilerDebugPrintf("parser: expr-asn\n");   $$ = conjugate($1, verbAssignment($2), $3); }
   | expr MATHASSIGN expr  { compilerDebugPrintf("parser: expr-mas\n");   $$ = conjugate($1, verbAssignment($2), $3); }
@@ -192,7 +200,6 @@ expr:
   | expr COMPARISON expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr BOOLEANOP  expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr  TERNARY   expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
-  | expr  CONDRETURN   expr  { compilerDebugPrintf("parser: expr-crt\n");   $$ = conjugate($1,  verbCondReturn(), $3); }
   | expr  MATH_OP   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | expr  UNARYNEGATE   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
@@ -201,7 +208,10 @@ expr:
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
-  | expr ACCESSOR_IDENT { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $2); }
+  | expr ACCESSOR_IDENT { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $2, Field); }
+  | expr ACCESSOR_IDENT arguments { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate($1, conjugateAccessorIdent( $1, $2, Method),$3); }
+  | expr RANGE expr { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate($1, verbRange($2), $3); }
+  |      RANGE expr { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate(0, verbRange($1), $2); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
   ;
 

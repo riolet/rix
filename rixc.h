@@ -42,7 +42,9 @@ void doneDestructor(Object * tree);
 
 Object *funcParameters(Object * tree, ListType *paramType, char *paramName);
 Object *concatParams(Object * existing, Object * newParam);
+
 Object *declareVariable(char *name, ListType *type);
+Object *declareGlobalVariable(char *name, ListType *type);
 
 Object *conjugateNewVarAssignment(char * ident, Object * verb, Object * objects);
 Object *conjugateAssign(Object * subject, Object * verb, Object * objects);
@@ -75,7 +77,7 @@ Object *objectChar(char *c);
 Object *objectPrev();
 Object *objectPlaceHolderType(char *ident);
 Object *objectString(char *string);
-Object *conjugateAccessorIdent(Object *subject, char *field);
+Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category);
 
 Object *createCodeBlock(Object * expression);
 
@@ -90,4 +92,7 @@ Object *directive(char *key, char *value);
 bool beginsWith(const char *haystack, const char *needle);
 
 void * displayDefinedSymbols(Object *tree);
+
+Object * openFiles(char name[]);
+int rixParse(FILE *fp);
 #endif
