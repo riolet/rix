@@ -1,0 +1,12 @@
+##external "rsl/RSL_bool.h"
+
+bool:::BaseType
+    //Do nothing today
+
+if->(bool cond)
+    //More Magic
+
+bool^ true
+bool^ false
+
+##external ""

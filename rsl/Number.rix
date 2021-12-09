@@ -1,0 +1,48 @@
+##external "rsl/RSL_Number.h"
+##addsource "rsl/RSL_Number.c"
+
+Number:::BaseType
+    exponent->Number(Number n)
+        //virtual
+
+    sqrt->Number()
+        //virtual
+
+    for->Number(Number start,Number end, Number step)
+        //Virtual
+
+
+char:::Number
+    //virtual
+
+int:::Number
+    //virtual
+    for->Number(int start,Number end, int step)
+        //virtual
+    for->Number(int start,int end, int step)
+        //virtual
+    for->Number(int start,int end)
+        //virtual
+
+short:::Number
+    //virtual
+
+unsigned:::Number
+    //virtual
+
+long:::Number
+    //Virtual
+
+unsignedLong:::Number
+    //Virtual
+
+float:::Number
+    //virtual
+
+double:::Number
+    //virtual
+
+longDouble:::Number
+    //virtual
+
+##external ""

@@ -1713,10 +1713,17 @@ Object *verbMathOp(char *verb)
     return result;
 }
 
+Object *verbRange(char *verb)
+{
+    compilerDebugPrintf("verbRange(%s)\n", verb);
+    Object *result = CreateObject("range", "range", 0, Function, "Range");
+    return result;
+}
+
 Object *verbComparison(char *verb)
 {
     compilerDebugPrintf("verbComparison(%s)\n", verb);
-    Object *result = CreateObject("range", "range", 0, Function, "bool");
+    Object *result = CreateObject(verb, verb, 0, Function, "bool");
     return result;
 }
 
@@ -2153,28 +2160,6 @@ Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
         else
         {
             snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
-        snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);        
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
         }
         addParam(result, oField->returnType);
         addCode(result, accessCode);
@@ -2234,7 +2219,7 @@ Object *directive(char *key, char *value)
 
 int rixParse(FILE *fp)
 {
-    compilerDebugPrintf("Rix Parse %s\n", yyinFileName);
+    compilerDebugPrintf("Rix Parse %d\n", yylineno);
     yylineno = 1;
     yyin = fp;
     hitEOF = false;
@@ -2242,7 +2227,7 @@ int rixParse(FILE *fp)
     {
         yyparse();
     }
-    compilerDebugPrintf("Done parsing %s %d\n", yyinFileName,yylineno);
+    compilerDebugPrintf("Done parsing %s\n", yyinFileName);
 }
 
 Object* openFiles(char name[])
@@ -2312,7 +2297,9 @@ Object* openFiles(char name[])
                 openFiles(word2);
             }
         }
-    }    
+    }
+    g_fileName = yyinFileName;    
+    compilerDebugPrintf("Parsing %s\n", name);
     rewind(fp);
     rixParse(fp);
     return 0;

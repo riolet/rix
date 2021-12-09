@@ -55,6 +55,7 @@ Object *injectC(char *code);
 Object *verbNewVarAssignment(char *verb);
 Object *verbAssignment(char *verb);
 Object *verbMathOp(char *verb);
+Object *verbRange(char *verb);
 Object *verbComparison(char *verb);
 Object *verbTernary();
 Object *verbCondReturn();
