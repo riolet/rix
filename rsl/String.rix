@@ -13,6 +13,8 @@ String:::BaseType
         //Virtual
     plus->String(int i)
         //Virtual
+    isDefined->bool()
+        //Virtual
 
 //Done
 ##external ""

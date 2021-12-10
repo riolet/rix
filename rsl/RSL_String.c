@@ -19,9 +19,10 @@ void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
     debugPrintf("Cleaned up String %s",_$_mptr_in->debugName);
 }
 
-String String_$_String_$_ (String * _$_mptr_in)
+String String_$_String_$_ (String s)
 {
     String self;
+    self.buffer=0;
     return self;
 }
 
@@ -62,6 +63,10 @@ String String_$_plus_$_int(String left, int right_int)
     s.buffer[s.length] = 0;
     s.isStaticBuffer = false;
     return s;
+}
+
+bool String_$_isDefined_$_(String s) {
+    return (s.buffer!=0);
 }
 
 // IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)

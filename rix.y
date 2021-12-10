@@ -27,6 +27,7 @@
 	char*   sval;
 	Object* oval;
   ListType* ltval;
+  ListString* lsval;
 }
 
 // define the constant-string tokens:
@@ -47,6 +48,7 @@
 %token <sval> STATICVERB
 %token <sval> TYPE
 %token <sval> MATH_OP
+%token <sval> ASTERISK
 %token <sval> ASSIGNMENT
 %token <sval> NEWVARASSIGNMENT
 %token <sval> LPAREN
@@ -63,6 +65,7 @@
 %token <sval> MATHASSIGN
 %token <sval> BITWISEOP
 %token <sval> BOOLEANOP
+%token <sval> UNARYBOOLNEGATE
 %token <sval> COLON
 %token <sval> CLASSDEC
 %token <sval> CLASSDECPRIM
@@ -104,6 +107,9 @@
 %type <oval> object;
 %type <oval> arguments;
 %type <oval> arglist;
+
+%type <lsval> enums;
+
 %type <ltval> typeExpression;
 
 %type <sval> parameterIdent;
@@ -128,10 +134,11 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %left PARAMCOMMA
 %left BOOLEANOP
 %left COMPARISON LESSTHAN GREATERTHAN TERNARY
+%left ASTERISK
 %left MATH_OP
-%left UNARYNEGATE
+%left UNARYNEGATE UNARYBOOLNEGATE
 %left RANGE
-%left ACCESSOR ACCESSOR_IDENT
+%left ACCESSOR ACCESSOR_IDENT CONDITIONLINK
 %left DESTRUCTOR
 %left LBRACKET RBRACKET LBRACE RBRACE
 //%right class_definition
@@ -149,6 +156,7 @@ statements:
 
 simple_statement:
   ENDOFLINE             { compilerDebugPrintf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
+  | VERB ENDOFLINE codeblock     { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), 0); }
   | IMPORT STRING ENDOFLINE{ compilerDebugPrintf("parser: import\n"); $$ = 0; }
   | DTV_EXTERNAL STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
   | DTV_ADDSOURCE STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
@@ -197,17 +205,21 @@ expr:
   | expr BOOLEANOP  expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1, verbComparison($2), $3); }
   | expr  TERNARY   expr  { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate($1,  verbTernary(), $3); }
   | expr  MATH_OP   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
+  | expr  ASTERISK   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | expr  UNARYNEGATE   expr  { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($1, verbMathOp($2), $3); }
   | UNARYNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate($2, verbMathOp("*"), objectInt(-1)); }
+  | UNARYBOOLNEGATE expr { compilerDebugPrintf("parser: expr-mth\n");   $$ = conjugate(0, verbComparison($1), $2); }
   |        VERB     arguments  { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), $2); }
   | LPAREN expr RPAREN    { compilerDebugPrintf("parser: expr-prn\n");   $$ = parenthesize($2); }
   | expr LBRACKET expr RBRACKETASSIGN expr { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbPutObjAtIdx(), concatParams($3,$5)); }
   | expr LBRACKET expr RBRACKET  { compilerDebugPrintf("parser: expr-prn\n");   $$ = conjugate($1,  verbGetObjAtIdx(), $3); }
+  | TYPE ACCESSOR_IDENT { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorEnum( $1, $2, Field); }
   | expr ACCESSOR_IDENT { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugateAccessorIdent( $1, $2, Field); }
   | expr ACCESSOR_IDENT arguments { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate($1, conjugateAccessorIdent( $1, $2, Method),$3); }
   | expr RANGE expr { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate($1, verbRange($2), $3); }
   |      RANGE expr { compilerDebugPrintf("parser: exp-.i\n");   $$ = conjugate(0, verbRange($1), $2); }
   | IDENT DESTRUCTOR      { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbDestructor(), 0); }
+  | IDENT CONDITIONLINK   { compilerDebugPrintf("parser: expr-cmp\n");   $$ = conjugate(objectIdent($1),  verbIsDefined($2), 0); }
   ;
 
 typeExpression:
@@ -217,7 +229,8 @@ typeExpression:
   ;
 
 arguments:
-   LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
+  /* %empty { compilerDebugPrintf("parser: arg\n");   $$ = 0; } //0-ary */
+  LPAREN RPAREN { compilerDebugPrintf("parser: arg-()\n");   $$ = 0; } //0-ary
   | LPAREN arglist RPAREN { compilerDebugPrintf("parser: arg(...)\n");   $$ = $2; } //n-ary
   ;
 
@@ -234,7 +247,7 @@ object:
   | NEWIDENT   { compilerDebugPrintf("parser: object-new-identifer\n"); $$ = objectNewIdent($1); }
   | STRING  { compilerDebugPrintf("parser: object-string\n");    $$ = objectString($1);  }
   | SELFIDENT { compilerDebugPrintf("parser: object-self\n");    $$ = objectSelfIdent($1);}
-  | CONDITIONLINK { compilerDebugPrintf("parser: object-previous\n"); $$ = objectPrev();   }
+  /* | CONDITIONLINK { compilerDebugPrintf("parser: object-previous\n"); $$ = objectPrev();   } */
   ;
 
 anyIdentOrVerb:
@@ -281,6 +294,7 @@ class_definition:
 
 ctor_definition:
   SELFIDENT LPAREN parameters RPAREN { compilerDebugPrintf("parser: class-def\n"); $$ = beginConstructor($3); }
+  |SELFIDENT LPAREN ASTERISK RPAREN { compilerDebugPrintf("parser: class-def\n"); $$ = beginConstructorAll(); }
   ;
 classblock:
   INDENT class_statements UNINDENT { $$ = $2; }
@@ -291,6 +305,7 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
+  | LBRACE enums RBRACE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareEnum($2); }
   | typeExpression UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
   | function_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
@@ -301,6 +316,11 @@ class_statement:
   | ctor_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Constructor Defined! %s\n", $1->fullname);
           doneConstructor($1); }
+  ;
+
+enums:
+   parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = createEnums( 0, $1); }
+  | enums PARAMCOMMA parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = createEnums($1, $3); }
   ;
 
 %%

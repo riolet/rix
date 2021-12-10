@@ -36,6 +36,7 @@ void doneClass(Object * tree);
 Object *beginFunction(char *funcName, ListType *returnType, Object * parameters);
 void doneFunction(Object * tree);
 Object *beginConstructor(Object * parameters);
+Object *beginConstructorAll();
 void doneConstructor(Object * tree);
 Object *beginDestructor(Object * parameters);
 void doneDestructor(Object * tree);
@@ -63,6 +64,7 @@ Object *verbIdent(char *verb);
 Object *verbDestructor();
 Object *verbGetObjAtIdx();
 Object *verbPutObjAtIdx();
+Object *verbIsDefined(char *verb);
 Object *sVerbIdent(char *staticVerb);
 ListType * createListType (char *type);
 char * genericNameToString (ListType *genericType);
@@ -79,7 +81,9 @@ Object *objectPrev();
 Object *objectPlaceHolderType(char *ident);
 Object *objectString(char *string);
 Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category);
-
+Object *conjugateAccessorEnum(char *typeName, char *field, OBJ_TYPE category) ;
+Object * declareEnum(ListString *enumList);
+ListString *createEnums(ListString *enumList, char *paramName);
 Object *createCodeBlock(Object * expression);
 
 double simplifydouble(double left, char *op, double right);

@@ -39,6 +39,8 @@ String String_$_plus_$_String(String left, String right);
 
 String String_$_plus_$_int(String left, int right_int);
 
+bool String_$_isDefined_$_(String s);
+
 // IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in);
 
 // IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDENT_MPTR_RAW * $_mptr_in);

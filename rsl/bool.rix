@@ -1,10 +1,16 @@
 ##external "rsl/RSL_bool.h"
 
 bool:::BaseType
-    //Do nothing today
+    tf->Generic_ZTYPE$$(Generic_$$ ifTrue, Generic_$$ ifFalse)
+        //virtual
 
 if->(bool cond)
     //More Magic
+
+else->()
+    //else
+
+
 
 bool^ true
 bool^ false

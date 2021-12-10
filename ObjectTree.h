@@ -72,7 +72,10 @@ typedef enum {
     NewUnmarkedIdent,
     Destructor,
     Method,
-    Field
+    Field,
+    Enum,
+    EnumEntry,
+    EnumTypeVariable
 } OBJ_TYPE;
 
 typedef struct _Object Object;
@@ -154,6 +157,8 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName);
 Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params);
 
 bool isVerb (Object *result);
+
+void writeEnums (FILE * outh, ListString *iter);
 
 #define TRY do{ jmp_buf ex_buf__; if( !setjmp(ex_buf__) ){
 #define CATCH } else {

@@ -63,6 +63,7 @@ integer       {numeral}+
 decimal       "."{numeral}+|{numeral}+"."{numeral}+
 double         {decimal}|(({decimal}|{integer})[eE][-+]?{integer})
 string        \"(\\.|[^\\"])*\"
+codeInsert    \`\`\`(\\.|[^\\\`\`\`])*\`\`\` 
 char          \'(\\.|[^\\'])+\'
 comment       \/\/.*
 
@@ -79,7 +80,8 @@ identifier    ({selfIdent})*({alphabetic}|"_")({alphanumeric}|"_")*({selfIdent})
 
 unaryNegate   "-"
 
-mathOp        "+"|"*"|"/"|"^^"|"%"
+asterisk      "*"
+mathOp        "+"|"/"|"^^"|"%"
 assignment    "="
 newVarassignment ":="
 return        "->"
@@ -93,6 +95,7 @@ comparison    "<="|">="|"=="|"!="
 ternary       "<>"
 bitwiseOp     "&"|"|"|"~"|">>"|"<<"
 booleanOp     "||"|"&&"
+unaryBoolNegate "!"
 
 import    "-->"
 
@@ -199,12 +202,13 @@ dtvAddsource "##addsource"
 
 [/][*][^*]*[*]+([^*/][^*]*[*]+)*[/]       { /* DO NOTHING */ }
 [/][*]                                    { criticalError(ERROR_ParseError, "unterminated comment\n"); }
-"```"			  {yylval -> sval =  handleCodeInsert(); return CODE_INSERT; }
+{codeInsert}			  {yylval -> sval =  strdup(yytext);; return CODE_INSERT; }
 {comment}     { compilerDebugPrintf("lexer: comment (ignored)\n"); /* do not forward comments at this time.*/ }
 {string}      { compilerDebugPrintf("lexer: string\n"); yylval->sval = strdup(yytext); return STRING; }
 {integer}     { compilerDebugPrintf("lexer: int\n");    yylval->ival = atoi(yytext);   return INT; }
 {char}     { compilerDebugPrintf("lexer: char\n");    yylval->sval = strdup(yytext);   return CHAR; }
 {double}       { compilerDebugPrintf("lexer: float\n");  yylval->fval = atof(yytext);   return DOUBLE; }
+{asterisk}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return ASTERISK; }
 {mathOp}      { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return MATH_OP; }
 {range}     { compilerDebugPrintf("lexer: mathOp\n"); yylval->sval = strdup(yytext); return RANGE; }
 
@@ -232,7 +236,7 @@ dtvAddsource "##addsource"
                         if (!exists) {
                           compilerDebugPrintf("lexer: unidentified identifier\n");
                           return UNMARKEDNEWIDENT;
-                        } else if (exists->category == Variable) {
+                        } else if (exists->category == Variable || exists->category == EnumTypeVariable) {
                           compilerDebugPrintf("lexer: identifier\n");
                           return IDENT;
                         } else if (isVerb(exists)) {
@@ -250,7 +254,7 @@ dtvAddsource "##addsource"
 {assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{paramComma}    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
+[ \t\n]*{paramComma}[ \t\n]*    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
 {colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
@@ -261,6 +265,7 @@ dtvAddsource "##addsource"
 {unaryNegate}   { compilerDebugPrintf("lexer: Unary Negate\n");  yylval->sval = strdup(yytext); return UNARYNEGATE;  }
 {bitwiseExp}     { compilerDebugPrintf("lexer: booleanOp\n");  yylval->sval = strdup(yytext); return BITWISEEXP;  }
 {booleanOp}     { compilerDebugPrintf("lexer: booleanOp\n");  yylval->sval = strdup(yytext); return BOOLEANOP;  }
+{unaryBoolNegate}     { compilerDebugPrintf("lexer: booleanOp\n");  yylval->sval = strdup(yytext); return UNARYBOOLNEGATE;  }
 {comparison}    { compilerDebugPrintf("lexer: comparator\n"); yylval->sval = strdup(yytext); return COMPARISON; }
 {lessThan}    { compilerDebugPrintf("lexer: comparator<\n"); yylval->sval = strdup(yytext); return LESSTHAN; }
 {greaterThan}    { compilerDebugPrintf("lexer: comparator>\n"); yylval->sval = strdup(yytext); return GREATERTHAN; }
@@ -276,13 +281,13 @@ dtvAddsource "##addsource"
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-"("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
-")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
-"["                             { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
-"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"("[ \t\n]*           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
+[ \t\n]*")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["[ \t\n]*                              { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+[ \t\n]*"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
 "]"[ \t]*{assignment}           { compilerDebugPrintf("lexer: )\n"); return RBRACKETASSIGN; }
-"{"           { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
-"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
+"{"[ \t\n]*            { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
+[ \t\n]*"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
 .             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%

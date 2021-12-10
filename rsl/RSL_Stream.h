@@ -9,7 +9,7 @@ struct Stream{
 
 void Stream_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in);
 IDENT_MPTR_RAW * Stream_$_Stream_$_ (IDENT_MPTR_RAW * _$_mptr_in);
-IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (IDENT_MPTR_RAW * filename_, IDENT_MPTR_RAW * mode_, IDENT_MPTR_RAW * _$_mptr_in);
+IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (String filename, String mode, IDENT_MPTR_RAW * _$_mptr_in);
 
 /* Print prints the param and a newline char */
 int Stream_$_print_$_String(IDENT_MPTR_RAW * stream_, IDENT_MPTR_RAW * s_);

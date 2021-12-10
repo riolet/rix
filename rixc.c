@@ -287,6 +287,10 @@ void doneFunction(Object *tree)
     displayDefinedSymbols(0);
 }
 
+Object *beginConstructorAll() {
+    beginConstructor(NULL);
+}
+
 Object *beginConstructor(Object *parameters)
 {
     if (current->category != Type)
@@ -494,6 +498,55 @@ Object *funcParameters(Object *paramList, ListType *paramType, char *paramName)
     return result;
 }
 
+Object * declareEnum(ListString *enumList) {
+    char enumName[BUFFLEN];
+    snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",current->name);
+
+    Object * result = CreateObject(enumName,enumName, current, Enum, current->returnType);
+    addCode(result,"typedef enum {");
+    bool first=true;
+    while (enumList)
+    {
+        compilerDebugPrintf("Enum %s ,",enumList->value);
+        if (!first) {
+            addCode(result,",");    
+        }
+        char fullName[BUFFLEN];
+        snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",current->name,enumList->value);
+        Object * symbol=CreateObject(enumList->value, fullName, current,EnumEntry,current->returnType);
+        addCode(result,fullName);
+        addSymbol(result, symbol);
+        first=false;
+        enumList=enumList->next;
+    }
+    addCode(result,"}");
+    addCode(result,enumName);    
+    addSymbol(current,result);    
+    return result;
+}
+
+ListString *createEnums(ListString *enumList, char *paramName)
+{
+    //TODO: check if category is actually a defined category
+    //TODO: check paramType is a valid Type
+    Object *result;
+    result = CreateObject(0, 0, 0, Undefined, 0);    
+    ListString * head=enumList;
+    if (!head) {
+        head=malloc(sizeof(ListString));
+        head->value=paramName;
+        head->next=0; 
+    } else {        
+        while (enumList->next) 
+            enumList=enumList->next;
+        enumList->next=malloc(sizeof(ListString));
+        enumList->next->value=paramName;
+        enumList->next->next=0;
+    }    
+       
+    return head;
+}
+
 Object *concatParams(Object *existing, Object *newParam)
 {
     Object *result = CreateObject(0, 0, 0, Expression, 0);
@@ -589,8 +642,9 @@ Object *declareVariable(char *name, ListType *type)
     {
         var->genericType = genericType;
     }
-    if (external) {
-        setFlags(var,FLAG_NO_CODEGEN);
+    if (external)
+    {
+        setFlags(var, FLAG_NO_CODEGEN);
     }
     addSymbol(current, var);
     return var;
@@ -897,7 +951,11 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
                 compilerDebugPrintf("Creating new variable %s as %s of %s\n", subject->name, objects->returnType,
                                     subject->genericType ? subject->genericType->type : "{}");
 
-                subject->category = Variable;
+                if (objects->category==EnumTypeVariable) {
+                    subject->category = EnumTypeVariable;
+                } else {
+                    subject->category = Variable;
+                }
                 subject->returnType = objects->returnType;
 
                 if (objects->genericType)
@@ -1553,6 +1611,42 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
                 snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR);
         }
     }
+    else if (!strcmp(realVerb->returnType, "Generic_ZTYPE$$"))
+    {
+        //compilerDebugPrintf("Subject %s at %d = %d\n",subject->name,__LINE__,subject);
+        compilerDebugPrintf("Trying to set subject %s as object RT %s %d\n", subject->name, objects->paramTypes->type, __LINE__);
+        if (objects->paramTypes->type)
+        {
+            //Todo better Generics handling
+            compilerDebugPrintf("Setting subject %s as object RT %s %d\n", subject->name, objects->paramTypes->type, __LINE__);
+            result->returnType = strdup(objects->paramTypes->type);
+            addParam(result, objects->paramTypes->type);
+            subject->returnType = strdup(objects->paramTypes->type);
+        }
+        // else
+        // {
+        //     //printf("%s",subject->genericType->type);
+        //     compilerDebugPrintf("Subject %s %s has no generic type at %d\n", subject->name, subject->returnType, __LINE__);
+        //     //compilerDebugPrintf("\n",lo->value->name);
+        //     criticalError(ERROR_RuntimeError, "Can't ascertain generic type");
+        //     exit(-1);
+        // }
+        // Object *pType = findByName(result->returnType);
+        // if (pType && getFlag(pType, FLAG_PRIMITIVE))
+        // {
+        //     invoke_pos +=
+        //         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",true");
+        //     invoke_pos +=
+        //         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->returnType);
+        // }
+        // else
+        // {
+        //     invoke_pos +=
+        //         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
+        //     invoke_pos +=
+        //         snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR);
+        // }
+    }
     else
     {
         addParam(result, realVerb->returnType);
@@ -1642,6 +1736,12 @@ Object *verbComparison(char *verb)
 {
     compilerDebugPrintf("verbComparison(%s)\n", verb);
     Object *result = CreateObject(verb, verb, 0, Function, "bool");
+    return result;
+}
+
+Object *verbIsDefined(char *verb)
+{
+    Object *result = CreateObject("isDefined", "isDefined", 0, Function, "bool");
     return result;
 }
 
@@ -1955,6 +2055,25 @@ Object *objectPlaceHolderType(char *ident)
     return result;
 }
 
+Object *conjugateAccessorEnum(char *typeName, char *field, OBJ_TYPE category) 
+{
+
+    Object *  subject=findByName(typeName);
+
+    
+    char enumName[BUFFLEN];
+    snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",typeName);
+
+    Object * result = CreateObject(enumName, enumName, 0, EnumTypeVariable, subject->returnType);
+
+    char fullName[BUFFLEN];
+    snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",subject->name,field);
+
+    addParam(result, subject->returnType);
+    addCode(result, fullName);
+    return result;
+}
+
 Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
 {
     //verify parent is defined
@@ -2140,7 +2259,7 @@ int rixParse(FILE *fp)
     compilerDebugPrintf("Done parsing %s\n", yyinFileName);
 }
 
-Object* openFiles(char name[])
+Object *openFiles(char name[])
 {
     FILE *fp;
     char line[LINESIZE], word[LINESIZE], word2[LINESIZE];
@@ -2152,12 +2271,14 @@ Object* openFiles(char name[])
     {
         name++;
     }
+    char importPath[BUFFLEN];
+    char myFileName[BUFFLEN];
     compilerDebugPrintf("Checking %s\n", name);
     if ((fp = fopen(name, "r+")) == 0)
     {
         compilerDebugPrintf("Cannot find import file %s in working directory. Trying RIX_HOME\n", name);
         const char *RIX_HOME = getenv("RIX_HOME");
-        char importPath[BUFFLEN];
+        
         if (RIX_HOME != 0)
         {
             snprintf(importPath, BUFFLEN, "%s/%s", RIX_HOME, name);
@@ -2171,7 +2292,7 @@ Object* openFiles(char name[])
             else
             {
                 //compilerDebugPrintf("Found file %s RIX_HOME\n",name);
-                snprintf(yyinFileName, 255, "%s", importPath);
+                snprintf(myFileName, 255, "%s", importPath);
             }
         }
         else
@@ -2183,11 +2304,12 @@ Object* openFiles(char name[])
     }
     else
     {
-        snprintf(yyinFileName, 255, "%s", name);
+        snprintf(myFileName, 255, "%s", name);
     }
     compilerDebugPrintf("Reading %s\n", name);
     while (fgets(line, LINESIZE, fp))
     {
+        //Todo: improve this lazy import parser implementation
         char *importPos = strstr(line, "-->");
         if (importPos != NULL)
         {
@@ -2207,8 +2329,29 @@ Object* openFiles(char name[])
                 openFiles(word2);
             }
         }
+        importPos = strstr(line, "import");
+        if (importPos != NULL)
+        {
+            char *openParenPos = strchr(importPos, '"');
+            if (openParenPos != NULL)
+            {
+                char *word2 = malloc(BUFFLEN);
+                char *cursor = openParenPos + 1;
+                int i = 0;
+                while (*(cursor + i) != '"')
+                {
+                    word2[i] = *(cursor + i);
+                    i++;
+                }
+                word2[i] = '\0';
+                //compilerDebugPrintf("Recursing %s\n",word2);
+                openFiles(word2);
+            }
+        }        
     }
-    g_fileName = yyinFileName;    
+    snprintf(yyinFileName, 255, "%s", myFileName);
+    snprintf(g_fileName, 255, "%s", myFileName);
+
     compilerDebugPrintf("Parsing %s\n", name);
     rewind(fp);
     rixParse(fp);
@@ -2230,6 +2373,8 @@ int main(int argc, char **argv)
     g_headerLines = 0;
     bool waferSupport = false;
     bool isLibrary = false;
+
+    g_fileName = malloc(sizeof(char)*BUFFLEN);
     while ((c = getopt(argc, argv, "o:tqWL")) != -1)
     {
         switch (c)

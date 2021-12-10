@@ -24,13 +24,11 @@ IDENT_MPTR_RAW * Stream_$_Stream_$_ (IDENT_MPTR_RAW * _$_mptr_in)
     return self;
 }
 
-IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (IDENT_MPTR_RAW * filename_, IDENT_MPTR_RAW * mode_, IDENT_MPTR_RAW * _$_mptr_in)
+IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (String filename, String mode, IDENT_MPTR_RAW * _$_mptr_in)
 {
     IDENT_MPTR_RAW * self = Stream_$_Stream_$_(_$_mptr_in);
     Stream * self_ = self->obj;
-    String * filename = (String *) filename_->obj;
-    String * mode = (String *) mode_->obj;
-    self_->stream = fopen(filename->buffer,mode->buffer);
+    self_->stream = fopen(filename.buffer,mode.buffer);
     if (!self_->stream) {
         criticalError(ERROR_RuntimeError,"Unable to open file");
     }

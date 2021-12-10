@@ -11,4 +11,5 @@ Options:::BaseType
     getString->String()
         //Mandatory opts
 
+//End defining options
 ##external ""

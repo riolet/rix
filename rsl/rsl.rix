@@ -13,4 +13,7 @@ Rix Standard Library - Default Includes
 -->"rsl/Stream.rix"
 -->"rsl/Options.rix"
 
+import->(String s)
+    //virtual
+
 ##external ""

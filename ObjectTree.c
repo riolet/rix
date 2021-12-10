@@ -617,6 +617,14 @@ void writeTypeDefs(FILE * outh, Object * tree)
     }
 }
 
+void writeEnums (FILE * outh, ListString *iter) {
+    while (iter) {
+        fprintf(outh, "%s\n", iter->value);
+        iter=iter->next;
+    }
+    fprintf(outh, ";\n");
+}
+
 void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
 {
 
@@ -644,7 +652,10 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
         writeClass(outc, outh, tree, indent);
     } else if (tree->category == Dummy) {
         //Dummy
-    } else {
+    } else if (tree->category == Enum){
+        compilerDebugPrintf("Writing Enums ***\n");
+        writeEnums (outh, tree->code);
+    }else {
         writeOther(outc, outh, tree, indent);
     }
 
@@ -775,6 +786,10 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
         if (oIter->value->category == Variable) {
             //declare all class variables
             writeDeclareVariable (oIter, outh, tree);
+        } else if (oIter->value->category == EnumTypeVariable) {
+            char enumName[BUFFLEN];
+            snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",oIter->value->returnType);
+            fprintf(outh, "%s %s;\n",enumName,oIter->value->name);
         }
         oIter = oIter->next;
     }
@@ -802,7 +817,12 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
         if (oIter->value->category == Variable) {
             //declare all local variables
             writeDeclareVariable (oIter, outc, tree);
-        } else {
+        } else if (oIter->value->category == EnumTypeVariable) {
+            char enumName[BUFFLEN];
+            snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",oIter->value->returnType);
+            fprintf(outc, "%s %s;\n",enumName,oIter->value->name);
+        }
+        else {
             writeTreeHelper(outc, outh, oIter->value, indent + 1);
         }
 
@@ -822,6 +842,7 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
 void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
 {
 
+    compilerDebugPrintf("Writing Class %s ***\n",tree->name);
     ListObject *oIter;
 
     oIter = tree->definedSymbols;
@@ -832,9 +853,10 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
         if (oIter->value->category == Variable) {
             writeDeclareClassVariable (oIter, outh, tree);
-        } else {
-            oIter = oIter->next;
-            break;
+        } else if (oIter->value->category == EnumTypeVariable) {
+            char enumName[BUFFLEN];
+            snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",oIter->value->returnType);
+            fprintf(outh, "%s %s;\n",enumName,oIter->value->name);
         }
         oIter = oIter->next;
     }
@@ -842,14 +864,21 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     fprintf(outh, "};\n");
 
 
-
+    oIter = tree->definedSymbols;
     while (oIter != 0) {
         if (isVerb(oIter->value)) {
             writeFunction(outh, tree, indent, false);
-        } else {
-            writeTreeHelper(outc, outh, tree, indent);
+        }  else if (oIter->value->category==Enum) {
+            compilerDebugPrintf("Writing Class Enums ***\n");
+            writeEnums(outh, oIter->value->code);
+            
+        }  else {
+            //writeTreeHelper(outc, outh, tree, indent);
         }
+        oIter=oIter->next;
     }
+
+
 
 }
 
