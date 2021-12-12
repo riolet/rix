@@ -71,6 +71,7 @@ colon         ":"
 paramComma    ","
 classDec      "::"
 classDecPrim  ":::"
+enumDec       ":|"
 conditionLink "?"
 selfIdent     "$"
 hash          "#"
@@ -254,7 +255,7 @@ dtvAddsource "##addsource"
 {assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-[ \t\n]*{paramComma}[ \t\n]*    { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
+{paramComma}   { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
 {colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
@@ -275,19 +276,20 @@ dtvAddsource "##addsource"
 {accessor}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return ACCESSOR; }
 
 {hash}      { compilerDebugPrintf("lexer: accessor\n"); yylval->sval = strdup(yytext); return DESTRUCTOR; }
+{enumDec}   { compilerDebugPrintf("lexer: enumDec\n"); yylval->sval = strdup(yytext); return ENUM_DEC; }
 
 {dtvExternal}   { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_EXTERNAL; }
 {dtvAddsource}  { compilerDebugPrintf("lexer: directive\n"); yylval->sval = strdup(yytext); return DTV_ADDSOURCE; }
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-"("[ \t\n]*           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
-[ \t\n]*")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
-"["[ \t\n]*                              { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
-[ \t\n]*"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
+")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["                              { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
 "]"[ \t]*{assignment}           { compilerDebugPrintf("lexer: )\n"); return RBRACKETASSIGN; }
-"{"[ \t\n]*            { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
-[ \t\n]*"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
+"{"            { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
+"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
 .             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%

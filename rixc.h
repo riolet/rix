@@ -82,8 +82,10 @@ Object *objectPlaceHolderType(char *ident);
 Object *objectString(char *string);
 Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category);
 Object *conjugateAccessorEnum(char *typeName, char *field, OBJ_TYPE category) ;
-Object * declareEnum(ListString *enumList);
-ListString *createEnums(ListString *enumList, char *paramName);
+char * createEnums(char *paramName);
+ListString *concatEnums(ListString *enumList, char *paramName);
+Object *beginEnum(ListString *enumList, char *enumName);
+void doneEnums(Object * tree, ListString *name);
 Object *createCodeBlock(Object * expression);
 
 double simplifydouble(double left, char *op, double right);

@@ -62,6 +62,44 @@ void handleEOF()
     hitEOF = true;
 }
 
+Object *beginEnum(ListString *enumList, char *enumName) {
+
+    char codename[BUFFLEN];
+    snprintf(codename, BUFFLEN, "%s", enumName);
+    Object *result = CreateObject(enumName, enumName, current, Type, codename);
+    setFlags(result,FLAG_PRIMITIVE);
+    setFlags(result,FLAG_ENUM);
+
+    compilerDebugPrintf("Beginning enum %s",codename);
+    addSymbol(current, result);
+    scope_push(result);
+
+    
+    addCode(result,"typedef enum {");
+    bool first=true;
+
+    while (enumList)
+    {
+        compilerDebugPrintf("Enum %s ,",enumList->value);
+        if (!first) {
+            addCode(result,",");    
+        }
+        char fullName[BUFFLEN];
+        snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",current->name,enumList->value);
+        Object * symbol=CreateObject(enumList->value, fullName, current,EnumEntry,current->returnType);
+        addCode(result,fullName);
+        addSymbol(result, symbol);
+        first=false;
+        enumList=enumList->next;
+    }
+
+    addCode(result,"}");
+    addCode(result,enumName);    
+    addSymbol(current,result);
+    scope_pop();    
+    return result;
+}
+
 Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isPrimitive)
 {
     if (!className || !parentName)
@@ -472,6 +510,11 @@ void doneDestructor(Object *tree)
     scope_pop();
 }
 
+void doneEnums(Object * tree, ListString *name)
+{
+    scope_pop();
+}
+
 Object *funcParameters(Object *paramList, ListType *paramType, char *paramName)
 {
     //TODO: check if category is actually a defined category
@@ -498,40 +541,18 @@ Object *funcParameters(Object *paramList, ListType *paramType, char *paramName)
     return result;
 }
 
-Object * declareEnum(ListString *enumList) {
-    char enumName[BUFFLEN];
-    snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",current->name);
-
-    Object * result = CreateObject(enumName,enumName, current, Enum, current->returnType);
-    addCode(result,"typedef enum {");
-    bool first=true;
-    while (enumList)
-    {
-        compilerDebugPrintf("Enum %s ,",enumList->value);
-        if (!first) {
-            addCode(result,",");    
-        }
-        char fullName[BUFFLEN];
-        snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",current->name,enumList->value);
-        Object * symbol=CreateObject(enumList->value, fullName, current,EnumEntry,current->returnType);
-        addCode(result,fullName);
-        addSymbol(result, symbol);
-        first=false;
-        enumList=enumList->next;
-    }
-    addCode(result,"}");
-    addCode(result,enumName);    
-    addSymbol(current,result);    
-    return result;
-}
-
-ListString *createEnums(ListString *enumList, char *paramName)
+ListString *concatEnums(ListString *enumList, char *paramName)
 {
     //TODO: check if category is actually a defined category
     //TODO: check paramType is a valid Type
     Object *result;
     result = CreateObject(0, 0, 0, Undefined, 0);    
     ListString * head=enumList;
+    if (!paramName) {
+        //Empty ENDOFLINE
+        return head;
+    }
+
     if (!head) {
         head=malloc(sizeof(ListString));
         head->value=paramName;
@@ -545,6 +566,17 @@ ListString *createEnums(ListString *enumList, char *paramName)
     }    
        
     return head;
+}
+
+char * createEnums(char *paramName)
+{
+    //TODO: check if category is actually a defined category
+    //TODO: check paramType is a valid Type
+    char fullName[BUFFLEN];
+    snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",current->name,paramName);
+    Object * symbol=CreateObject(paramName, fullName, current,EnumEntry,current->returnType);
+    addCode(current,fullName);
+    addSymbol(current, symbol);
 }
 
 Object *concatParams(Object *existing, Object *newParam)
@@ -951,11 +983,9 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
                 compilerDebugPrintf("Creating new variable %s as %s of %s\n", subject->name, objects->returnType,
                                     subject->genericType ? subject->genericType->type : "{}");
 
-                if (objects->category==EnumTypeVariable) {
-                    subject->category = EnumTypeVariable;
-                } else {
-                    subject->category = Variable;
-                }
+
+                subject->category = Variable;
+
                 subject->returnType = objects->returnType;
 
                 if (objects->genericType)
@@ -1664,7 +1694,7 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
     {
         addCode(result, invocation);
     }
-    compilerDebugPrintf("\tConjugated: (%d) %s  -> %s\n", __LINE__, invocation, result->returnType);
+    compilerDebugPrintf("\tConjugated: (%d) %s %s  -> %s\n", __LINE__, result->name, invocation, result->returnType);
     //    compilerDebugPrintf("Result at %d = %d\n",__LINE__,result);
     //    if (result->genericType)
     //        compilerDebugPrintf("Result %d generic type %s\n",result,result->genericType);
@@ -2061,10 +2091,7 @@ Object *conjugateAccessorEnum(char *typeName, char *field, OBJ_TYPE category)
     Object *  subject=findByName(typeName);
 
     
-    char enumName[BUFFLEN];
-    snprintf(enumName,BUFFLEN,"%s" COMPILER_SEP "$$ENUMS$$",typeName);
-
-    Object * result = CreateObject(enumName, enumName, 0, EnumTypeVariable, subject->returnType);
+    Object * result = CreateObject(field, field, 0, EnumTypeVariable, subject->returnType);
 
     char fullName[BUFFLEN];
     snprintf(fullName,BUFFLEN,"%s" COMPILER_SEP "%s",subject->name,field);

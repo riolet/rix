@@ -78,7 +78,7 @@
 %token <sval> GREATERTHAN
 %token <ival> TERNARY
 %token <sval> CODE_INSERT
-
+%token <sval> ENUM_DEC
 %token <sval> IMPORT
 %token <sval> ACCESSOR
 %token <sval> ACCESSOR_IDENT
@@ -107,13 +107,15 @@
 %type <oval> object;
 %type <oval> arguments;
 %type <oval> arglist;
-
-%type <lsval> enums;
-
+%type <oval> verbEndOfLine;
 %type <ltval> typeExpression;
 
 %type <sval> parameterIdent;
 %type <sval> anyIdentOrVerb;
+
+%type <lsval> enumblock;
+%type <lsval> enum_statements;
+%type <sval> enum_statement;
 
 
 %{
@@ -140,7 +142,8 @@ void yyerror(YYLTYPE *locp, const char* msg);
 %left RANGE
 %left ACCESSOR ACCESSOR_IDENT CONDITIONLINK
 %left DESTRUCTOR
-%left LBRACKET RBRACKET LBRACE RBRACE
+%left LBRACKET RBRACKET LBRACE RBRACE 
+%left LPAREN RPAREN
 //%right class_definition
 
 %%
@@ -156,7 +159,7 @@ statements:
 
 simple_statement:
   ENDOFLINE             { compilerDebugPrintf("parser: s_s-eol\nempty EOL\n"); $$ = 0; }
-  | VERB ENDOFLINE codeblock     { compilerDebugPrintf("parser: expr- vo\n");   $$ = conjugate( 0,  verbIdent($1), 0); }
+  | verbEndOfLine codeblock     { compilerDebugPrintf("parser: VERB ENDOFLINE codeblock\n"); closeBrace();}
   | IMPORT STRING ENDOFLINE{ compilerDebugPrintf("parser: import\n"); $$ = 0; }
   | DTV_EXTERNAL STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
   | DTV_ADDSOURCE STRING ENDOFLINE { compilerDebugPrintf("parser: dtv\n"); directive($1,$2);  }
@@ -172,6 +175,17 @@ simple_statement:
   | class_definition ENDOFLINE classblock {
           compilerDebugPrintf("parser: s_s-class - Class Defined! %s\n", $1->fullname);
           doneClass($1); }
+  | UNMARKEDNEWIDENT ENUM_DEC ENDOFLINE enumblock {
+        compilerDebugPrintf("parser: s_s-class - Enum Defined! %s\n", $1);
+        beginEnum($4,$1); }
+  | expr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
+  | RETURN expr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
+  | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
+  ;
+
+verbEndOfLine:
+  VERB ENDOFLINE  {$$ = completeExpression(finalize(conjugate( 0,  verbIdent($1), 0))); }
+  ;
 //Todo-Proper handling of codeblocks
 //Verb calls with Codeblocks
 //  |        VERB     arguments ENDOFLINE codeblock { compilerDebugPrintf("parser: expr- vo-cb\n");   $$ = completeExpression(conjugate( 0,  verbIdent($1), $2)); }
@@ -305,7 +319,6 @@ class_statements:
   ;
 class_statement:
   ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$ = 0; }
-  | LBRACE enums RBRACE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareEnum($2); }
   | typeExpression UNMARKEDNEWIDENT ENDOFLINE { compilerDebugPrintf("parser: c_s:varType\n"); $$ = declareVariable($2, $1); }
   | function_definition ENDOFLINE codeblock {
           compilerDebugPrintf("parser: c_s-func - Function Defined! %s\n", $1->fullname);
@@ -318,9 +331,18 @@ class_statement:
           doneConstructor($1); }
   ;
 
-enums:
-   parameterIdent                       { compilerDebugPrintf("parser: param1\n"); $$ = createEnums( 0, $1); }
-  | enums PARAMCOMMA parameterIdent { compilerDebugPrintf("parser: paramN\n"); $$ = createEnums($1, $3); }
+enumblock:
+  INDENT enum_statements UNINDENT { compilerDebugPrintf("parser: enumDeclared\n"); $$=$2; }
+  ;
+
+enum_statements:
+  enum_statement { compilerDebugPrintf("parser: enumLine\n"); $$=concatEnums(0,$1); }
+  | enum_statements enum_statement { compilerDebugPrintf("parser: enumLine\n"); $$=concatEnums($1,$2); }
+  ;
+
+enum_statement:
+  ENDOFLINE { compilerDebugPrintf("parser: c_s-eol\nempty EOL\n"); $$=0; }
+  | parameterIdent ENDOFLINE  { compilerDebugPrintf("parser: enumLine\n"); $$=$1; }
   ;
 
 %%
