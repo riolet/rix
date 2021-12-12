@@ -178,9 +178,6 @@ simple_statement:
   | UNMARKEDNEWIDENT ENUM_DEC ENDOFLINE enumblock {
         compilerDebugPrintf("parser: s_s-class - Enum Defined! %s\n", $1);
         beginEnum($4,$1); }
-  | expr              { compilerDebugPrintf("parser: stmt-expr\n"); $$ = completeExpression(finalize($1)); }
-  | RETURN expr     { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn($2)); }
-  | RETURN          { compilerDebugPrintf("parser: stmt-rtEx\n"); $$ = completeExpression(makeReturn(0)); }
   ;
 
 verbEndOfLine:
