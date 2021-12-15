@@ -5,7 +5,7 @@
 #include "rsl/rsl.h"
 #include "rsl/RSL_Array.h"
 
-void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
+void Vector_$_destructor_$_ (NonPrimObj * a);
 
 typedef struct {
     size_t size;
@@ -15,14 +15,14 @@ typedef struct {
     bool isPrimitive;
 } StructVector;
 
-void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
+void Vector_$_destructor_$_ (NonPrimObj * a);
 
 #define _$_Vector_object_at_1(_$v$_arr__,_$v$_idx__) _$v$_arr__[_$v$_idx__]
 #define _$_Vector_object_at_0(_$v$_arr__,_$v$_idx__) &_$v$_arr__[_$v$_idx__]
 
 #define _$_Vector_set_object_at_0(_$v$_arrptr, _$v$_idx, _$v$_elem) ({\
-        IDENT_MPTR_RAW * _$v$_dataptr = (IDENT_MPTR_RAW *) _$v$_arrptr->data;\
-        IDENT_MPTR_RAW_assign(&_$v$_dataptr[_$v$_idx], _$v$_elem);\
+        NonPrimObj * _$v$_dataptr = (NonPrimObj *) _$v$_arrptr->data;\
+        NonPrimObj_assign(&_$v$_dataptr[_$v$_idx], _$v$_elem);\
 })
 
 #define _$_Vector_set_object_at_1(_$v$_arrptr, _$v$_idx, _$v$_elem) ({\
@@ -37,7 +37,7 @@ void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a);
     _$v$_arr->length=0;\
     _$v$_arr->bitVector=calloc((_$v$_size__/WORD_SIZE)+1,sizeof(uintmax_t));\
     if (!_$v$_primYtpe) {\
-        _$v$_arr->data = (void *) calloc(_$v$_size__, sizeof(IDENT_MPTR_RAW));\
+        _$v$_arr->data = (void *) calloc(_$v$_size__, sizeof(NonPrimObj));\
     } else {\
         _$v$_arr->data = (void *) calloc(_$v$_size__, sizeof(_$v$_type));\
     }\

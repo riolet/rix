@@ -411,8 +411,7 @@ Object *beginConstructor(Object *parameters)
     {
         //Add allocation code
         char allocator[BUFFLEN];
-        snprintf(allocator, BUFFLEN, "%s * " IDENT_SELF_SELF "_ = calloc(1, sizeof(%s));\n" IDENT_MPTR " * " IDENT_SELF_SELF " = _$_returnAppointer(_$_mptr_in," IDENT_SELF_SELF "_,%s_$_destructor_$_);",
-                 returnType, current->name, returnType);
+        snprintf(allocator, BUFFLEN, "%s " IDENT_SELF_SELF ";", returnType);
         addCode(result, allocator);
     }
     else
@@ -1039,12 +1038,12 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
             compilerDebugPrintf("Is it FLAG_IDENT_SELF %d\n", getFlag(subject, FLAG_IDENT_SELF));
             if (getFlag(subject, FLAG_IDENT_SELF))
             {
-                snprintf(verbname, BUFFLEN, MPTR_ASSIGN_ALLOC "(&%s,%s,\"subject->code->value\")", subject->code->value,
+                snprintf(verbname, BUFFLEN, MPTR_ASSIGN_ALLOC "(&%s,%s)", subject->code->value,
                          objects->code->value);
             }
             else
             {
-                snprintf(verbname, BUFFLEN, MPTR_ASSIGN "(%s,%s)", subject->code->value,
+                snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
                          objects->code->value);
             }
         }
@@ -1351,7 +1350,7 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
             char newName[BUFFLEN];
             char newSubject[BUFFLEN];
             char paramTypes[BUFFLEN][BUFFLEN];
-            int subject_idx = snprintf(newSubject, BUFFLEN, "/* %d */ ((%s *) ((%s)->obj))->", __LINE__,
+            int subject_idx = snprintf(newSubject, BUFFLEN, "/* %d */ %s.%s", __LINE__,
                                        subject->returnType, subject->code->value);
             int offset = snprintf(newName, BUFFLEN, "%s", subject->returnType);
             while (newName[offset - 1] == '*' || newName[offset - 1] == ' ')
@@ -2152,7 +2151,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
     }
     else
     {
-        subject_idx = snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx, "((%s *)( %s->obj))", returnType,
+        subject_idx = snprintf(&newSubject[subject_idx], BUFFLEN - subject_idx,  "/* %s */ %s", oReturnType->name,
                                subCodeValue);
     }
 
@@ -2220,7 +2219,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
         }
         else
         {
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s).%s", __LINE__, oReturnType->name, newSubject, field);
         }
         addParam(result, oField->returnType);
         addCode(result, accessCode);

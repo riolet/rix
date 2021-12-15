@@ -3,7 +3,7 @@
 #include "rsl/RSL_Stream.h"
 #include "rsl/RSL_String.h"
 
-void Stream_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
+void Stream_$_destructor_$_(NonPrimObj * _$_mptr_in)
 {
     Stream * s = (Stream *) _$_mptr_in->obj;
 
@@ -14,7 +14,7 @@ void Stream_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
     free(s);
 }
 
-IDENT_MPTR_RAW * Stream_$_Stream_$_ (IDENT_MPTR_RAW * _$_mptr_in)
+NonPrimObj * Stream_$_Stream_$_ (NonPrimObj * _$_mptr_in)
 {
     _$_HEAP_VARIABLE(_$_mptr_super);
     Stream * self_ = calloc(1, sizeof(Stream));
@@ -24,9 +24,9 @@ IDENT_MPTR_RAW * Stream_$_Stream_$_ (IDENT_MPTR_RAW * _$_mptr_in)
     return self;
 }
 
-IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (String filename, String mode, IDENT_MPTR_RAW * _$_mptr_in)
+NonPrimObj * Stream_$_Stream_$_String_$_String (String filename, String mode, NonPrimObj * _$_mptr_in)
 {
-    IDENT_MPTR_RAW * self = Stream_$_Stream_$_(_$_mptr_in);
+    NonPrimObj * self = Stream_$_Stream_$_(_$_mptr_in);
     Stream * self_ = self->obj;
     self_->stream = fopen(filename.buffer,mode.buffer);
     if (!self_->stream) {
@@ -36,7 +36,7 @@ IDENT_MPTR_RAW * Stream_$_Stream_$_String_$_String (String filename, String mode
 }
 
 /* Print prints the param and a newline char */
-int Stream_$_print_$_String(IDENT_MPTR_RAW * stream_, IDENT_MPTR_RAW * s_)
+int Stream_$_print_$_String(NonPrimObj * stream_, NonPrimObj * s_)
 {
     String * s = (String *) s_->obj;
     FILE * stream = ((Stream *) stream_->obj)->stream;
@@ -44,20 +44,20 @@ int Stream_$_print_$_String(IDENT_MPTR_RAW * stream_, IDENT_MPTR_RAW * s_)
     return result;
 }
 
-int Stream_$_print_$_int(IDENT_MPTR_RAW * stream_, int i)
+int Stream_$_print_$_int(NonPrimObj * stream_, int i)
 {
     FILE * stream = ((Stream *) stream_->obj)->stream;
     return fprintf(stream, "%d\n", i);
 }
 
-int Stream_$_print_$_float(IDENT_MPTR_RAW * stream_, float f)
+int Stream_$_print_$_float(NonPrimObj * stream_, float f)
 {
     FILE * stream = ((Stream *) stream_->obj)->stream;
     return fprintf(stream, "%f\n", f);
 }
 
 /* Echo omits the newline char */
-int Stream_$_echo_$_String(IDENT_MPTR_RAW * stream_, IDENT_MPTR_RAW * s_)
+int Stream_$_echo_$_String(NonPrimObj * stream_, NonPrimObj * s_)
 {
     String * s = (String *) s_->obj;
     FILE * stream = ((Stream *) stream_->obj)->stream;
@@ -65,21 +65,21 @@ int Stream_$_echo_$_String(IDENT_MPTR_RAW * stream_, IDENT_MPTR_RAW * s_)
     return result;
 }
 
-int Stream_$_echo_$_int(IDENT_MPTR_RAW * stream_, int i)
+int Stream_$_echo_$_int(NonPrimObj * stream_, int i)
 {
     FILE * stream = ((Stream *) stream_->obj)->stream;
     return fprintf(stream, "%d", i);
 }
 
-int Stream_$_echo_$_float(IDENT_MPTR_RAW * stream_, float f)
+int Stream_$_echo_$_float(NonPrimObj * stream_, float f)
 {
     FILE * stream = ((Stream *) stream_->obj)->stream;
     return fprintf(stream, "%f", f);
 }
 
-IDENT_MPTR_RAW * Stream_$_fromFile_$_ (FILE *fp,IDENT_MPTR_RAW * _$_mptr_in)
+NonPrimObj * Stream_$_fromFile_$_ (FILE *fp,NonPrimObj * _$_mptr_in)
 {
-    IDENT_MPTR_RAW * self = Stream_$_Stream_$_(_$_mptr_in);    
+    NonPrimObj * self = Stream_$_Stream_$_(_$_mptr_in);    
     Stream * selfStream = self->obj;
     selfStream->stream=fp;
     return self;

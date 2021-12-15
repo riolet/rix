@@ -36,26 +36,6 @@ FILE *outCompilerLogFile;
 #define IDENT_SELF "$"
 #define IDENT_SELF_SELF "$self"
 #define IDENT_SUPER "$super"
-#define IDENT_MPTR_RAW _$_mptr
-#define IDENT_HEAP_MPTR_RAW _$_heap_mptr
-#define IDENT_CTR_PTR _$_counter_pointer
-#define MPTR_POINT_RAW cat(IDENT_MPTR_RAW,_point)
-#define MPTR_ASSIGN_RAW cat(IDENT_MPTR_RAW,_assign)
-#define MPTR_ASSIGN_ALLOC_RAW cat(IDENT_MPTR_RAW,_assign_with_alloc)
-#define IDENT_MPTR_INITIALIZE_RAW cat(IDENT_MPTR_RAW,_initialize)
-
-
-#define IDENT_MPTR xstr(IDENT_MPTR_RAW)
-#define IDENT_HEAP_MPTR xstr(IDENT_HEAP_MPTR_RAW)
-#define IDENT_MPTR_INITIALIZE xstr(IDENT_MPTR_INITIALIZE_RAW)
-#define MPTR_POINT xstr(MPTR_POINT_RAW)
-#define MPTR_ASSIGN xstr(MPTR_ASSIGN_RAW)
-#define MPTR_ASSIGN_ALLOC xstr(MPTR_ASSIGN_ALLOC_RAW)
-
-#define _$_TEMP_OBJ(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) x; IDENT_MPTR_INITIALIZE_RAW (&x,xstr(x));
-#define _$_VARIABLE(x) _$_mptr __attribute__ ((__cleanup__(_$_cleanup_var))) * x = alloca(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
-#define _$_U_VARIABLE(x) _$_mptr * x = alloca(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
-#define _$_HEAP_VARIABLE(x) _$_mptr * x = malloc(sizeof(IDENT_MPTR_RAW)); IDENT_MPTR_INITIALIZE_RAW(x,xstr(x));
 
 
 //typedef enum {false, true} bool;

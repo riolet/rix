@@ -6,8 +6,8 @@
 #include "ext/List/cliblist.h"
 
 void List_$_destructor_$_ (list_t ** list);
-IDENT_MPTR_RAW * _$_List_$_append_non_primitive(IDENT_MPTR_RAW * list_, IDENT_MPTR_RAW * element, IDENT_MPTR_RAW * $_mptr_in);
-bool _$_List_$_contains_non_primitive(IDENT_MPTR_RAW * list_, IDENT_MPTR_RAW * element);
+NonPrimObj * _$_List_$_append_non_primitive(NonPrimObj * list_, NonPrimObj * element, NonPrimObj * $_mptr_in);
+bool _$_List_$_contains_non_primitive(NonPrimObj * list_, NonPrimObj * element);
 
 #define List  list_t  *
 
@@ -22,9 +22,9 @@ bool _$_List_$_contains_non_primitive(IDENT_MPTR_RAW * list_, IDENT_MPTR_RAW * e
 #define List_$_foreach_$_Generic_$$(_$v$_list, _$v$_elem, _$v$_primElem) \
     for (  struct { list_node_t *node; list_iterator_t *it;} xcat(loop_struct,__LINE__) = {0,list_iterator_new(_$v$_list, LIST_HEAD)};\
             (xcat(loop_struct,__LINE__).node = list_iterator_next(xcat(loop_struct,__LINE__).it));) {\
-            IDENT_MPTR_RAW_assign(_$v$_elem,xcat(loop_struct,__LINE__).node->val);            
+            NonPrimObj_assign(_$v$_elem,xcat(loop_struct,__LINE__).node->val);            
 
-IDENT_MPTR_RAW * _$_List_$_List_$_ (IDENT_MPTR_RAW * $_mptr_in);
+NonPrimObj * _$_List_$_List_$_ (NonPrimObj * $_mptr_in);
 
 #define List_$_List_$_(_$v$_primYtpe, _$v$_type) list_new()
 

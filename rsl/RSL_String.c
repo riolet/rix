@@ -5,7 +5,7 @@
 #include "rsl/rsl.h"
 #include "rsl/RSL_String.h"
 
-void String_$_destructor_$_(IDENT_MPTR_RAW * _$_mptr_in)
+void String_$_destructor_$_(NonPrimObj * _$_mptr_in)
 {
     debugPrintf("Cleaning up String %s\n",_$_mptr_in->debugName);
     String *s = (String *) _$_mptr_in->obj;
@@ -69,12 +69,12 @@ bool String_$_isDefined_$_(String s) {
     return (s.buffer!=0);
 }
 
-// IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
+// NonPrimObj * int_$_plus_$_String(int left, NonPrimObj * right_, NonPrimObj * $_mptr_in)
 // {
 //     debugPrintf("int_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
 //     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
 //                                                                                                     xstr($_mptr_temp));
-//     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+//     NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 //     String * s = s_->obj;
 //     String * right = right_->obj;
 
@@ -92,13 +92,13 @@ bool String_$_isDefined_$_(String s) {
 //     return $_mptr_in;
 // }
 
-// IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDENT_MPTR_RAW * $_mptr_in)
+// NonPrimObj * String_$_plus_$_float(NonPrimObj * left_, float right, NonPrimObj * $_mptr_in)
 // {
 
 //     debugPrintf("String_$_plus_$_int %s -> %s\n",left_->debugName, $_mptr_in->debugName);
 //     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
 //                                                                                               xstr($_mptr_temp));
-//     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+//     NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 //     String * s = s_->obj;
 //     String * left = left_->obj;
 
@@ -116,12 +116,12 @@ bool String_$_isDefined_$_(String s) {
 //     return $_mptr_in;
 // }
 
-// IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in)
+// NonPrimObj * float_$_plus_$_String(float left, NonPrimObj * right_, NonPrimObj * $_mptr_in)
 // {
 //     debugPrintf("int_$_plus_$_String %s -> %s\n",right_->debugName, $_mptr_in->debugName);
 //     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp; IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp,
 //                                                                                               xstr($_mptr_temp));
-//     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+//     NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 //     String * s = s_->obj;
 //     String * right = right_->obj;
 
@@ -138,24 +138,24 @@ bool String_$_isDefined_$_(String s) {
 //     _$_object_ownership_transfer(&$_mptr_temp,$_mptr_in);
 //     return $_mptr_in;
 // }
-// char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left)
+// char String_$_getObjectAtIndex_$_int(NonPrimObj * right_, int left)
 // {
 //     String * right = (String *) right_->obj;
 //     return right->buffer[left];
 // }
 
-// int String_$_length_$_(IDENT_MPTR_RAW *  s_)
+// int String_$_length_$_(NonPrimObj *  s_)
 // {
 //     String * s = s_ ->obj;
 //     return s->length;
 // }
 
-// IDENT_MPTR_RAW * String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in)
+// NonPrimObj * String_$_lower_$_(NonPrimObj *  right_, NonPrimObj * $_mptr_in)
 // {
 //     debugPrintf("String_$_lower %s -> %s\n",right_->debugName, $_mptr_in->debugName);
 //     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
 //     IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
-//     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+//     NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 //     String * s = s_->obj;
 //     String * right = right_->obj;
 
@@ -175,12 +175,12 @@ bool String_$_isDefined_$_(String s) {
 //     return $_mptr_in;
 // }
 
-// IDENT_MPTR_RAW * String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in)
+// NonPrimObj * String_$_upper_$_(NonPrimObj *  right_, NonPrimObj * $_mptr_in)
 // {
 //     debugPrintf("String_$_lower %s -> %s\n",right_->debugName, $_mptr_in->debugName);
 //     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
 //     IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
-//     IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+//     NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 //     String * s = s_->obj;
 //     String * right = right_->obj;
 

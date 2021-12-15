@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include "ObjectTree.h"
-
 
 
 typedef struct String String;
@@ -17,18 +15,12 @@ typedef struct {
     int object_$_id;
 } BaseType;
 
-typedef struct IDENT_MPTR_RAW IDENT_MPTR_RAW;
+typedef struct _NonPrimObj NonPrimObj;
 
-
-struct IDENT_MPTR_RAW {
-    int ctr;
-    IDENT_MPTR_RAW *ptr;
+struct _NonPrimObj {
     void *obj;
     void (*destructor)(void *);
-    char debugName[1024];
 };
-
-typedef IDENT_MPTR_RAW * IDENT_MPTR_RAW_PTR;
 
 typedef void *UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
@@ -75,7 +67,7 @@ typedef void *Generic_$$;
 //#define Ternary_$_leg_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (A) : ((T==eq) ? (B) : (C))
 //#define Ternary_$_gel_$__$GP0_$__$GP1_$__$GP2(T,A,B,C,MPTR) (T==lt) ? (C) : ((T==eq) ? (B) : (A))
 
-int int_$_int_$_String(IDENT_MPTR_RAW * s_);
+int int_$_int_$_String(String s);
 
 
 double double_$_exponent_$_int(double f, int i);
@@ -97,7 +89,7 @@ int print_$_int(int i);
 
 int print_$_double(double f);
 
-int echo_$_String(IDENT_MPTR_RAW * s);
+int echo_$_String(String s);
 
 int echo_$_int(int i);
 
@@ -115,28 +107,28 @@ String args_$_int(int i);
 
 int args_$_();
 
-void BaseType_$_destructor (IDENT_MPTR_RAW * $_mptr_in);
+void BaseType_$_destructor (NonPrimObj   $_mptr_in);
 
-IDENT_MPTR_RAW * BaseType_$_BaseType_$_ (IDENT_MPTR_RAW * $_mptr_in);
+NonPrimObj   BaseType_$_BaseType_$_ (NonPrimObj   $_mptr_in);
 
-void _$_cleanup (IDENT_MPTR_RAW *p);
+void _$_cleanup (NonPrimObj  p);
 
-void _$_cleanup_var (IDENT_MPTR_RAW **p);
+void _$_cleanup_var (NonPrimObj  *p);
 
-void _$_object_ownership_transfer(IDENT_MPTR_RAW * a, IDENT_MPTR_RAW * b);
+void _$_object_ownership_transfer(NonPrimObj   a, NonPrimObj   b);
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_point (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
+NonPrimObj   NonPrimObj_point (NonPrimObj   a, NonPrimObj  b);
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign_with_alloc (IDENT_MPTR_RAW **a_ptr, IDENT_MPTR_RAW *b,char *debugName);
+NonPrimObj   NonPrimObj_assign_with_alloc (NonPrimObj  *a_ptr, NonPrimObj  b,char *debugName);
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign (IDENT_MPTR_RAW * a, IDENT_MPTR_RAW *b);
+NonPrimObj   NonPrimObj_assign (NonPrimObj   a, NonPrimObj  b);
 
-IDENT_MPTR_RAW * _$_returnAppointer (IDENT_MPTR_RAW * $_mptr_in, void * obj, void * destructor);
+NonPrimObj   _$_returnAppointer (NonPrimObj   $_mptr_in, void * obj, void * destructor);
 
-void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW *mptr, char *name);
+void NonPrimObj_initialize(NonPrimObj  mptr, char *name);
 
 char *snprintfauto(const char *format, ...);
-void _$_cleanup_object(IDENT_MPTR_RAW *p);
+void _$_cleanup_object(NonPrimObj  p);
 
 #define import_$_String(x) true
 

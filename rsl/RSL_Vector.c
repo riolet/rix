@@ -2,11 +2,11 @@
 #include "rsl/RSL_Array.h"
 #include "rsl/RSL_Vector.h"
 
-void Vector_$_destructor_$_ (IDENT_MPTR_RAW * a)
+void Vector_$_destructor_$_ (NonPrimObj * a)
 {
     debugPrintf("\nCleaning up array \n");
     StructVector * arrptr = (StructVector *) a->obj;
-    IDENT_MPTR_RAW * dataptr = (IDENT_MPTR_RAW *) arrptr->data;
+    NonPrimObj * dataptr = (NonPrimObj *) arrptr->data;
     debugPrintf("Array last %d size %d\n",(int) arrptr->length,(int) arrptr->size);
 
     int i;

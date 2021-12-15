@@ -1,6 +1,6 @@
 #include "List.h"
 
-IDENT_MPTR_RAW * _$_List_$_List_$_ (IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * _$_List_$_List_$_ (NonPrimObj * $_mptr_in)
 {
     list_t *list = list_new();
     //list->free = (void *) _$_cleanup;
@@ -20,7 +20,7 @@ void List_$_iterator_destructor_$_ (list_iterator_t ** list_iter)
     list_iterator_destroy(*list_iter);
 }
 
-IDENT_MPTR_RAW * _$_List_$_append_non_primitive(IDENT_MPTR_RAW * list, IDENT_MPTR_RAW * element, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * _$_List_$_append_non_primitive(NonPrimObj * list, NonPrimObj * element, NonPrimObj * $_mptr_in)
 {   
     _$_TEMP_OBJ(xcat($_TEMP_OBJ,__LINE__))
     list_t * l = list->obj;
@@ -30,7 +30,7 @@ IDENT_MPTR_RAW * _$_List_$_append_non_primitive(IDENT_MPTR_RAW * list, IDENT_MPT
     $_mptr_in=list;
 }
 
-bool _$_List_$_contains_non_primitive(IDENT_MPTR_RAW * ListObject, IDENT_MPTR_RAW * element) {
+bool _$_List_$_contains_non_primitive(NonPrimObj * ListObject, NonPrimObj * element) {
     list_t * l = ListObject->obj;
     void * val = element->obj;    
     list_node_t *node = list_find(l, "some value");

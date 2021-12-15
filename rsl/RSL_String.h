@@ -29,7 +29,7 @@ void String_return_GCC(String *s);
 
 void String_cleanUp_GCC(String *s);
 
-void String_$_destructor_$_(IDENT_MPTR_RAW *s_);
+void String_$_destructor_$_(NonPrimObj *s_);
 
 String String_$_stringlit(char *strlit);
 
@@ -41,19 +41,19 @@ String String_$_plus_$_int(String left, int right_int);
 
 bool String_$_isDefined_$_(String s);
 
-// IDENT_MPTR_RAW * int_$_plus_$_String(int left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in);
+// NonPrimObj * int_$_plus_$_String(int left, NonPrimObj * right_, NonPrimObj * $_mptr_in);
 
-// IDENT_MPTR_RAW * String_$_plus_$_float(IDENT_MPTR_RAW * left_, float right, IDENT_MPTR_RAW * $_mptr_in);
+// NonPrimObj * String_$_plus_$_float(NonPrimObj * left_, float right, NonPrimObj * $_mptr_in);
 
-// IDENT_MPTR_RAW * float_$_plus_$_String(float left, IDENT_MPTR_RAW * right_, IDENT_MPTR_RAW * $_mptr_in);
+// NonPrimObj * float_$_plus_$_String(float left, NonPrimObj * right_, NonPrimObj * $_mptr_in);
 
-// char String_$_getObjectAtIndex_$_int(IDENT_MPTR_RAW * right_, int left);
+// char String_$_getObjectAtIndex_$_int(NonPrimObj * right_, int left);
 
-// int String_$_length_$_(IDENT_MPTR_RAW *  string);
+// int String_$_length_$_(NonPrimObj *  string);
 
-// String String_$_lower_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in);
+// String String_$_lower_$_(NonPrimObj *  right_, NonPrimObj * $_mptr_in);
 
-// String String_$_upper_$_(IDENT_MPTR_RAW *  right_, IDENT_MPTR_RAW * $_mptr_in);
+// String String_$_upper_$_(NonPrimObj *  right_, NonPrimObj * $_mptr_in);
 
 bool String_$_cmpeq_$_String(String left, String right);
 

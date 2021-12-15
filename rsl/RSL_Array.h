@@ -9,7 +9,7 @@ enum { WORD_SIZE = sizeof(uintmax_t) * sizeof(char) };
 typedef struct {
     size_t last;
     uintmax_t *bitArray;
-    IDENT_MPTR_RAW  *data;
+    NonPrimObj  *data;
 } StructArray;
 
 #define WORD_OFFSET(b) ((b) / WORD_SIZE)
@@ -34,8 +34,8 @@ void Array_$_destructor_$_ (StructArray ** a);
     _$v$_arr->last=0;\
     _$v$_arr->bitArray=alloca(((_$v$_size__/WORD_SIZE)+1) * sizeof(uintmax_t));\
     memset (_$v$_arr->bitArray,0,((_$v$_size__/WORD_SIZE)+1) * sizeof(uintmax_t)); \
-    _$v$_arr->data = (void *) alloca(_$v$_size__ * sizeof(IDENT_MPTR_RAW));\
-    memset (_$v$_arr->data,0,_$v$_size__ * sizeof(IDENT_MPTR_RAW)); \
+    _$v$_arr->data = (void *) alloca(_$v$_size__ * sizeof(NonPrimObj));\
+    memset (_$v$_arr->data,0,_$v$_size__ * sizeof(NonPrimObj)); \
     _$v$_arr;\
 })
 
@@ -51,8 +51,8 @@ void Array_$_destructor_$_ (StructArray ** a);
         debugPrintf("Last %d\n",_$v$_idx);\
     }\
     setBit(_$v$_arr->bitArray,_$v$_idx);\
-    IDENT_MPTR_RAW_initialize(&_$v$_arr->data[_$v$_idx], xstr(xcat(_$v$_arr,_$v$_idx)));\
-    IDENT_MPTR_RAW_assign(&_$v$_arr->data[_$v$_idx], _$v$_elem);\
+    NonPrimObj_initialize(&_$v$_arr->data[_$v$_idx], xstr(xcat(_$v$_arr,_$v$_idx)));\
+    NonPrimObj_assign(&_$v$_arr->data[_$v$_idx], _$v$_elem);\
 })
 
 #define _$_Array_set_object_at_1(_$v$_arr, _$v$_idx, _$v$_elem) ({\

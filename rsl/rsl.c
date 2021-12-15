@@ -6,10 +6,9 @@
 #include "rsl/RSL_String.h"
 #include "rsl/RSL_Stream.h"
 
-int int_$_int_$_String(IDENT_MPTR_RAW *s_)
+int int_$_int_$_String(String s)
 {
-    String *s = s_->obj;
-    return atoi(s->buffer);
+    return atoi(s.buffer);
 }
 
 double double_$_exponent_$_int(double f, int i)
@@ -58,10 +57,9 @@ int print_$_double(double f)
     return fprintf(stdout, "%f\n", f);
 }
 
-int echo_$_String(IDENT_MPTR_RAW *s_)
+int echo_$_String(String s)
 {
-    String *s = (String *)s_->obj;
-    int result = fwrite(s->buffer, sizeof(char), s->length, stdout);
+    int result = fwrite(s.buffer, sizeof(char), s.length, stdout);
     return result;
 }
 
@@ -121,97 +119,98 @@ int args_$_()
     return _$$_argc;
 }
 
-void BaseType_$_destructor(IDENT_MPTR_RAW *$_mptr_in)
+void BaseType_$_destructor(NonPrimObj $_mptr_in)
 {
-    free($_mptr_in->obj);
+    free($_mptr_in.obj);
 }
 
-IDENT_MPTR_RAW *BaseType_$_BaseType_$_(IDENT_MPTR_RAW *$_mptr_in)
+NonPrimObj BaseType_$_BaseType_$_(NonPrimObj $_mptr_in)
 {
-    BaseType *b = calloc(1, sizeof(BaseType));
+    NonPrimObj r;
+    r.obj=
+    BaseType b = calloc(1, sizeof(BaseType));
     _$_returnAppointer($_mptr_in, b, BaseType_$_destructor);
 }
 
-IDENT_MPTR_RAW *IDENT_MPTR_RAW_TEMP_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
+NonPrimObj NonPrimObj_TEMP_assign(NonPrimObj a, NonPrimObj b)
 {
     debugPrintf("Temp assigning %s = %s:\n", a->debugName, b->debugName);
 
-    if (a->obj)
+    if (a.obj)
     {
-        debugPrintf("%s %d is being recycled\n", a->debugName, a->ctr);
+        debugPrintf("%s %d is being recycled\n", a->debugName, a.ctr);
         _$_cleanup_object(a);
     } else {
-        debugPrintf("%s %d is does not need recycling\n", a->debugName, a->ctr);
+        debugPrintf("%s %d is does not need recycling\n", a->debugName, a.ctr);
     }    
     debugPrintf("Temp assigned %s = %s:\n", a->debugName, b->debugName);    
-    a->destructor = b->destructor;
-    a->obj = b->obj;
+    a.destructor = b.destructor;
+    a.obj = b.obj;
     //Objects that get returned should not be destroyed
-    b->ctr = 1;
+    b.ctr = 1;
     //DANGER    
     return a;
 }
 
-IDENT_MPTR_RAW * IDENT_MPTR_RAW_assign_with_alloc (IDENT_MPTR_RAW **a_ptr, IDENT_MPTR_RAW *b,char * debugName)
-{
-    IDENT_MPTR_RAW * a = *a_ptr;
-    if (!a) {
-        /* TODO: Create better class field handling */        
-        a = malloc(sizeof(IDENT_MPTR_RAW)); 
-        IDENT_MPTR_RAW_initialize(a,"TempHeapVariable");
-        a->ptr=0;
-        a->ctr=0;
-        size_t needed = snprintf(a->debugName,1000, "%s %llu", debugName,(long long unsigned int)a);
-    }
-    *a_ptr = a;
-    return IDENT_MPTR_RAW_assign(a,b);
-}
+// NonPrimObj  NonPrimObj_assign_with_alloc (NonPrimObj * a_ptr, NonPrimObj b, char * debugName)
+// {
+//     if (!a_ptr) {
+//         /* TODO: Create better class field handling */        
+//         a_ptr = malloc(sizeof(NonPrimObj)); 
+//         NonPrimObj_initialize(a,"TempHeapVariable");
+//         a.ptr=0;
+//         a.ctr=0;
+//         size_t needed = snprintf(a->debugName,1000, "%s %llu", debugName,(long long unsigned int)a);
+//     }
+//     *a_ptr = a;
+//     return NonPrimObj_assign(a,b);
+// }
 
-IDENT_MPTR_RAW *IDENT_MPTR_RAW_assign(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
+NonPrimObj NonPrimObj_assign(NonPrimObj a, NonPrimObj b)
 {
-    if (!a) {
-        /* TODO: Create better class field handling */        
-        a = malloc(sizeof(IDENT_MPTR_RAW)); 
-        IDENT_MPTR_RAW_initialize(a,"TempHeapVariable");
-        a->ptr=0;
-        a->ctr=0;
-    }
+    // if (!a) {
+    //     /* TODO: Create better class field handling */        
+    //     a = malloc(sizeof(NonPrimObj)); 
+    //     NonPrimObj_initialize(a,"TempHeapVariable");
+    //     a.ptr=0;
+    //     a.ctr=0;
+    // }
 
     debugPrintf("Assigning %s = %s:", a->debugName, b->debugName);
 
-    if (a->obj)
+    if (a.obj)
     {
-        debugPrintf("%s %d is being recycled\n", a->debugName, a->ctr);
+        debugPrintf("%s %d is being recycled\n", a->debugName, a.ctr);
         _$_cleanup_object(a);
     } else {
-        debugPrintf("%s %d is does not need recycling\n", a->debugName, a->ctr);
+        debugPrintf("%s %d is does not need recycling\n", a->debugName, a.ctr);
     }    
     debugPrintf("assigned %s to %s\n", a->debugName, b->debugName);
 
-    b->ctr++;
+    b.ctr++;
 
-    debugPrintf("##  %d objects point to to %s\n", b->ctr, b->debugName);
+    debugPrintf("##  %d objects point to to %s\n", b.ctr, b->debugName);
     
-    a->destructor = b->destructor;
+    a.destructor = b.destructor;
 
-    if (a->ptr) {
-        a->ptr->ctr--;
+    if (a.ptr) {
+        a.ptr.ctr--;
     }
 
-    a->ptr = b;
-    a->obj = b->obj;
+    a.ptr = b;
+    a.obj = b.obj;
     return a;
 }
 
-IDENT_MPTR_RAW *IDENT_MPTR_RAW_point(IDENT_MPTR_RAW *a, IDENT_MPTR_RAW *b)
+NonPrimObj NonPrimObj_point(NonPrimObj a, NonPrimObj b)
 {
 
     debugPrintf("Pointing to %s to %s\n", a->debugName, b->debugName);
-    b->ctr++;
+    b.ctr++;
 
-    a->ptr = b;
-    a->obj = b->obj;
-    a->ctr = 0;
+    a.ptr = b;
+    a.obj = b.obj;
+    a.ctr = 0;
 }
 
 
@@ -228,21 +227,21 @@ char *snprintfauto(const char *format, ...)
     return buffer;
 }
 
-void IDENT_MPTR_RAW_initialize(IDENT_MPTR_RAW *mptr, char *name)
+void NonPrimObj_initialize(NonPrimObj mptr, char *name)
 {
-    mptr->ctr = 0;
-    mptr->ptr = 0;
-    mptr->obj = 0;
-    mptr->destructor = 0;    
-    mptr->debugName[0]=0;
+    mptr.ctr = 0;
+    mptr.ptr = 0;
+    mptr.obj = 0;
+    mptr.destructor = 0;    
+    snprintf(mptr.debugName,BUFFLEN,"%s",name);
 }
 
-void _$_cleanup_object(IDENT_MPTR_RAW *p)
+void _$_cleanup_object(NonPrimObj p)
 {
-    if (p->obj)
+    if (p.obj)
     {
-        void (*destructor)(void *) = p->destructor;
-        if (p->destructor)
+        void (*destructor)(void *) = p.destructor;
+        if (p.destructor)
         {
             debugPrintf("%s has destructor\n", p->debugName);
             destructor(p);
@@ -253,7 +252,7 @@ void _$_cleanup_object(IDENT_MPTR_RAW *p)
             errorMsg("%s has no destructor\n", p->debugName);
             criticalError(ERROR_RuntimeError, "No destructor found\n");
         }
-        p->obj = 0;
+        p.obj = 0;
         debugPrintf("Gone !\n");
     }
     else
@@ -262,19 +261,19 @@ void _$_cleanup_object(IDENT_MPTR_RAW *p)
     }
 }
 
-void _$_cleanup(IDENT_MPTR_RAW *p)
+void _$_cleanup(NonPrimObj p)
 {
-    debugPrintf("Cleaning up temp %d %s : ", p->ctr, p->debugName);
+    debugPrintf("Cleaning up temp %d %s : ", p.ctr, p->debugName);
 
-    if (p->ctr > 0)
+    if (p.ctr > 0)
     {
         debugPrintf("Survives !\n");
     }
     else
     {
-        if (p->ptr == 0)
+        if (p.ptr == 0)
         {
-            if (p->obj)
+            if (p.obj)
             {
                 _$_cleanup_object(p);
             }
@@ -285,37 +284,37 @@ void _$_cleanup(IDENT_MPTR_RAW *p)
         }
         else
         {
-            IDENT_MPTR_RAW *next = p->ptr;
-            debugPrintf("Check up stream -> %d %d",next,p->ptr);
-            next->ctr--;
+            NonPrimObj next = p.ptr;
+            debugPrintf("Check up stream -> %d %d",next,p.ptr);
+            next.ctr--;
             _$_cleanup(next);
         }
-        debugPrintf("Done cleaning up temp %d %s : ", p->ctr, p->debugName);
+        debugPrintf("Done cleaning up temp %d %s : ", p.ctr, p->debugName);
     }
 }
 
-void _$_cleanup_var(IDENT_MPTR_RAW **p)
+void _$_cleanup_var(NonPrimObj *p)
 {
-    debugPrintf("Cleaning up var %d %s => ", (*p)->ctr, (*p)->debugName);
-    IDENT_MPTR_RAW *pDeref = (*p);
+    debugPrintf("Cleaning up var %d %s => ", (*p).ctr, (*p)->debugName);
+    NonPrimObj pDeref = (*p);
     _$_cleanup(pDeref);
 }
 
-IDENT_MPTR_RAW *_$_returnAppointer(IDENT_MPTR_RAW *$_mptr_in, void *obj, void *destructor)
+NonPrimObj _$_returnAppointer(NonPrimObj $_mptr_in, void *obj, void *destructor)
 {
-    if ($_mptr_in->obj)
+    if ($_mptr_in.obj)
     {
         debugPrintf("%s is being recycled\n", $_mptr_in->debugName);
         _$_cleanup_object($_mptr_in);
     }    
-    $_mptr_in->ptr = 0;
-    $_mptr_in->obj = obj;
-    $_mptr_in->destructor = destructor;
+    $_mptr_in.ptr = 0;
+    $_mptr_in.obj = obj;
+    $_mptr_in.destructor = destructor;
     return $_mptr_in;
 }
 
-void _$_object_ownership_transfer(IDENT_MPTR_RAW *$_mptr_temp, IDENT_MPTR_RAW *$_mptr_in)
+void _$_object_ownership_transfer(NonPrimObj $_mptr_temp, NonPrimObj $_mptr_in)
 {
     debugPrintf("Transferring ownership of obj from %s to %s\n", $_mptr_temp->debugName, $_mptr_in->debugName);
-    IDENT_MPTR_RAW_TEMP_assign($_mptr_in, $_mptr_temp);
+    NonPrimObj_TEMP_assign($_mptr_in, $_mptr_temp);
 }

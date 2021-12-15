@@ -1,19 +1,19 @@
 #include "ext/BetterString/BetterString.h"
 #include "rsl/RSL_Vector.h"
 
-IDENT_MPTR_RAW * BetterString_$_BetterString_$_BetterString_$_  (BetterString * b, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_BetterString_$_BetterString_$_  (BetterString * b, NonPrimObj * $_mptr_in)
 {
     return _$_returnAppointer($_mptr_in,b,BetterString_$_destructor_$_);
 }
 
 
-IDENT_MPTR_RAW * BetterString_$_BetterString_$_ (IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_BetterString_$_ (NonPrimObj * $_mptr_in)
 {
     BetterString * b = calloc(1, sizeof(BetterString));
     return _$_returnAppointer($_mptr_in,b,BetterString_$_destructor_$_);
 }
 
-IDENT_MPTR_RAW *  BetterString_$_BetterString_$_String(IDENT_MPTR_RAW * s_, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj *  BetterString_$_BetterString_$_String(NonPrimObj * s_, NonPrimObj * $_mptr_in)
 {
     String * s = s_->obj;
     BetterString *  result = (BetterString * ) bfromcstr(s->buffer);
@@ -21,9 +21,9 @@ IDENT_MPTR_RAW *  BetterString_$_BetterString_$_String(IDENT_MPTR_RAW * s_, IDEN
     return _$_returnAppointer($_mptr_in, result, BetterString_$_destructor_$_);
 }
 
-//IDENT_MPTR_RAW *  BetterString_$_plus_$_BetterString(IDENT_MPTR_RAW *  left, IDENT_MPTR_RAW *  right)
+//NonPrimObj *  BetterString_$_plus_$_BetterString(NonPrimObj *  left, NonPrimObj *  right)
 //{
-//    IDENT_MPTR_RAW *  retval = bstrcpy(left);
+//    NonPrimObj *  retval = bstrcpy(left);
 //    if (bconcat(retval, right)) {
 //        return retval;
 //    } else {
@@ -31,29 +31,29 @@ IDENT_MPTR_RAW *  BetterString_$_BetterString_$_String(IDENT_MPTR_RAW * s_, IDEN
 //    }
 //}
 //
-//IDENT_MPTR_RAW *  BetterString_$_plus_$_int(IDENT_MPTR_RAW *  left, int right)
+//NonPrimObj *  BetterString_$_plus_$_int(NonPrimObj *  left, int right)
 //{
 //    return bformat("%s%i", left->data, right);
 //}
 //
-//IDENT_MPTR_RAW *  int_$_plus_$_BetterString(int left, IDENT_MPTR_RAW *  right)
+//NonPrimObj *  int_$_plus_$_BetterString(int left, NonPrimObj *  right)
 //{
 //    return bformat("%i%s", left, right->data);
 //}
 //
-//IDENT_MPTR_RAW *  BetterString_$_plus_$_float(IDENT_MPTR_RAW *  left, float right)
+//NonPrimObj *  BetterString_$_plus_$_float(NonPrimObj *  left, float right)
 //{
 //    return bformat("%s%f", left->data, right);
 //}
 //
-//IDENT_MPTR_RAW *  float_$_plus_$_BetterString(float left, IDENT_MPTR_RAW *  right)
+//NonPrimObj *  float_$_plus_$_BetterString(float left, NonPrimObj *  right)
 //{
 //    return bformat("%f%s", left, right->data);
 //}
 
 
 
-IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_toString_$_(NonPrimObj *  b_, NonPrimObj * $_mptr_in)
 {
     debugPrintf("Creating string  from %s and storing in %s\n",b_->debugName,$_mptr_in->debugName);
     BetterString * b = b_->obj;
@@ -61,7 +61,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     _$_mptr __attribute__ ((__cleanup__(_$_cleanup))) $_mptr_temp;
     IDENT_MPTR_INITIALIZE_RAW (&$_mptr_temp, xstr($_mptr_temp));
 
-    IDENT_MPTR_RAW * s_ = String_$_String_$_(&$_mptr_temp);
+    NonPrimObj * s_ = String_$_String_$_(&$_mptr_temp);
 
     String *s = (String *) s_->obj;
     s->buffer = malloc(sizeof(char)*(b->slen+1));
@@ -72,7 +72,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
     return $_mptr_in;
 }
 
-//IDENT_MPTR_RAW *  BetterString_$_toLower_$_(IDENT_MPTR_RAW *  b)
+//NonPrimObj *  BetterString_$_toLower_$_(NonPrimObj *  b)
 //{
 //    int result = btolower(b);
 //    if (result==BSTR_OK) {
@@ -82,7 +82,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
 //    }
 //}
 //
-//IDENT_MPTR_RAW *  BetterString_$_toUpper_$_(IDENT_MPTR_RAW *  b)
+//NonPrimObj *  BetterString_$_toUpper_$_(NonPrimObj *  b)
 //{
 //    int result = btoupper(b);
 //    if (result==BSTR_OK) {
@@ -92,7 +92,7 @@ IDENT_MPTR_RAW * BetterString_$_toString_$_(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW
 //    }
 //}
 //
-void BetterString_$_destructor_$_(IDENT_MPTR_RAW *  b_)
+void BetterString_$_destructor_$_(NonPrimObj *  b_)
 {
     BetterString * b = (BetterString *) b_->obj;
     int result = bdestroy((BetterString * )b);
@@ -103,7 +103,7 @@ void BetterString_$_destructor_$_(IDENT_MPTR_RAW *  b_)
     }
 }
 
-IDENT_MPTR_RAW * BetterString_$_split_$_char(IDENT_MPTR_RAW *  b_, char c, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_split_$_char(NonPrimObj *  b_, char c, NonPrimObj * $_mptr_in)
 {
     _$_VARIABLE(_$_temp_vector);
     _$_VARIABLE(_$_temp_vector_item);
@@ -129,7 +129,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_char(IDENT_MPTR_RAW *  b_, char c, IDENT
     return $_mptr_in;
 }
 
-IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_split_$_String(NonPrimObj *  b_, NonPrimObj *  s_, NonPrimObj * $_mptr_in)
 {
     const_bstring b = b_->obj;
     String * s = s_->obj;
@@ -159,7 +159,7 @@ IDENT_MPTR_RAW * BetterString_$_split_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_
     return $_mptr_in;
 }
 
-IDENT_MPTR_RAW * BetterString_$_splits_$_String(IDENT_MPTR_RAW *  b_, IDENT_MPTR_RAW *  s_, IDENT_MPTR_RAW * $_mptr_in)
+NonPrimObj * BetterString_$_splits_$_String(NonPrimObj *  b_, NonPrimObj *  s_, NonPrimObj * $_mptr_in)
 {
     const_bstring b = b_->obj;
     String * s = s_->obj;

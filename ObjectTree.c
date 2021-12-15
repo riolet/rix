@@ -4,6 +4,8 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+#include "rsl/rsl.h"
+
 //mallocs memory and returns a pointer to a new Object
 Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE type,
                      char *returnType)
@@ -677,7 +679,7 @@ void writeWithGenericAndPrimitive(FILE * outh, Object * tree, Object * rType, ch
                 fprintf(outh, "%s", returnType);
             }
         } else {
-            fprintf(outh, IDENT_MPTR "* ");
+            fprintf(outh, xstr(NonPrimObj));
         }
 }
 
@@ -695,7 +697,7 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                             fprintf(outFile, "\t_$_%s_$dec_prim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
                                     oIter->value->fullname);
                         } else {
-                            fprintf(outFile, "\t_$_%s_$dec_non_prim$_(" IDENT_MPTR ",%s)  %s;\n", oIter->value->returnType,
+                            fprintf(outFile, "\t_$_%s_$dec_non_prim$_(" xstr(NonPrimObj) ",%s)  %s;\n", oIter->value->returnType,
                                     oIter->value->genericType->type, oIter->value->fullname);
                         }
                     } else {
@@ -703,9 +705,9 @@ void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
                                 oIter->value->fullname);
                     }
                 } else {
-                    if (!strcmp(oIter->value->returnType, IDENT_MPTR)) {
+                    if (!strcmp(oIter->value->returnType, xstr(NonPrimObj))) {
                         fprintf(outFile, "\t_$_TEMP_OBJ(%s);\n", oIter->value->fullname);
-                    } else if (!strcmp(oIter->value->returnType, IDENT_HEAP_MPTR)) {
+                    } else if (!strcmp(oIter->value->returnType, xstr(NonPrimObj))) {
                         fprintf(outFile, "\t_$_HEAP_VARIABLE(%s);\n", oIter->value->fullname);
                     }
                     else {
@@ -724,9 +726,9 @@ void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree
                     oIter->value->fullname);
         } else {
             if (strcmp(oIter->value->fullname, IDENT_SUPER "_")) {
-                fprintf(outFile, "\t" IDENT_MPTR "* %s;\n", oIter->value->fullname);
+                fprintf(outFile, "\t" xstr(NonPrimObj) " %s;\n", oIter->value->fullname);
             } else {
-                fprintf(outFile, "\t%s * %s;\n", oIter->value->returnType, oIter->value->fullname);
+                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType, oIter->value->fullname);
             }
         }
     }
@@ -774,7 +776,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     }
 
     if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
-        fprintf(outh, "%c " IDENT_MPTR " * " IDENT_MPTR "_in",printComma);
+        fprintf(outh, "/* %d */ %c " xstr(NonPrimObj) " * " xstr(NonPrimObj) "_in",__LINE__,printComma);
     }
 
     //finish
