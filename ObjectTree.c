@@ -7,15 +7,16 @@
 #include "rsl/rsl.h"
 
 //mallocs memory and returns a pointer to a new Object
-Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE type,
+Object *CreateObject(char *name, char *fullname, Object *parentScope, OBJ_TYPE type,
                      char *returnType)
 {
 
-    Object *result = (Object *) malloc(sizeof(Object));
+    Object *result = (Object *)malloc(sizeof(Object));
 
-    if (result == 0) {
+    if (result == 0)
+    {
         warningMsg("%s", "CreateObject couldn't allocate a new object. (ObjectTree.c)\n");
-        return 0;               //malloc failed.
+        return 0; //malloc failed.
     }
 
     result->name = name ? strdup(name) : 0;
@@ -30,61 +31,66 @@ Object *CreateObject(char *name, char *fullname, Object * parentScope, OBJ_TYPE 
     return result;
 }
 
-int addParam(Object * tree, char *type){   
-    addParamWithGenericType(tree,type,0);  
+int addParam(Object *tree, char *type)
+{
+    addParamWithGenericType(tree, type, 0);
 }
 
-
-int addParamWithGenericType(Object * tree, char *type, ListType *genericType)
+int addParamWithGenericType(Object *tree, char *type, ListType *genericType)
 {
 
     ListType *node = malloc(sizeof(ListType));
 
-    if (node == 0) {
+    if (node == 0)
+    {
         warningMsg("Allocation failed in addParam. (ObjectTree.c)\n");
         return 1;
     }
 
     node->type = strdup(type);
-    if (genericType) {
+    if (genericType)
+    {
         node->genericType = genericType;
     }
     node->next = 0;
 
-    if (node->type == 0) {
+    if (node->type == 0)
+    {
         warningMsg("strdup failed in addParam. (ObjectTree.c)\n");
         return 2;
     }
 
-    if (tree->paramTypes == 0) {
+    if (tree->paramTypes == 0)
+    {
         tree->paramTypes = node;
         return 0;
     }
 
     ListType *tail = tree->paramTypes;
 
-    while (tail->next != 0) {
+    while (tail->next != 0)
+    {
         tail = tail->next;
     }
 
     tail->next = node;
     return 0;
-
 }
 
 //append item to end of linked list
-int addGenericType(Object * tree, ListType *genericType, int genericTypeArgPos)
+int addGenericType(Object *tree, ListType *genericType, int genericTypeArgPos)
 {
     tree->genericType = genericType;
     tree->genericTypeArgPos = genericTypeArgPos;
     return 0;
 }
 
-int addSymbol(Object * tree, Object * leaf)
+int addSymbol(Object *tree, Object *leaf)
 {
     ListObject *node = malloc(sizeof(ListObject));
 
-    if (node == 0) {
+    if (node == 0)
+    {
         warningMsg("Allocation failed in addSymbol. (ObjectTree.c)\n");
         return 1;
     }
@@ -92,14 +98,16 @@ int addSymbol(Object * tree, Object * leaf)
     node->value = leaf;
     node->next = 0;
 
-    if (tree->definedSymbols == 0) {
+    if (tree->definedSymbols == 0)
+    {
         tree->definedSymbols = node;
         return 0;
     }
 
     ListObject *tail = tree->definedSymbols;
 
-    while (tail->next != 0) {
+    while (tail->next != 0)
+    {
         tail = tail->next;
     }
 
@@ -107,62 +115,67 @@ int addSymbol(Object * tree, Object * leaf)
     return 0;
 }
 
-ListString *pushCode(Object * tree, char *line)
+ListString *pushCode(Object *tree, char *line)
 {
     ListString *node = malloc(sizeof(ListString));
-    if (node == 0) {
+    if (node == 0)
+    {
         warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
 
     node->value = strdup(line);
 
-
-    if (node->value == 0) {
+    if (node->value == 0)
+    {
         warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
 
-    if (tree->code == 0) {
+    if (tree->code == 0)
+    {
         tree->code = node;
         return node;
     }
 
-    node->next  = tree->code;
+    node->next = tree->code;
     tree->code = node;
     return node;
 }
 
-ListString *insertCode(Object * tree, char *line)
+ListString *insertCode(Object *tree, char *line)
 {
     ListString *node = malloc(sizeof(ListString));
-    if (node == 0) {
+    if (node == 0)
+    {
         warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
 
     node->value = strdup(line);
 
-
-    if (node->value == 0) {
+    if (node->value == 0)
+    {
         warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
 
-    if (tree->code == 0) {
+    if (tree->code == 0)
+    {
         tree->code = node;
         return node;
     }
 
-    node->next  = tree->code;
+    node->next = tree->code;
     tree->code = node;
     return node;
 }
 
-ListString *addCode(Object * tree, char *line)
+ListString *addCode(Object *tree, char *line)
 {
     ListString *node = malloc(sizeof(ListString));
-    if (node == 0) {
+    if (node == 0)
+    {
         warningMsg("Allocation failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
@@ -170,19 +183,22 @@ ListString *addCode(Object * tree, char *line)
     node->value = strdup(line);
     node->next = 0;
 
-    if (node->value == 0) {
+    if (node->value == 0)
+    {
         warningMsg("strdup failed in addCode. (ObjectTree.c)\n");
         return 0;
     }
 
-    if (tree->code == 0) {
+    if (tree->code == 0)
+    {
         tree->code = node;
         return node;
     }
 
     ListString *tail = tree->code;
 
-    while (tail->next != 0) {
+    while (tail->next != 0)
+    {
         tail = tail->next;
     }
 
@@ -191,37 +207,39 @@ ListString *addCode(Object * tree, char *line)
     return node;
 }
 
-int listStringlen(ListString * head)
+int listStringlen(ListString *head)
 {
     int count = 0;
-    while (head != 0) {
+    while (head != 0)
+    {
         count++;
         head = head->next;
     }
     return count;
 }
 
-int listTypelen(ListType * head)
+int listTypelen(ListType *head)
 {
     int count = 0;
-    while (head != 0) {
+    while (head != 0)
+    {
         count++;
         head = head->next;
     }
     return count;
 }
 
-int setFlags(Object * tree, int flags)
+int setFlags(Object *tree, int flags)
 {
     tree->flags |= flags;
 }
 
-int getFlag(Object * tree, int flag)
+int getFlag(Object *tree, int flag)
 {
     return ((tree->flags & flag) == flag);
 }
 
-int setParentClass(Object * tree, Object * parentClass)
+int setParentClass(Object *tree, Object *parentClass)
 {
     tree->parentClass = parentClass;
 }
@@ -230,7 +248,7 @@ int setParentClass(Object * tree, Object * parentClass)
    Search the parent scope
    for V, T, C, F, CB
 */
-Object *searchCodeBlock(Object * scope, char *name, int bUseFullName)
+Object *searchCodeBlock(Object *scope, char *name, int bUseFullName)
 {
 
     //printf("\tSearch: CodeBlock\n");
@@ -239,37 +257,39 @@ Object *searchCodeBlock(Object * scope, char *name, int bUseFullName)
     //search locally first
     ListObject *iter = scope->definedSymbols;
 
-    while (iter != 0) {
+    while (iter != 0)
+    {
 
-        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name))
+        {
 
             result = iter->value;
 
             break;
-
         }
 
         iter = iter->next;
-
     }
 
     //try looking in the parent scope, if any
-    if (!result && scope->parentScope != 0) {
+    if (!result && scope->parentScope != 0)
+    {
 
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
 
-        if (result) {
+        if (result)
+        {
 
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
-        } else {
+        }
+        else
+        {
 
             //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
-
     }
     //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
-
 }
 
 /*In a Function,
@@ -279,16 +299,15 @@ Object *searchCodeBlock(Object * scope, char *name, int bUseFullName)
       for T, F
 */
 
-
-bool isVerb (Object *result) {
+bool isVerb(Object *result)
+{
     return result->category == Function ||
-            result->category == Constructor ||
-            result->category == Destructor ||
-            result->category == Method;
+           result->category == Constructor ||
+           result->category == Destructor ||
+           result->category == Method;
 }
 
-
-Object *searchFunction(Object * scope, char *name, int bUseFullName)
+Object *searchFunction(Object *scope, char *name, int bUseFullName)
 {
 
     //printf("\tSearch: Function\n");
@@ -296,64 +315,77 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
 
     ListObject *iter = scope->definedSymbols;
 
-    while (iter != 0) {
-        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
+    while (iter != 0)
+    {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name))
+        {
             result = iter->value;
             break;
         }
         iter = iter->next;
     }
 
-    if (!result && scope->parentClass) {
+    if (!result && scope->parentClass)
+    {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
-        if (result && result->category == Variable) {
-            if (getFlag(scope->parentClass,FLAG_PRIMITIVE)) {
+        if (result && result->category == Variable)
+        {
+            if (getFlag(scope->parentClass, FLAG_PRIMITIVE))
+            {
                 char newFullName[BUFFLEN];
-                snprintf(newFullName, BUFFLEN, IDENT_SELF_SELF ".%s",result->fullname);
+                snprintf(newFullName, BUFFLEN, IDENT_SELF_SELF ".%s", result->fullname);
                 //TODO: memory leak. (allocating space that will never be freed)
                 Object *temp =
                     CreateObject(result->name, newFullName, result->parentScope, result->category,
-                                result->returnType);
+                                 result->returnType);
                 result = temp;
-            } else {
+            }
+            else
+            {
                 char newFullName[BUFFLEN];
                 snprintf(newFullName, BUFFLEN, "((%s *) (" IDENT_SELF_SELF "->obj))->%s /* %s %d %s */",
-                        scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
+                         scope->parentClass->returnType, result->fullname, __FILE__, __LINE__, scope->parentClass->name);
                 //TODO: memory leak. (allocating space that will never be freed)
                 Object *temp =
                     CreateObject(result->name, newFullName, result->parentScope, result->category,
-                                result->returnType);
+                                 result->returnType);
                 result = temp;
             }
         }
 
-        if (result) {
+        if (result)
+        {
             //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
-        } else {
+        }
+        else
+        {
             //printf("\t  searched %s's superclass(%s) and found (null)\n", scope->fullname, scope->parentClass->fullname);
         }
     }
 
-    if (!result && scope->parentScope) {
+    if (!result && scope->parentScope)
+    {
 
-        compilerDebugPrintf("Looking for %s\n",name);
+        compilerDebugPrintf("Looking for %s\n", name);
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
-        
-        if (result && result->category != Type && !isVerb(result)) {
-            if (!getFlag(result,FLAG_GLOBAL)) {
+
+        if (result && result->category != Type && !isVerb(result))
+        {
+            if (!getFlag(result, FLAG_GLOBAL))
+            {
                 compilerDebugPrintf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname,
                                     scope->parentScope->fullname, result->fullname);
                 //Object not found
                 result = 0;
             }
-        } else {
+        }
+        else
+        {
             compilerDebugPrintf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
-
     }
     //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
-
 }
 
 /* In a Constructor,
@@ -362,7 +394,7 @@ Object *searchFunction(Object * scope, char *name, int bUseFullName)
    Search the parent scope
       for T, F
 */
-Object *searchConstructor(Object * scope, char *name, int bUseFullName)
+Object *searchConstructor(Object *scope, char *name, int bUseFullName)
 {
 
     //printf("\tSearch: Constructor\n");
@@ -370,28 +402,30 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
 
     ListObject *iter = scope->definedSymbols;
 
-    while (iter != 0) {
+    while (iter != 0)
+    {
 
-        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name))
+        {
 
             result = iter->value;
 
             break;
-
         }
 
         iter = iter->next;
-
     }
 
-    if (!result && scope->parentClass) {
+    if (!result && scope->parentClass)
+    {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
-        if (result && result->category != Variable && result->category != Type
-            && !isVerb(result)) {
+        if (result && result->category != Variable && result->category != Type && !isVerb(result))
+        {
             //printf("\t  searched %s's superclass(%s) and rejected %s\n", scope->fullname, scope->parentClass->fullname, result->fullname);
             result = 0;
-
-        } else if (result && result->category == Variable) {
+        }
+        else if (result && result->category == Variable)
+        {
             char newFullName[BUFFLEN];
             snprintf(newFullName, BUFFLEN, "/* %s %d */ ((%s * )(" IDENT_SELF_SELF "->obj))->%s", __FILE__, __LINE__, scope->returnType, result->fullname);
             //TODO: memory leak. (allocating space that will never be freed)
@@ -401,18 +435,20 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
             result = temp;
             //printf("\t  searched %s's superclass(%s) and found %s\n", scope->fullname, scope->parentClass->fullname, result ? result->fullname : "(null)");
         }
-
     }
 
-    if (!result && scope->parentScope != 0) {
+    if (!result && scope->parentScope != 0)
+    {
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
-        if (result && result->category != Type && result->category != Function) {
+        if (result && result->category != Type && result->category != Function)
+        {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
-        } else {
+        }
+        else
+        {
             //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
-
     }
     //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
@@ -422,31 +458,37 @@ Object *searchConstructor(Object * scope, char *name, int bUseFullName)
   Search the parent class
     for T, F, V
 */
-Object *searchType(Object * scope, char *name, int bUseFullName)
+Object *searchType(Object *scope, char *name, int bUseFullName)
 {
 
     //printf("\tSearch Types\n");
     Object *result = 0;
     ListObject *iter = scope->definedSymbols;
-    while (iter) {
-        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name)) {
+    while (iter)
+    {
+        if (!strcmp(name, bUseFullName ? iter->value->fullname : iter->value->name))
+        {
             result = iter->value;
             break;
         }
         iter = iter->next;
     }
 
-    if (!result && scope->parentClass) {
+    if (!result && scope->parentClass)
+    {
         result = findByNameInScope(scope->parentClass, name, bUseFullName);
-        if (result && result->category != Type && result->category != Function
-            && result->category != Variable) {
+        if (result && result->category != Type && result->category != Function && result->category != Variable)
+        {
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
-        } else {
-            if (result && result->category == Variable) {
+        }
+        else
+        {
+            if (result && result->category == Variable)
+            {
                 //Prepend "$super." to fullName
                 char newFullName[BUFFLEN];
-                snprintf(newFullName, BUFFLEN, IDENT_SUPER "_->%s /* %s %d */", result->fullname,__FILE__, __LINE__);
+                snprintf(newFullName, BUFFLEN, IDENT_SUPER "_->%s /* %s %d */", result->fullname, __FILE__, __LINE__);
                 //TODO: memory leak. (allocating space that will never be freed)
                 Object *temp =
                     CreateObject(result->name, newFullName, result->parentClass,
@@ -457,40 +499,42 @@ Object *searchType(Object * scope, char *name, int bUseFullName)
         }
     }
 
-    if (!result && scope->parentScope) {
+    if (!result && scope->parentScope)
+    {
 
         result = findByNameInScope(scope->parentScope, name, bUseFullName);
 
-        if (result && result->category != Type && result->category != Function) {
+        if (result && result->category != Type && result->category != Function)
+        {
 
             //printf("\t  searched %s's parent(%s) and rejected %s\n", scope->fullname, scope->parentScope->fullname, result->fullname);
             result = 0;
-
-        } else {
+        }
+        else
+        {
 
             //printf("\t  searched %s's parent(%s) and found %s\n", scope->fullname, scope->parentScope->fullname, result ? result->fullname : "(null)");
         }
-
     }
     //printf("\tsearched %s, returning %s\n", scope->fullname, result ? result->fullname : "(null)");
     return result;
-
 }
 
-Object *findByNameInScope(Object * scope, char *name, int bUseFullName)
+Object *findByNameInScope(Object *scope, char *name, int bUseFullName)
 {
 
-    if (scope == 0 || name == 0) {
+    if (scope == 0 || name == 0)
+    {
 
         warningMsg("Object or name was null in findByNameInScope. (ObjectTree.c)\n");
 
         return 0;
-
     }
     //printf("in findByName, searching %s for %s\n", scope->fullname, name);
     Object *result;
 
-    switch (scope->category) {
+    switch (scope->category)
+    {
 
     case CodeBlock:
         result = searchCodeBlock(scope, name, bUseFullName);
@@ -512,82 +556,80 @@ Object *findByNameInScope(Object * scope, char *name, int bUseFullName)
     default:
         warningMsg("cannot search within category %d\n", scope->category);
         break;
-
     }
 
-    compilerDebugPrintf("exiting findByName (%s), found %s\n", scope->fullname, result? result->fullname : "nothing.");
+    compilerDebugPrintf("exiting findByName (%s), found %s\n", scope->fullname, result ? result->fullname : "nothing.");
     return result;
-
 }
 
-Object *findFunctionMatch(Object * scope, char *name, int paramc, char **params)
+Object *findFunctionMatch(Object *scope, char *name, int paramc, char **params)
 {
 
-    if (scope == 0 || name == 0) {
+    if (scope == 0 || name == 0)
+    {
 
         warningMsg("Object or name was null in findFunctionMatch. (ObjectTree.c)\n");
 
         return 0;
-
     }
 
     int i;
 
     char *s;
 
-    if (scope->definedSymbols == 0 && scope->parentScope == 0) {
+    if (scope->definedSymbols == 0 && scope->parentScope == 0)
+    {
 
         return 0;
-
-    } else if (scope->definedSymbols == 0) {
+    }
+    else if (scope->definedSymbols == 0)
+    {
 
         return findFunctionMatch(scope->parentScope, name, paramc, params);
-
     }
 
     ListObject *iter = scope->definedSymbols;
 
-    while (iter != 0) {
+    while (iter != 0)
+    {
 
-        if (!strcmp(name, iter->value->name)) {
+        if (!strcmp(name, iter->value->name))
+        {
 
             ListType *iter_param = iter->value->paramTypes;
 
-            for (i = 0; i < paramc && iter_param != 0; i++) {
+            for (i = 0; i < paramc && iter_param != 0; i++)
+            {
 
-                if (strcmp(params[i], iter_param->type)) {
+                if (strcmp(params[i], iter_param->type))
+                {
 
                     break;
-
                 }
 
                 iter_param = iter_param->next;
-
             }
 
-            if (i == paramc && iter_param == 0) {
+            if (i == paramc && iter_param == 0)
+            {
 
                 return iter->value;
-
             }
-
         }
 
         iter = iter->next;
-
     }
 
-    if (scope->parentScope != 0) {
+    if (scope->parentScope != 0)
+    {
 
         return findFunctionMatch(scope->parentScope, name, paramc, params);
-
     }
 
     return 0;
-
 }
 
-OBJ_TYPE getIdentType(Object * scope, char *identifier)
+OBJ_TYPE getIdentType(Object *scope, char *identifier)
 {
 
     Object *obj = findByNameInScope(scope, identifier, 0);
@@ -597,50 +639,65 @@ OBJ_TYPE getIdentType(Object * scope, char *identifier)
         return obj->category;
 
     return Undefined;
-
 }
 
-void writeTree(FILE * outc, FILE * outh, Object * tree)
+void writeTree(FILE *outc, FILE *outh, Object *tree)
 {
     writeTypeDefs(outh, tree);
-    writeForwardDeclarations(outh, tree);         
+    writeForwardDeclarations(outh, tree);
     writeTreeHelper(outc, outh, tree, 0);
 }
 
-void writeTypeDefs(FILE * outh, Object * tree)
+void writeTypeDefs(FILE *outh, Object *tree)
 {
     ListObject *iter = tree->definedSymbols;
-    while (iter) {
-        if (iter->value->category == Type && !getFlag(iter->value, FLAG_EXTERNAL) && !getFlag(iter->value, FLAG_ENUM)) {
-            fprintf(outh, "/* %d */ typedef struct " COMPILER_SEP "%s %s;\n", __LINE__, iter->value->name,
-                    iter->value->name);
-        } else if (getFlag(iter->value, FLAG_ENUM)) {
+    while (iter)
+    {
+        if (iter->value->category == Type && !getFlag(iter->value, FLAG_EXTERNAL) && !getFlag(iter->value, FLAG_ENUM))
+        {
+            if (getFlag(iter->value, FLAG_PRIMITIVE))
+            {
+                fprintf(outh, "/* %d */  typedef struct " COMPILER_SEP "%s %s;\n",__LINE__, iter->value->name,
+                        iter->value->name);
+            }
+            else
+            {
+                fprintf(outh, "/* %d */ typedef struct " COMPILER_SEP "%s * %s;\n", __LINE__, iter->value->name,
+                        iter->value->name);
+            }
+        }
+        else if (getFlag(iter->value, FLAG_ENUM))
+        {
             writeEnums(outh, iter->value->code);
         }
         iter = iter->next;
     }
 }
 
-void writeEnums (FILE * outh, ListString *iter) {
-    while (iter) {
+void writeEnums(FILE *outh, ListString *iter)
+{
+    while (iter)
+    {
         fprintf(outh, "%s\n", iter->value);
-        iter=iter->next;
+        iter = iter->next;
     }
     fprintf(outh, ";\n");
 }
 
-void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
+void writeTreeHelper(FILE *outc, FILE *outh, Object *tree, int indent)
 {
 
     ListObject *oIter;
     ListType *sIter;
 
-    if (tree == 0) {
+    if (tree == 0)
+    {
         warningMsg("tree was null in writeTree. (ObjectTree.c)\n");
         return;
     }
 
-    if (outc == 0 || outh == 0) {
+    if (outc == 0 || outh == 0)
+    {
         warningMsg("output file was null in writeTree. (ObjectTree.c)\n");
         return;
     }
@@ -649,156 +706,204 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
     sIter = tree->paramTypes;
 
     //construct and print function header
-    if (isVerb(tree) && !getFlag(tree, FLAG_EXTERNAL)) {
-        compilerDebugPrintf("Writing function %s\n",tree->fullname);
+    if (isVerb(tree) && !getFlag(tree, FLAG_EXTERNAL))
+    {
+        compilerDebugPrintf("Writing function %s\n", tree->fullname);
         writeFunction(outh, tree, indent, false);
-    } else if (tree->category == Type && !getFlag(tree, FLAG_EXTERNAL)) {
-        if (getFlag(tree, FLAG_ENUM)) {
+    }
+    else if (tree->category == Type && !getFlag(tree, FLAG_EXTERNAL))
+    {
+        if (getFlag(tree, FLAG_ENUM))
+        {
             //writeEnums(outh, tree->code);
-        } else {
+        }
+        else
+        {
             writeClass(outc, outh, tree, indent);
         }
-    } else if (tree->category == Dummy) {
+    }
+    else if (tree->category == Dummy)
+    {
         //Dummy
-    } else {
+    }
+    else
+    {
         writeOther(outc, outh, tree, indent);
     }
-
 }
 
-void writeWithGenericAndPrimitive(FILE * outh, Object * tree, Object * rType, char *returnType, ListType *genericType) {
-        if (getFlag(rType, FLAG_PRIMITIVE)) {
-            if (rType->genericType) {
-                Object * gType = findByNameInScope(tree,genericType->type,false);
-                if (getFlag(gType, FLAG_PRIMITIVE)) {
-                    fprintf(outh, "%s_$primitive$_(%s)", returnType, genericType->type);
-                } else {
-                    fprintf(outh, "%s_$non_primitive$_(%s)", returnType, genericType->type);
-                }
-            } else {
-                fprintf(outh, "%s", returnType);
+void writeWithGenericAndPrimitive(FILE *outh, Object *tree, Object *rType, char *returnType, ListType *genericType)
+{
+    if (getFlag(rType, FLAG_PRIMITIVE))
+    {
+        if (rType->genericType)
+        {
+            Object *gType = findByNameInScope(tree, genericType->type, false);
+            if (getFlag(gType, FLAG_PRIMITIVE))
+            {
+                fprintf(outh, "%s_$primitive$_(%s)", returnType, genericType->type);
             }
-        } else {
-            fprintf(outh, xstr(NonPrimObj));
+            else
+            {
+                fprintf(outh, "%s_$non_primitive$_(%s)", returnType, genericType->type);
+            }
         }
+        else
+        {
+            fprintf(outh, "%s", returnType);
+        }
+    }
+    else
+    {
+        fprintf(outh, "%s", returnType);
+    }
 }
 
-void writeDeclareVariable (ListObject *oIter, FILE * outFile, Object * tree) {
-            Object * rType = findByNameInScope(tree,oIter->value->returnType,false);
-            //compilerDebugPrintf("writing variable %s\n",oIter->value->name);
-            if (!getFlag(oIter->value,FLAG_NO_CODEGEN)) {
-                // writeWithGenericAndPrimitive(outFile, tree, rType, oIter->value->returnType, oIter->value->genericType);
-                // fprintf(outFile, " %s;\n", oIter->value->fullname);
-                if (getFlag(rType, FLAG_PRIMITIVE)) {
-                    if (oIter->value->genericType) {
-                        //ToDo better Generic Handling
-                        Object * gType = findByNameInScope(tree,oIter->value->genericType->type,false);
-                        if (getFlag(gType,FLAG_PRIMITIVE)) {
-                            fprintf(outFile, "\t_$_%s_$dec_prim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
-                                    oIter->value->fullname);
-                        } else {
-                            fprintf(outFile, "\t_$_%s_$dec_non_prim$_(" xstr(NonPrimObj) ",%s)  %s;\n", oIter->value->returnType,
-                                    oIter->value->genericType->type, oIter->value->fullname);
-                        }
-                    } else {
-                        fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
-                                oIter->value->fullname);
-                    }
-                } else {
-                    if (!strcmp(oIter->value->returnType, xstr(NonPrimObj))) {
-                        fprintf(outFile, "\t_$_TEMP_OBJ(%s);\n", oIter->value->fullname);
-                    } else if (!strcmp(oIter->value->returnType, xstr(NonPrimObj))) {
-                        fprintf(outFile, "\t_$_HEAP_VARIABLE(%s);\n", oIter->value->fullname);
-                    }
-                    else {
-                        fprintf(outFile, "\t_$_VARIABLE(%s);\n", oIter->value->fullname);
-                    }
-
+void writeDeclareVariable(ListObject *oIter, FILE *outFile, Object *tree)
+{
+    Object *rType = findByNameInScope(tree, oIter->value->returnType, false);
+    //compilerDebugPrintf("writing variable %s\n",oIter->value->name);
+    if (!getFlag(oIter->value, FLAG_NO_CODEGEN))
+    {
+        // writeWithGenericAndPrimitive(outFile, tree, rType, oIter->value->returnType, oIter->value->genericType);
+        // fprintf(outFile, " %s;\n", oIter->value->fullname);
+        //Primitiveness is ignored
+        if (getFlag(rType, FLAG_PRIMITIVE))
+        {
+            if (oIter->value->genericType)
+            {
+                //ToDo better Generic Handling
+                Object *gType = findByNameInScope(tree, oIter->value->genericType->type, false);
+                if (getFlag(gType, FLAG_PRIMITIVE))
+                {
+                    fprintf(outFile, "\t_$_%s_$dec_prim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
+                            oIter->value->fullname);
+                }
+                else
+                {
+                    fprintf(outFile, "\t_$_%s_$dec_nonprim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
+                            oIter->value->fullname);
                 }
             }
-}
-
-void writeDeclareClassVariable (ListObject *oIter, FILE * outFile, Object * tree) {
-    Object * rType = findByNameInScope(tree,oIter->value->returnType,false);
-    if (!getFlag(oIter->value,FLAG_NO_CODEGEN)) {
-        if (getFlag(rType, FLAG_PRIMITIVE)) {
-            fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
-                    oIter->value->fullname);
-        } else {
-            if (strcmp(oIter->value->fullname, IDENT_SUPER "_")) {
-                fprintf(outFile, "\t" xstr(NonPrimObj) " %s;\n", oIter->value->fullname);
-            } else {
-                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+            else
+            {
+                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
+                        oIter->value->fullname);
+            }
+        }
+        else
+        {
+            if (oIter->value->genericType)
+            {
+                //ToDo better Generic Handling
+                Object *gType = findByNameInScope(tree, oIter->value->genericType->type, false);
+                if (getFlag(gType, FLAG_PRIMITIVE))
+                {
+                    fprintf(outFile, "\t_$_%s_$dec_prim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
+                            oIter->value->fullname);
+                }
+                else
+                {
+                    fprintf(outFile, "\t_$_%s_$dec_nonprim$_(%s)  %s;\n", oIter->value->returnType, oIter->value->genericType->type,
+                            oIter->value->fullname);
+                }
+            }
+            else
+            {
+                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
+                        oIter->value->fullname);
             }
         }
     }
 }
 
+void writeDeclareClassVariable(ListObject *oIter, FILE *outFile, Object *tree)
+{
+    Object *rType = findByNameInScope(tree, oIter->value->returnType, false);
+    if (!getFlag(oIter->value, FLAG_NO_CODEGEN))
+    {
+        if (getFlag(rType, FLAG_PRIMITIVE))
+        {
+            fprintf(outFile, "\t%s %s;\n", oIter->value->returnType,
+                    oIter->value->fullname);
+        }
+        else
+        {
+                fprintf(outFile, "\t%s %s;\n", oIter->value->returnType, oIter->value->fullname);
+        }
+    }
+}
 
-
-void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
+void writeFunction(FILE *outh, Object *tree, int indent, bool sigOnly)
 {
     ListObject *oIter;
     ListType *sIter;
-    
+
     ListString *cIter;
-    
+
     oIter = tree->definedSymbols;
     sIter = tree->paramTypes;
 
-    compilerDebugPrintf("Looking up function %s\n",tree->fullname);
-    Object * rType = findByNameInScope(tree,tree->returnType,false);
+    compilerDebugPrintf("Looking up function %s\n", tree->fullname);
+    Object *rType = findByNameInScope(tree, tree->returnType, false);
 
-    compilerDebugPrintf ("Looking up category %s\n",tree->returnType);
+    compilerDebugPrintf("Looking up category %s\n", tree->returnType);
     //writeWithGenericAndPrimitive(outh, getFlag(rType, FLAG_PRIMITIVE), )
-    if (rType) {
-        compilerDebugPrintf("Line%d %s\n",__LINE__, tree->fullname);
-        writeWithGenericAndPrimitive(outh,tree,rType,tree->returnType,tree->genericType);
+    if (rType)
+    {
+        compilerDebugPrintf("Line%d %s\n", __LINE__, tree->fullname);
+        writeWithGenericAndPrimitive(outh, tree, rType, tree->returnType, tree->genericType);
         fprintf(outh, " %s(", tree->fullname);
-    } else {
+    }
+    else
+    {
         fprintf(outh, "void %s(", tree->fullname);
     }
 
     //add each param
     Object *pType;
     char printComma = ' ';
-    while (sIter != 0) {
+    while (sIter != 0)
+    {
         printComma = ',';
-        pType = findByNameInScope(tree,sIter->type,false);
+        pType = findByNameInScope(tree, sIter->type, false);
         //compilerDebugPrintf("Looking up symbol %d\n",oIter);
-        writeWithGenericAndPrimitive(outh,tree, pType,sIter->type,sIter->genericType);
+        writeWithGenericAndPrimitive(outh, tree, pType, sIter->type, sIter->genericType);
         fprintf(outh, " %s", oIter->value->fullname);
         sIter = sIter->next;
         oIter = oIter->next;
-        if (sIter !=0 ) {
+        if (sIter != 0)
+        {
             fprintf(outh, ",");
         }
     }
-
-    if (rType&&!getFlag(rType,FLAG_PRIMITIVE)) {
-        fprintf(outh, "/* %d */ %c " xstr(NonPrimObj) " * " xstr(NonPrimObj) "_in",__LINE__,printComma);
-    }
-
     //finish
-    if (sigOnly) {
+    if (sigOnly)
+    {
         fprintf(outh, ");\n");
         return;
-    } else {
+    }
+    else
+    {
         fprintf(outh, ") {\n");
     }
 
-    while (oIter != 0) {
-        if (oIter->value->category == Variable) {
+    while (oIter != 0)
+    {
+        if (oIter->value->category == Variable)
+        {
             //declare all class variables
-            writeDeclareVariable (oIter, outh, tree);
-        } 
+            writeDeclareVariable(oIter, outh, tree);
+        }
         oIter = oIter->next;
     }
 
     //print each line of code.
-    if (tree->code != 0 && tree->code->value != 0) {
+    if (tree->code != 0 && tree->code->value != 0)
+    {
         cIter = tree->code;
-        while (cIter != 0) {
+        while (cIter != 0)
+        {
             fprintf(outh, " \t%s\n", cIter->value);
             cIter = cIter->next;
         }
@@ -806,7 +911,7 @@ void writeFunction(FILE * outh, Object * tree, int indent, bool sigOnly)
     fprintf(outh, "}\n");
 }
 
-void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
+void writeOther(FILE *outc, FILE *outh, Object *tree, int indent)
 {
 
     ListObject *oIter;
@@ -814,37 +919,43 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
 
     oIter = tree->definedSymbols;
 
-    while (oIter != 0) {
-        if (oIter->value->category == Variable) {
+    while (oIter != 0)
+    {
+        if (oIter->value->category == Variable)
+        {
             //declare all local variables
-            if (getFlag(oIter->value,FLAG_GLOBAL)) {
-                writeDeclareVariable (oIter, outh, tree);
-            } else {
-                writeDeclareVariable (oIter, outc, tree);
+            if (getFlag(oIter->value, FLAG_GLOBAL))
+            {
+                writeDeclareVariable(oIter, outh, tree);
             }
-        }  else {
+            else
+            {
+                writeDeclareVariable(oIter, outc, tree);
+            }
+        }
+        else
+        {
             writeTreeHelper(outc, outh, oIter->value, indent + 1);
         }
 
         oIter = oIter->next;
     }
 
-    if (tree->code != 0 && tree->code->value != 0) {
+    if (tree->code != 0 && tree->code->value != 0)
+    {
         sIter = tree->code;
-        while (sIter != 0) {
+        while (sIter != 0)
+        {
             fprintf(outc, "\t%s\n", sIter->value);
             sIter = sIter->next;
         }
     }
-
 }
 
-
-
-void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
+void writeClass(FILE *outc, FILE *outh, Object *tree, int indent)
 {
 
-    compilerDebugPrintf("Writing Class %s ***\n",tree->name);
+    compilerDebugPrintf("Writing Class %s ***\n", tree->name);
     ListObject *oIter;
 
     oIter = tree->definedSymbols;
@@ -852,39 +963,44 @@ void writeClass(FILE * outc, FILE * outh, Object * tree, int indent)
     //        tree->name);
     fprintf(outh, "%s " COMPILER_SEP "%s {\n", "struct", tree->name);
 
-    while (oIter != 0) {
-        if (oIter->value->category == Variable) {
-            writeDeclareClassVariable (oIter, outh, tree);
-        } 
+    while (oIter != 0)
+    {
+        if (oIter->value->category == Variable)
+        {
+            writeDeclareClassVariable(oIter, outh, tree);
+        }
         oIter = oIter->next;
     }
 
     fprintf(outh, "};\n");
 
-
     oIter = tree->definedSymbols;
-    while (oIter != 0) {
-        if (isVerb(oIter->value)) {
+    while (oIter != 0)
+    {
+        if (isVerb(oIter->value))
+        {
             writeFunction(outh, tree, indent, false);
-        }  else {
+        }
+        else
+        {
             //writeTreeHelper(outc, outh, tree, indent);
         }
-        oIter=oIter->next;
+        oIter = oIter->next;
     }
-
-
-
 }
 
-void writeForwardDeclarations (FILE * outh, Object * tree)
+void writeForwardDeclarations(FILE *outh, Object *tree)
 {
     ListObject *fiter;
     int indent = 0;
     fiter = tree->definedSymbols;
     //Do the forward declarations
-    while (fiter) {
-        if (isVerb(fiter->value)) {
-            if (!getFlag(fiter->value, FLAG_EXTERNAL)) {
+    while (fiter)
+    {
+        if (isVerb(fiter->value))
+        {
+            if (!getFlag(fiter->value, FLAG_EXTERNAL))
+            {
                 compilerDebugPrintf("Forward decling %s\n", fiter->value->fullname);
                 writeFunction(outh, fiter->value, indent, true);
             }

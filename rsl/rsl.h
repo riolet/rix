@@ -9,7 +9,6 @@
 
 
 typedef struct String String;
-typedef struct Stream Stream;
 
 typedef struct {
     int object_$_id;
@@ -22,24 +21,7 @@ typedef enum { lt = -1, eq = 0, gt = 1 } Ternary;
 typedef void *System;
 typedef void *Generic_$$;
 
-#define bool_$_if(A) if (A) {
-#define bool_$_elif_$_bool(A) if (A) {
-#define bool_$_else(A) if (A) {
 
-// #define bool_$_tf_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR,isReturnPrim,returnType) (T) ? (A) : (B)
-// #define bool_$_ft_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR,isReturnPrim,returnType) (T) ? (B) : (A)
-
-#define bool_$_tf_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR) (T) ? (A) : (B)
-#define bool_$_ft_$_Generic_$$_$_Generic_$$(T,A,isAPrim, B,isBPrim,MPTR) (T) ? (B) : (A)
-
-
-#define bool_$_condreturn_$_Generic_$$_$_Generic_$$(T,B) if (T) return (B);
-
-#define if_$_bool(A) if (A) {
-#define elif_$_bool(A) else if (A) {
-#define else_$_() else {
-
-#define bool_$_while_$_(A) while (A) {
 #define while_$_bool(A) while (A) {
 
 #define for_$_int_$_int(i,a,b) for (i=a;i<b;i++) {

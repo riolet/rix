@@ -29,7 +29,7 @@ void String_return_GCC(String *s);
 
 void String_cleanUp_GCC(String *s);
 
-void String_$_destructor_$_(NonPrimObj *s_);
+void String_$_destructor_$_(String *s_);
 
 String String_$_stringlit(char *strlit);
 

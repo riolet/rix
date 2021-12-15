@@ -126,6 +126,11 @@ Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isP
 
     setParentClass(result, parent);
 
+    if (external)
+    {
+        setFlags(result, FLAG_EXTERNAL);
+    }
+    
     if (typeArgs)
     {
         ListType *list = typeArgs->paramTypes;
@@ -2163,7 +2168,7 @@ Object *conjugateAccessorIdent(Object *subject, char *field, OBJ_TYPE category)
         }
         else
         {
-            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s).%s", __LINE__, oReturnType->name, newSubject, field);
+            snprintf(accessCode, BUFFLEN, "/* %d %s*/ (%s)->%s", __LINE__, oReturnType->name, newSubject, field);
         }
         addParam(result, oField->returnType);
         addCode(result, accessCode);

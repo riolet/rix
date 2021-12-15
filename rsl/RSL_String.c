@@ -5,18 +5,18 @@
 #include "rsl/rsl.h"
 #include "rsl/RSL_String.h"
 
-void String_$_destructor_$_(NonPrimObj * _$_mptr_in)
+void String_$_destructor_$_(String *s)
 {
-    debugPrintf("Cleaning up String %s\n",_$_mptr_in->debugName);
-    String *s = (String *) _$_mptr_in->obj;
-    if (!s->isStaticBuffer) {
-        debugPrintf("String %s contains %s\n",_$_mptr_in->debugName, s->buffer);
-        free(s->buffer); 
-    } else {
-        debugPrintf("Not cleaning StaticString %s containing %s\n",_$_mptr_in->debugName, s->buffer);
-    }
-    free(s);
-    debugPrintf("Cleaned up String %s",_$_mptr_in->debugName);
+    // debugPrintf("Cleaning up String %s\n",_$_mptr_in->debugName);
+    // String *s = (String *) _$_mptr_in->obj;
+    // if (!s->isStaticBuffer) {
+    //     debugPrintf("String %s contains %s\n",_$_mptr_in->debugName, s->buffer);
+    //     free(s->buffer); 
+    // } else {
+    //     debugPrintf("Not cleaning StaticString %s containing %s\n",_$_mptr_in->debugName, s->buffer);
+    // }
+    // free(s);
+    // debugPrintf("Cleaned up String %s",_$_mptr_in->debugName);
 }
 
 String String_$_String_$_ (String s)
