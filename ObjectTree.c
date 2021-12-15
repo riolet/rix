@@ -601,7 +601,7 @@ OBJ_TYPE getIdentType(Object * scope, char *identifier)
 void writeTree(FILE * outc, FILE * outh, Object * tree)
 {
     writeTypeDefs(outh, tree);
-    writeForwardDeclarations(outh, tree);
+    writeForwardDeclarations(outh, tree);         
     writeTreeHelper(outc, outh, tree, 0);
 }
 
@@ -612,6 +612,8 @@ void writeTypeDefs(FILE * outh, Object * tree)
         if (iter->value->category == Type && !getFlag(iter->value, FLAG_EXTERNAL) && !getFlag(iter->value, FLAG_ENUM)) {
             fprintf(outh, "typedef struct " COMPILER_SEP "%s %s;\n", iter->value->name,
                     iter->value->name);
+        } else if (getFlag(iter->value, FLAG_ENUM)) {
+            writeEnums(outh, iter->value->code);
         }
         iter = iter->next;
     }
@@ -650,7 +652,7 @@ void writeTreeHelper(FILE * outc, FILE * outh, Object * tree, int indent)
         writeFunction(outh, tree, indent, false);
     } else if (tree->category == Type && !getFlag(tree, FLAG_EXTERNAL)) {
         if (getFlag(tree, FLAG_ENUM)) {
-            writeEnums(outh, tree->code);
+            //writeEnums(outh, tree->code);
         } else {
             writeClass(outc, outh, tree, indent);
         }
@@ -813,7 +815,11 @@ void writeOther(FILE * outc, FILE * outh, Object * tree, int indent)
     while (oIter != 0) {
         if (oIter->value->category == Variable) {
             //declare all local variables
-            writeDeclareVariable (oIter, outc, tree);
+            if (getFlag(oIter->value,FLAG_GLOBAL)) {
+                writeDeclareVariable (oIter, outh, tree);
+            } else {
+                writeDeclareVariable (oIter, outc, tree);
+            }
         }  else {
             writeTreeHelper(outc, outh, oIter->value, indent + 1);
         }

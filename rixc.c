@@ -397,7 +397,7 @@ Object *beginConstructor(Object *parameters)
             addSymbol(result,
                       CreateObject(names->value, names->value, 0, Variable, types->type));
         }
-        addParam(result, types->type);
+        addParamWithGenericType(result,types->type,types->genericType);
         names = names->next;
         types = types->next;
     }
@@ -684,6 +684,7 @@ Object *declareVariable(char *name, ListType *type)
 
 Object *declareGlobalVariable(char *name, ListType *type)
 {
+    compilerDebugPrintf("Declaring global variabl %s",name);
     Object *var = declareVariable(name, type);
     setFlags(var, FLAG_GLOBAL);
     return var;
@@ -1280,8 +1281,12 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
         if (!objects->paramTypes)
         {
             char error[BUFFLEN];
-            snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n",
-                     objects->code->value);
+            if (objects->code) {
+                snprintf(error, BUFFLEN, "Variable '%s' used before definition as object\n",
+                        objects->code->value);
+            } else {
+                snprintf(error, BUFFLEN, "Variable used before definition as object\n");
+            }
             criticalError(ERROR_UndefinedVariable, error);
         }
         paramIter = objects->paramTypes;

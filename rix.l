@@ -255,7 +255,7 @@ dtvAddsource "##addsource"
 {assignment}    { compilerDebugPrintf("lexer: assignment\n"); yylval->sval = strdup(yytext); return ASSIGNMENT; }
 {conditionLink} { compilerDebugPrintf("lexer: CondLink\n");   yylval->sval = strdup(yytext); return CONDITIONLINK; }
 
-{paramComma}   { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
+{paramComma}[ \t\n]*   { compilerDebugPrintf("lexer: ParamComma\n"); yylval->sval = strdup(yytext); /*handleComma();*/ return PARAMCOMMA; }
 {colon}         { compilerDebugPrintf("lexer: Colon\n");    yylval->sval = strdup(yytext); return COLON; }
 {classDec}      { compilerDebugPrintf("lexer: ClassDec\n");   yylval->sval = strdup(yytext); return CLASSDEC; }
 {classDecPrim}     { compilerDebugPrintf("lexer: CtorDecPrim\n");    yylval->sval = strdup(yytext); return CLASSDECPRIM; }
@@ -283,13 +283,13 @@ dtvAddsource "##addsource"
 
 <<EOF>>       { return ENDOFFILE; }
 [ \t]+        { g_lineCol += yyleng; } /* eat up whitespace */
-"("           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
-")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
-"["                              { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
-"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
+"("[ \t\n]*           { compilerDebugPrintf("lexer: (\n"); return LPAREN; }
+[ \t\n]*")"                             { compilerDebugPrintf("lexer: )\n"); return RPAREN; }
+"["[ \t\n]*                              { compilerDebugPrintf("lexer: (\n"); return LBRACKET; }
+[ \t\n]*"]"                             { compilerDebugPrintf("lexer: )\n"); return RBRACKET; }
 "]"[ \t]*{assignment}           { compilerDebugPrintf("lexer: )\n"); return RBRACKETASSIGN; }
-"{"            { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
-"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
+"{"[ \t\n]*            { compilerDebugPrintf("lexer: (\n"); return LBRACE; }
+[ \t\n]*"}"           { compilerDebugPrintf("lexer: )\n"); return RBRACE; }
 .             { compilerDebugPrintf("Unknown symbol encountered: '%s'\n", yytext); }
 
 %%

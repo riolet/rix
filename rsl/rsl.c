@@ -249,8 +249,9 @@ void _$_cleanup_object(IDENT_MPTR_RAW *p)
         }
         else
         {
+             *(int*)0 = 0;            
             errorMsg("%s has no destructor\n", p->debugName);
-            criticalError(ERROR_RuntimeError, "No destructor found");
+            criticalError(ERROR_RuntimeError, "No destructor found\n");
         }
         p->obj = 0;
         debugPrintf("Gone !\n");
