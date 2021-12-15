@@ -15,13 +15,6 @@ typedef struct {
     int object_$_id;
 } BaseType;
 
-typedef struct _NonPrimObj NonPrimObj;
-
-struct _NonPrimObj {
-    void *obj;
-    void (*destructor)(void *);
-};
-
 typedef void *UNKNOWNTYPE;
 UNKNOWNTYPE UNKNOWNOBJECT;
 //typedef char Char;
@@ -107,28 +100,9 @@ String args_$_int(int i);
 
 int args_$_();
 
-void BaseType_$_destructor (NonPrimObj   $_mptr_in);
+void BaseType_$_destructor (void *   $_mptr_in);
 
-NonPrimObj   BaseType_$_BaseType_$_ (NonPrimObj   $_mptr_in);
-
-void _$_cleanup (NonPrimObj  p);
-
-void _$_cleanup_var (NonPrimObj  *p);
-
-void _$_object_ownership_transfer(NonPrimObj   a, NonPrimObj   b);
-
-NonPrimObj   NonPrimObj_point (NonPrimObj   a, NonPrimObj  b);
-
-NonPrimObj   NonPrimObj_assign_with_alloc (NonPrimObj  *a_ptr, NonPrimObj  b,char *debugName);
-
-NonPrimObj   NonPrimObj_assign (NonPrimObj   a, NonPrimObj  b);
-
-NonPrimObj   _$_returnAppointer (NonPrimObj   $_mptr_in, void * obj, void * destructor);
-
-void NonPrimObj_initialize(NonPrimObj  mptr, char *name);
-
-char *snprintfauto(const char *format, ...);
-void _$_cleanup_object(NonPrimObj  p);
+BaseType  BaseType_$_BaseType_$_ ();
 
 #define import_$_String(x) true
 

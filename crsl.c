@@ -52,23 +52,11 @@ void defineRSLSymbols(Object * root, bool waferSupport)
     setFlags(temp4, FLAG_EXTERNAL);
     addSymbol(root, temp4);
 
-    temp4 =
-            CreateObject(IDENT_MPTR, IDENT_MPTR COMPILER_SEP BASETYPE, objBaseType, Type,
-                         IDENT_MPTR);
-    setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp4);
-
-    temp4 =
-            CreateObject(IDENT_HEAP_MPTR, IDENT_HEAP_MPTR COMPILER_SEP BASETYPE, objBaseType, Type,
-                         IDENT_HEAP_MPTR);
-    setFlags(temp4, FLAG_EXTERNAL);
-    addSymbol(root, temp4);
-
     // ==============  Basetype constructor ===============
 
     rslFunc =
             CreateObject(BASETYPE, BASETYPE COMPILER_SEP BASETYPE COMPILER_SEP,
-                         0, Constructor, IDENT_MPTR);
+                         0, Constructor, BASETYPE);
     setFlags(rslFunc, FLAG_EXTERNAL);
     addParam(rslFunc, BASETYPE);
     addSymbol(root, rslFunc);

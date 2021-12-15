@@ -126,23 +126,6 @@ Object *beginClass(char *className, char *parentName, Object *typeArgs, bool isP
 
     setParentClass(result, parent);
 
-    if (external)
-    {
-        setFlags(result, FLAG_EXTERNAL);
-    }
-    else if (isPrimitive)
-    {
-        //Do nothing
-    }
-    else
-    {
-        Object *parentReference = CreateObject(IDENT_SUPER, IDENT_SUPER, 0, Variable, IDENT_MPTR);
-        Object *parentReference_ = CreateObject(IDENT_SUPER "_", IDENT_SUPER "_", 0, Variable, parent->name);
-
-        addSymbol(result, parentReference);
-        addSymbol(result, parentReference_);
-    }
-
     if (typeArgs)
     {
         ListType *list = typeArgs->paramTypes;
@@ -462,7 +445,7 @@ Object *beginDestructor(Object *parameters)
     parentScope = scopeStack[i];
 
     Object *result =
-        CreateObject(current->name, funcFullName, parentScope, Function, IDENT_MPTR);
+        CreateObject(current->name, funcFullName, parentScope, Function, current->name);
     result->parentClass = current;
 
     ListObject *oIter;
@@ -470,35 +453,6 @@ Object *beginDestructor(Object *parameters)
     oIter = current->definedSymbols;
     char deallocator[BUFFLEN];
 
-    // while (oIter != 0) {
-    //     if (strcmp(oIter->value->name,IDENT_SUPER "_"))
-    //     {
-    //         if (oIter->value->category == Variable) {
-    //             Object * rType = findByName(oIter->value->returnType);
-    //             if (!getFlag(rType,FLAG_PRIMITIVE)) {
-    //                 snprintf(deallocator, BUFFLEN, "_$_cleanup(((%s *)" IDENT_MPTR "_in->obj)->%s);",
-    //                          current->returnType, oIter->value->name);
-    //                 addCode(result, deallocator);
-    //                 snprintf(deallocator, BUFFLEN, "free(((%s *)" IDENT_MPTR "_in->obj)->%s);",
-    //                          current->returnType, oIter->value->name);
-    //                 addCode(result, deallocator);
-    //             }
-    //         } else {
-    //             oIter = oIter->next;
-    //             break;
-    //         }
-    //     }
-    //     oIter = oIter->next;
-    // }
-
-    snprintf(deallocator, BUFFLEN, "if (" IDENT_MPTR "_in->obj) free(((%s *)" IDENT_MPTR "_in->obj));", current->returnType);
-    addCode(result, deallocator);
-
-    char marker[BUFFLEN];
-    snprintf(deallocator, BUFFLEN, IDENT_MPTR "_in->obj=0;");
-    addCode(result, deallocator);
-
-    addSymbol(parentScope, result);
     scope_push(result);
 
     return result;
@@ -786,9 +740,7 @@ Object *makeReturn(Object *expression)
         //remove last semicolon
         if (line->value[strlen(line->value) - 1] == ';')
             line->value[strlen(line->value) - 1] = '\0';
-        snprintf(newCode, BUFFLEN, "_$_object_ownership_transfer(%s, " IDENT_MPTR "_in);\n"
-                                   "return " IDENT_MPTR "_in;",
-                 line->value);
+        snprintf(newCode, BUFFLEN, "/* %d */ return %s", __LINE__, line->value);
         free(line->value);
         line->value = strdup(newCode);
         compilerDebugPrintf("Expression category %d code %s\n", expression->category, expression->code->value);
@@ -1036,16 +988,8 @@ Object *conjugateAssign(Object *subject, Object *verb, Object *objects)
             //if (subject->name)
             //ToDo handle member initializations
             compilerDebugPrintf("Is it FLAG_IDENT_SELF %d\n", getFlag(subject, FLAG_IDENT_SELF));
-            if (getFlag(subject, FLAG_IDENT_SELF))
-            {
-                snprintf(verbname, BUFFLEN, MPTR_ASSIGN_ALLOC "(&%s,%s)", subject->code->value,
-                         objects->code->value);
-            }
-            else
-            {
-                snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
-                         objects->code->value);
-            }
+            snprintf(verbname, BUFFLEN, "%s = %s", subject->code->value,
+                        objects->code->value);
         }
 
         addCode(result, verbname);
@@ -1535,22 +1479,22 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
         }
     }
     //== RetVar shenanigans ==
-    Object *rType = findByName(realVerb->returnType);
-    if (rType && !getFlag(rType, FLAG_PRIMITIVE))
-    {
-        char retVarName[BUFFLEN];
-        snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d_%d", scope_idx, retVarNumber);
-        retVarNumber++;
-        Object *retVar =
-            CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
-        addSymbol(current, retVar);
-        if (hasParams)
-        {
-            invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
-        }
-        invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
-        hasParams = true;
-    }
+    // Object *rType = findByName(realVerb->returnType);
+    // if (rType && !getFlag(rType, FLAG_PRIMITIVE))
+    // {
+    //     char retVarName[BUFFLEN];
+    //     snprintf(retVarName, BUFFLEN, IDENT_MPTR "%d_%d", scope_idx, retVarNumber);
+    //     retVarNumber++;
+    //     Object *retVar =
+    //         CreateObject(retVarName, retVarName, 0, Variable, IDENT_MPTR);
+    //     addSymbol(current, retVar);
+    //     if (hasParams)
+    //     {
+    //         invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ", ");
+    //     }
+    //     invoke_pos += snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "&%s", retVarName);
+    //     hasParams = true;
+    // }
 
     //== Generic shenanigans ==
     //compilerDebugPrintf("Conjverb Generic type %s\n",verb->genericType);
@@ -1609,7 +1553,7 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
             invoke_pos +=
                 snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
             invoke_pos +=
-                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR);
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->returnType);
         }
     }
     else if (!strcmp(realVerb->returnType, "Generic_YTYPE$$"))
@@ -1642,7 +1586,7 @@ Object *conjugate(Object *subject, Object *verb, Object *objects)
             invoke_pos +=
                 snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",false");
             invoke_pos +=
-                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, "," IDENT_MPTR);
+                snprintf(&invocation[invoke_pos], BUFFLEN - invoke_pos, ",%s", result->returnType);
         }
     }
     else if (!strcmp(realVerb->returnType, "Generic_ZTYPE$$"))

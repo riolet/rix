@@ -612,7 +612,7 @@ void writeTypeDefs(FILE * outh, Object * tree)
     ListObject *iter = tree->definedSymbols;
     while (iter) {
         if (iter->value->category == Type && !getFlag(iter->value, FLAG_EXTERNAL) && !getFlag(iter->value, FLAG_ENUM)) {
-            fprintf(outh, "typedef struct " COMPILER_SEP "%s %s;\n", iter->value->name,
+            fprintf(outh, "/* %d */ typedef struct " COMPILER_SEP "%s %s;\n", __LINE__, iter->value->name,
                     iter->value->name);
         } else if (getFlag(iter->value, FLAG_ENUM)) {
             writeEnums(outh, iter->value->code);
