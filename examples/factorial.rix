@@ -1,5 +1,0 @@
-n = 5
-result = 1
-i for 1,n+1
-    result = result * i
-print result

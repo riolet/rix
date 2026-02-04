@@ -1,3 +1,0 @@
-#a = Stream ("StreamTest.text","w")
-a.echo ("The word is: ")
-a.print ("Hello World!")

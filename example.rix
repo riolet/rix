@@ -1,20 +1,49 @@
-Point :: BaseType
-  x = int
-  y = int
-  
-  $(int x, int y)
-    $.x=x
-    $.y=y
+Rectangle :: 
+  w = int
+  h = int
 
-Line :: BaseType
-  a = Point
-  b = Point
-  
-  $(Point a, Point b)
-    $.a=a
-    $.b=b
+  #constructor
+  $(int w, int h)
+    $.w = w
+    $.h = h
 
-  length->float() = (((a.x-b.x)^^2) + ((a.y-b.y)^^2)) ^^ 0.5
+  #One line function
+  area->int() = w * h
 
-#myLine = Line (Point (3, 0), Point (0, 4))
-print ("Length of my line is: " + myLine.length())
+  perimeter->int() = ( w + h ) *2
+
+
+NamedRectangle :: Rectangle
+  name = String
+  $(int w, int h, String name)
+    $.w = w
+    $.h = h
+    $.name = name
+  nameArea->String() = "NamedRectangle "+ name + " has an area of "+$.area()
+
+# := is the equivalanet of saying r = new Rectangle(5,10) in other Object Oriented Languages
+# Types are inferred when a new variable is created
+r := Rectangle (5, 10)
+s := NamedRectangle (3, 4, "Great")
+
+print (s.name)
+print (r.area() + " " + r.perimeter())
+print (s.name + " " + s.area())
+print (s.nameArea())
+
+y := 5
+#Once a variable is created you use = for assignment with the correct type
+y = y + 2
+
+#Another one line function
+fib -> int(int n) = (n <= 1).tf (n, fib (n-1) + fib (n-2))
+
+#Read command line arguments
+if args()>1
+    .N = int (args (1))
+    #For loops
+    for i := 1 to N+1
+        print (i + ": " + fib (i))
+else
+    print ("Usage "+args(0)+" N")
+
