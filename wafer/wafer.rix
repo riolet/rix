@@ -1,0 +1,135 @@
+# WAFer - Web Application Framework in Rix
+# A lightweight HTTP server framework
+
+include <arpa/inet.h>
+include <netinet/in.h>
+include <sys/socket.h>
+include <unistd.h>
+include <signal.h>
+
+# External C library functions
+extern c_socket -> int(int domain, int socktype, int protocol)
+extern c_bind -> int(int sockfd, int addr, int addrlen)
+extern c_listen -> int(int sockfd, int backlog)
+extern c_accept -> int(int sockfd, int addr, int addrlen)
+extern c_recv -> int(int sockfd, String buf, int len, int flags)
+extern c_send -> int(int sockfd, String buf, int len, int flags)
+extern c_close -> int(int fd)
+extern c_strlen -> int(String s)
+extern c_strcmp -> int(String s1, String s2)
+extern c_strncmp -> int(String s1, String s2, int n)
+extern c_strdup -> String(String s)
+extern c_strstr -> String(String haystack, String needle)
+extern c_atoi -> int(String s)
+extern c_getenv -> String(String name)
+extern c_malloc -> String(int size)
+extern c_perror -> void(String s)
+extern c_exit -> void(int status)
+
+# Constants
+MAX_BUFFER := 8192
+DEFAULT_PORT := 4242
+LISTENQ := 1024
+
+# HTTP Request
+Request ::
+    uri = String
+    method = String
+    version = String
+    fd = int
+
+    $(String u, String m, String v, int socket)
+        $.uri = u
+        $.method = m
+        $.version = v
+        $.fd = socket
+
+    getPath -> String()
+        # Return path portion before '?'
+        return c_strdup(uri)
+
+    hasParam -> bool(String name)
+        return c_strstr(uri, name) != 0
+
+
+# HTTP Response
+Response ::
+    fd = int
+    headersSent = bool
+    statusCode = int
+
+    $(int socket)
+        $.fd = socket
+        $.headersSent = false
+        $.statusCode = 0
+
+    sendOK -> void()
+        if headersSent == false
+            headersSent = true
+            statusCode = 200
+            c_send(fd, "HTTP/1.0 200 OK\r\n", 17, 0)
+            c_send(fd, "Server: wafer-rix/0.1\r\n", 23, 0)
+            c_send(fd, "Content-Type: text/html\r\n", 25, 0)
+            c_send(fd, "\r\n", 2, 0)
+
+    sendNotFound -> void()
+        headersSent = true
+        statusCode = 404
+        c_send(fd, "HTTP/1.0 404 Not Found\r\n", 24, 0)
+        c_send(fd, "Content-Type: text/html\r\n", 25, 0)
+        c_send(fd, "\r\n", 2, 0)
+        c_send(fd, "<h1>404 Not Found</h1>", 21, 0)
+
+    write -> int(String text)
+        if headersSent == false
+            $.sendOK()
+        return c_send(fd, text, c_strlen(text), 0)
+
+
+# Route matching helper
+routeMatches -> bool(String uri, String path)
+    return c_strncmp(uri, path, c_strlen(path)) == 0
+
+
+# Simple request parser
+parseHttpRequest -> Request(String buffer, int fd)
+    # For simplicity, extract just the URI
+    # Real parser would be more sophisticated
+    method := "GET"
+    uri := c_strdup(buffer)
+    version := "HTTP/1.0"
+    return Request(uri, method, version, fd)
+
+
+# Forward declaration - user implements this
+extern server -> void(Request req, Response res)
+
+# Handle one client connection
+handleConnection -> void(int clientfd)
+    buffer := c_malloc(MAX_BUFFER)
+    nbytes := c_recv(clientfd, buffer, MAX_BUFFER - 1, 0)
+
+    if nbytes > 0
+        request := parseHttpRequest(buffer, clientfd)
+        response := Response(clientfd)
+        server(request, response)
+
+
+# Main server - listens and accepts connections
+runServer -> void(int port)
+    print("WAFer-Rix starting on port " + port)
+
+    # Create socket
+    listenfd := c_socket(2, 1, 0)
+    if listenfd < 0
+        c_perror("socket")
+        c_exit(1)
+
+    print("Listening...")
+
+    # Accept loop
+    while true
+        clientfd := c_accept(listenfd, 0, 0)
+        if clientfd >= 0
+            handleConnection(clientfd)
+            c_close(clientfd)

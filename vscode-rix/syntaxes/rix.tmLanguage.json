@@ -1,0 +1,168 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Rix",
+  "scopeName": "source.rix",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#boolean" },
+    { "include": "#keywords" },
+    { "include": "#operators" },
+    { "include": "#class-definition" },
+    { "include": "#function-definition" },
+    { "include": "#method-definition" },
+    { "include": "#constructor" },
+    { "include": "#member-declaration" },
+    { "include": "#self-reference" },
+    { "include": "#types" },
+    { "include": "#function-call" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.number-sign.rix",
+      "match": "#.*$"
+    },
+    "strings": {
+      "name": "string.quoted.double.rix",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.rix",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.rix",
+      "match": "\\b[0-9]+\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.rix",
+          "match": "\\b(if|else|for|to|while|return)\\b"
+        },
+        {
+          "name": "keyword.other.rix",
+          "match": "\\b(print|args|sqrt)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.class.rix",
+          "match": "::"
+        },
+        {
+          "name": "keyword.operator.assignment.rix",
+          "match": ":=|\\+=|-=|="
+        },
+        {
+          "name": "keyword.operator.arrow.rix",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.comparison.rix",
+          "match": "<=|>=|<|>|==|!="
+        },
+        {
+          "name": "keyword.operator.arithmetic.rix",
+          "match": "\\+|-|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.ternary.rix",
+          "match": "\\.tf\\b"
+        }
+      ]
+    },
+    "class-definition": {
+      "match": "^(\\w+)\\s*(::)\\s*(\\w+)?",
+      "captures": {
+        "1": { "name": "entity.name.class.rix" },
+        "2": { "name": "keyword.operator.class.rix" },
+        "3": { "name": "entity.other.inherited-class.rix" }
+      }
+    },
+    "function-definition": {
+      "match": "^(\\w+)\\s*(->)\\s*(\\w+)\\s*\\(",
+      "captures": {
+        "1": { "name": "entity.name.function.rix" },
+        "2": { "name": "keyword.operator.arrow.rix" },
+        "3": { "name": "storage.type.rix" }
+      }
+    },
+    "method-definition": {
+      "match": "^\\s+(\\w+)\\s*(->)\\s*(\\w+)\\s*\\(",
+      "captures": {
+        "1": { "name": "entity.name.function.method.rix" },
+        "2": { "name": "keyword.operator.arrow.rix" },
+        "3": { "name": "storage.type.rix" }
+      }
+    },
+    "constructor": {
+      "match": "(\\$)\\s*\\(",
+      "captures": {
+        "1": { "name": "entity.name.function.constructor.rix" }
+      }
+    },
+    "member-declaration": {
+      "match": "^\\s+(\\w+)\\s*(=)\\s*(int|String|\\w+)\\s*$",
+      "captures": {
+        "1": { "name": "variable.other.member.rix" },
+        "2": { "name": "keyword.operator.assignment.rix" },
+        "3": { "name": "storage.type.rix" }
+      }
+    },
+    "self-reference": {
+      "patterns": [
+        {
+          "match": "(\\$)\\.(\\w+)",
+          "captures": {
+            "1": { "name": "variable.language.self.rix" },
+            "2": { "name": "variable.other.member.rix" }
+          }
+        },
+        {
+          "name": "variable.language.self.rix",
+          "match": "\\$"
+        }
+      ]
+    },
+    "types": {
+      "name": "storage.type.rix",
+      "match": "\\b(int|String|bool)\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.rix",
+      "match": "\\b(true|false)\\b"
+    },
+    "function-call": {
+      "match": "(\\w+)\\s*\\(",
+      "captures": {
+        "1": { "name": "entity.name.function.call.rix" }
+      }
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "match": "\\.(\\w+)",
+          "captures": {
+            "1": { "name": "variable.other.member.rix" }
+          }
+        },
+        {
+          "name": "variable.other.rix",
+          "match": "\\b[a-z_][a-zA-Z0-9_]*\\b"
+        },
+        {
+          "name": "entity.name.type.rix",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

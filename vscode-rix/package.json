@@ -1,0 +1,35 @@
+{
+  "name": "rix-language",
+  "displayName": "Rix Language",
+  "description": "Syntax highlighting for the Rix programming language",
+  "version": "0.1.0",
+  "publisher": "rix",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rix",
+        "aliases": [
+          "Rix",
+          "rix"
+        ],
+        "extensions": [
+          ".rix"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rix",
+        "scopeName": "source.rix",
+        "path": "./syntaxes/rix.tmLanguage.json"
+      }
+    ]
+  }
+}

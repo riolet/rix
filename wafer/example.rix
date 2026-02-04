@@ -1,0 +1,109 @@
+# WAFer Example - Demo web server in Rix
+
+include <sys/socket.h>
+include <unistd.h>
+include <netinet/in.h>
+include <arpa/inet.h>
+
+# Request class
+Request ::
+    uri = String
+    method = String
+    fd = int
+
+    $(String u, String m, int socket)
+        $.uri = u
+        $.method = m
+        $.fd = socket
+
+# Response class
+Response ::
+    fd = int
+    headersSent = int
+
+    $(int socket)
+        $.fd = socket
+        $.headersSent = 0
+
+# Fibonacci calculator
+fib -> int(int n) = (n <= 1).tf(n, fib(n - 1) + fib(n - 2))
+
+# Send text over socket
+respond(int fd, String text)
+    send(fd, text, strlen(text), 0)
+
+# Send HTTP OK header
+sendHeaders(int fd)
+    send(fd, "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n", 44, 0)
+
+# Send 404 response
+sendNotFound(int fd)
+    send(fd, "HTTP/1.0 404 Not Found\r\nContent-Type: text/html\r\n\r\n<h1>404</h1>", 63, 0)
+
+# Route: Home page
+handleHome(int fd)
+    sendHeaders(fd)
+    respond(fd, "<html><body><h1>WAFer-Rix</h1>")
+    respond(fd, "<p>A web server written in Rix</p>")
+    respond(fd, "<ul><li><a href='/fib'>Fibonacci</a></li>")
+    respond(fd, "<li><a href='/hello'>Hello</a></li></ul>")
+    respond(fd, "</body></html>")
+
+# Route: Fibonacci
+handleFib(int fd)
+    sendHeaders(fd)
+    respond(fd, "<html><body><h1>Fibonacci</h1><pre>")
+    i := 1
+    while i <= 15
+        result := fib(i)
+        respond(fd, "F(" + i + ") = " + result + "\n")
+        i += 1
+    respond(fd, "</pre><a href='/'>Back</a></body></html>")
+
+# Route: Hello
+handleHello(int fd)
+    sendHeaders(fd)
+    respond(fd, "<html><body><h1>Hello World!</h1>")
+    respond(fd, "<a href='/'>Back</a></body></html>")
+
+# Main request handler
+handleRequest(int fd, String buffer)
+    print("Request received")
+    # Check routes based on buffer content
+    if strncmp(buffer, "GET / ", 6) == 0
+        handleHome(fd)
+    else
+        if strncmp(buffer, "GET /fib", 8) == 0
+            handleFib(fd)
+        else
+            if strncmp(buffer, "GET /hello", 10) == 0
+                handleHello(fd)
+            else
+                sendNotFound(fd)
+
+# Handle client connection
+handleClient(int clientfd)
+    buffer := malloc(8192)
+    nbytes := recv(clientfd, buffer, 8191, 0)
+    if nbytes > 0
+        handleRequest(clientfd, buffer)
+
+# Main entry point
+print("WAFer-Rix Server")
+print("Starting on port 4242")
+
+# Create socket (AF_INET=2, SOCK_STREAM=1)
+listenfd := socket(2, 1, 0)
+if listenfd < 0
+    print("Error: socket failed")
+
+# Note: In a real server, you'd also need bind() and listen()
+# This simplified version demonstrates the Rix syntax
+
+print("Waiting for connections...")
+
+while true
+    clientfd := accept(listenfd, 0, 0)
+    if clientfd >= 0
+        handleClient(clientfd)
+        close(clientfd)
